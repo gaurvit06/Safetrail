@@ -10,6 +10,8 @@ Built for BIOS V2 (Thapar Institute, Patiala), Prune challenge "Ship It Lean: AI
 ## Run it (one origin, one port)
 Clone into a **short path** (Windows: `C:\Users\<you>\safetrail`).
 
+**macOS / Linux, one command:** `bash scripts/run_local.sh` (checks Python 3.10+ and Node 18+, builds, installs, starts http://localhost:8000 and opens the browser). Windows:
+
 ```bash
 cd frontend
 npm install

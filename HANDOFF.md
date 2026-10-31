@@ -37,7 +37,10 @@ _Last updated: projector live counter, confetti + cheer on Accept and one-tap Ne
 - [x] `docs/DEMO_SCRIPT.md` (SPEC 10.4): setup checklist, the 3-minute run of show with the app's real button labels, fallbacks, Break-it round
 - [x] README: the safety rule, Prune headers, keys and the three budget layers, how cost per trip and per emergency are computed, the benchmark method
 
-## How to run (backend)
+## How to run
+**macOS / Linux:** `bash scripts/run_local.sh` does everything below and opens the browser.
+
+### Step by step (backend)
 Clone into a **short path** (Windows: `C:\Users\<you>\safetrail`; long paths break Python and `node_modules`).
 ```bash
 cd backend
