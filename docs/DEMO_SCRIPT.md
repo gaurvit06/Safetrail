@@ -44,6 +44,7 @@ Then **Break it**: switch the projector QR to **Break it** (`/break`). Judges tr
 - **GPS is bad indoors:** leave "Place zones at my location" off so zones go around the judges; use **Walk simulation**; on a tourist phone use **Demo: tap the map to set your location** (in the trip screen's bottom sheet); or scan the door's checkpoint QR.
 - **Venue Wi-Fi is bad:** put the laptop on the phone hotspot; phones use their own mobile data through the tunnel.
 - **Prune is down, over budget or Gemini is busy:** cards show "Standard text". Say: "This is the safety rule working: the AI is never in the emergency path." On the free Gemini key this can last a minute or more, and when the AI does answer, its text can take 10 to 40 s to replace the standard text.
+- **The live demo can't run at all:** play `docs/SafeTrail-Backup-Walkthrough.mp4` (75 seconds) and talk over it. Say it's a walkthrough from the real app, not a live run.
 - **Responder screen shows "Reconnecting…":** it retries on its own; refresh if it takes more than a few seconds.
 - **iPhone doesn't vibrate:** it uses sound and a full-screen flash instead; ask judges to turn the volume up.
 - **Between judging rounds:** tap **Next round** on Stage control. The projector shows the last round's recap until the first new judge joins. **Hold to reset the demo** is still there as an emergency reset.

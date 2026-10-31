@@ -43,6 +43,7 @@ _Last updated: the benchmark and the deck are done. `docs/SafeTrail-Deck.pptx` h
 - [ ] Replace the placeholder help desk, lobby and door positions in `hall.json` with the real spots
 - [ ] Test GPS at the venue with 3+ real phones (`scripts/run_phones.sh`)
 - [ ] Rehearse `docs/DEMO_SCRIPT.md` twice with real phones (Android and iPhone), then record a backup video
+- [x] Backup walkthrough: `docs/SafeTrail-Backup-Walkthrough.mp4`, 75 seconds, built from screenshots of the real app on emulated phones and labelled that way on every frame. A recording on real phones would still be better
 - [x] `docs/EXPLAINER.md` for the team (SPEC Section 16): story, diagram, three sentences per part, glossary, judge Q&A, what we did not build
 - [x] `scripts/check_no_direct_calls.sh` (logic in `check_no_direct_calls.py`, runs on Windows too): fails on direct AI-provider URLs, AI SDK imports outside `prune_client.py`, LLM use in the frontend, committed keys (files, git history and the built bundle), `.env`, `backend/keys/` or databases. Passes; tested in `tests/test_no_direct_calls.py`. 36 backend tests
 - [x] `docs/DEMO_SCRIPT.md` (SPEC 10.4): setup checklist, the 3-minute run of show with the app's real button labels, fallbacks, Break-it round
