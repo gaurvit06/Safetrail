@@ -40,7 +40,7 @@ RUNS = {
 }
 ORDER = ["R3", "R4", "R2", "R1"]
 TRIP_FEATURES = ("pack", "advisory")
-EMERGENCY_FEATURES = ("report", "cluster", "copilot")
+EMERGENCY_FEATURES = ("report", "cluster", "copilot", "sms_parse")
 
 
 def load_scenario() -> tuple[dict, dict]:

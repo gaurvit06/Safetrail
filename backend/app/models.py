@@ -148,6 +148,21 @@ class SosEvent(SQLModel, table=True):
     cancelled_at: Optional[float] = None
 
 
+class SmsInbound(SQLModel, table=True):
+    """An SMS from the gateway (SPEC 5.6 SMS inbound). The sender's number is never stored: only a salted hash
+    (to recognise repeats) and the last 4 digits (for the call-back card). The text is cleared after 30 days."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    from_hash: str = Field(default="", index=True)
+    from_last4: str = ""
+    text: Optional[str] = None
+    parsed_via: str = ""  # coded|free_text|unmatched|duplicate
+    trip_id: Optional[str] = None
+    sos_client_id: Optional[str] = None
+    ai_source: Optional[str] = None  # ai|template, once the sms_parse job has run
+    ai_result: Any = J(None)
+    received_at: float = Field(default_factory=now)
+
+
 class Incident(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     route_id: str = Field(index=True)

@@ -192,6 +192,11 @@ def retention_tick() -> None:
                                                 SosEvent.note_text != None)).all():  # noqa: E711
             r.note_text = None
             s.add(r)
+        from .models import SmsInbound
+        for m in s.exec(select(SmsInbound).where(SmsInbound.received_at < time.time() - 30 * 86400,
+                                                 SmsInbound.text != None)).all():  # noqa: E711
+            m.text = None
+            s.add(m)
         s.commit()
 
 

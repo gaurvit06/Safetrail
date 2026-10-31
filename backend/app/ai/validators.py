@@ -171,3 +171,28 @@ def clean_copilot(out: dict, sop_ids: set[str], help_ids: set[str]):
     cleaned = {"steps": steps, "resources_nearby": res, "message_to_tourists": msg[:200]}
     errs = [] if steps else ["no step cites a real SOP id"]
     return cleaned, errs
+
+
+SMS_KINDS = {"injured", "lost", "stuck", "medical", "unsafe", "unknown"}
+SMS_BUCKETS = {"1", "2-5", "6+", "unknown"}
+
+
+def validate_sms(out: dict, text: str):
+    """sms_parse (5.8.6): only the allowed values, and a place only if it's copied from the SMS itself."""
+    errs = []
+    kind = str(out.get("kind", "")).strip().lower()
+    bucket = str(out.get("people_bucket", "")).strip()
+    place = str(out.get("place_hint") or "").strip()
+    if kind not in SMS_KINDS:
+        errs.append(f"kind must be one of {sorted(SMS_KINDS)}")
+    if bucket not in SMS_BUCKETS:
+        errs.append(f"people_bucket must be one of {sorted(SMS_BUCKETS)}")
+    if len(place) > 60:
+        errs.append("place_hint is longer than 60 characters")
+    elif place and _fold(place) not in _fold(text):
+        errs.append("place_hint must be copied from the SMS, not invented")
+    return {"kind": kind, "people_bucket": bucket, "place_hint": place}, errs
+
+
+def _fold(t: str) -> str:
+    return " ".join(unicodedata.normalize("NFKC", t or "").casefold().split())

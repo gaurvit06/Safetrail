@@ -30,7 +30,8 @@ def clean_db():
     prune_client.reset_state()
     with Session(engine) as s:
         for m in (models.SosEvent, models.Incident, models.Ping, models.Trip, models.Pass, models.AiJob,
-                  models.LlmCall, models.SafetyCheck, models.CheckResponse, models.EventLog, models.BreakItAttempt):
+                  models.LlmCall, models.SafetyCheck, models.CheckResponse, models.EventLog, models.BreakItAttempt,
+                  models.SmsInbound):
             for row in s.exec(select(m)).all():
                 s.delete(row)
         s.commit()

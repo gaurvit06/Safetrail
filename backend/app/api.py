@@ -1,4 +1,5 @@
 """REST API (SPEC Section 7). Base path /api."""
+import json
 import time
 import uuid
 
@@ -346,6 +347,34 @@ def cancel(client_id: str, request: Request, s: Session = Depends(get_session)):
     tourist_trip(request, s, r.trip_id)
     core.cancel_sos(s, r)
     return {"ok": True}
+
+
+@router.post("/sms/inbound")
+async def sms_inbound(request: Request, s: Session = Depends(get_session)):
+    """SMS gateway webhook (SPEC 5.6). Secret in the X-SafeTrail-Secret header or ?secret=. Accepts JSON
+    {from, text} or a form post (Twilio-style From/Body). Never drops an SOS: unmatched SMS go to responders."""
+    import hmac
+    from urllib.parse import parse_qs
+
+    from . import sms
+    if not settings.sms_webhook_secret:
+        raise HTTPException(503, "SMS webhook not configured: set SMS_WEBHOOK_SECRET in .env")
+    given = request.headers.get("x-safetrail-secret") or request.query_params.get("secret") or ""
+    if not hmac.compare_digest(given.encode(), settings.sms_webhook_secret.encode()):
+        raise HTTPException(401, "Wrong webhook secret")
+    raw = await request.body()
+    if "json" in request.headers.get("content-type", ""):
+        try:
+            data = json.loads(raw or b"{}")
+        except ValueError:
+            raise HTTPException(400, "Body is not JSON") from None
+    else:
+        data = {k: v[0] for k, v in parse_qs(raw.decode("utf-8", "replace")).items()}
+    pick = lambda *keys: next((str(data[k]) for k in keys if data.get(k)), "")  # noqa: E731
+    sender, text = pick("from", "From", "sender", "msisdn"), pick("text", "Body", "body", "message", "Text")
+    if not text:
+        raise HTTPException(400, "No SMS text")
+    return sms.handle(s, sender, text)
 
 
 @router.get("/incidents")

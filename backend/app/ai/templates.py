@@ -65,3 +65,8 @@ def copilot_template(kinds: list[str]) -> dict:
             if len(steps) < 5:
                 steps.append({"text": item["text"], "sop_id": item["sop_id"]})
     return {"steps": steps, "resources_nearby": [], "message_to_tourists": templates("en")["message_to_group"]}
+
+
+def sms_template() -> dict:
+    """5.8.6 fallback: nothing extracted, so the SOS stays kind=unknown and the card says to call back."""
+    return {"kind": "unknown", "people_bucket": "unknown", "place_hint": ""}

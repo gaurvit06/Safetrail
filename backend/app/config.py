@@ -77,6 +77,7 @@ JOB_CFG = {
     "report": {"budget_usd": 0.02, "max_steps": 4, "tier": "small", "max_tokens": 450},
     "cluster": {"budget_usd": 0.03, "max_steps": 3, "tier": "large", "max_tokens": 350},
     "copilot": {"budget_usd": 0.01, "max_steps": 3, "tier": "small", "max_tokens": 400},
+    "sms_parse": {"budget_usd": 0.003, "max_steps": 2, "tier": "small", "max_tokens": 120},
 }
 
 # Planning-only price table (USD per 1M tokens) used by the governor to ESTIMATE before a call.

@@ -12,7 +12,7 @@ from ..models import HelpPoint, Incident, SafetyPack, SosEvent, Trip, Zone, Zone
 from ..seeddata import route_facts, route_seed, sops
 from . import prompts, validators
 from .jobs import run_job
-from .templates import cluster_template, copilot_template, pack_template, report_template, zone_text
+from .templates import cluster_template, copilot_template, pack_template, report_template, sms_template, zone_text
 
 PEOPLE_MID = {"1": 1, "2-5": 3, "6+": 8}
 
@@ -248,3 +248,23 @@ async def build_brief(incident_id: int) -> None:
     events.publish("incident.brief_ready", {"incident_id": incident_id, "source": res.source,
                                             "content": {**res.output, "help_points": help_points},
                                             "llm_call_ids": res.llm_call_ids}, events.OPS, route_id=route_id)
+
+
+# ---------------------------------------------------------------- 5.8.6 SMS parse (free-text SMS only)
+
+async def build_sms_parse(sms_id: int) -> None:
+    """Read kind, people and a place from a free-text SMS. The SOS already exists; this only fills in detail."""
+    from .. import sms
+    from ..models import SmsInbound
+
+    with Session(engine) as s:
+        row = s.get(SmsInbound, sms_id)
+        if not row or not row.text:
+            return
+        trip = s.get(Trip, row.trip_id) if row.trip_id else None
+        route_id, text = (trip.route_id if trip else ""), row.text
+    res = await run_job(job_key=f"sms_{sms_id}", feature="sms_parse", route_id=route_id, run_id=f"sms_{sms_id}",
+                        messages=prompts.sms_messages(text), validate=lambda o: validators.validate_sms(o, text),
+                        template=sms_template)
+    with Session(engine) as s:
+        sms.apply_parse(s, sms_id, res.output, res.source)

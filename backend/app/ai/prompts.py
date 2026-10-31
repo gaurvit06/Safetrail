@@ -5,6 +5,8 @@ no trip ids, no personal data. User-written text is wrapped in <untrusted> tags 
 """
 import json
 
+from .pii import scrub
+
 LANG_NAMES = {"en": "English", "hi": "Hindi", "as": "Assamese", "ne": "Nepali", "bn": "Bengali", "ta": "Tamil"}
 
 BASE = (
@@ -48,6 +50,13 @@ COPILOT = BASE + (
     " Task: give a responder next steps for this incident, in English. JSON keys: steps (at most 5 items "
     "{text: at most 20 words, sop_id}) where every sop_id must be one of the given SOP ids; resources_nearby "
     "(list of help point ids from the input); message_to_tourists (at most 25 words)."
+)
+
+SMS_PARSE = BASE + (
+    " Task: read an emergency SMS sent by a tourist (any language, maybe misspelt) and extract three fields. JSON keys: "
+    "kind (one of injured, lost, stuck, medical, unsafe, unknown); people_bucket (one of 1, 2-5, 6+, unknown); "
+    "place_hint (a place name copied exactly as written in the SMS, at most 60 characters, or an empty string). "
+    "Never guess: use unknown or an empty string when the SMS doesn't say."
 )
 
 
@@ -95,3 +104,7 @@ def copilot_messages(summary: dict, kinds: list[str], sop_snippets: list[dict], 
                      nonce: str = "") -> list[dict]:
     return _msgs(COPILOT, {"incident": summary, "kinds": sorted(kinds), "sops": sop_snippets,
                            "help_points": help_points}, nonce)
+
+
+def sms_messages(text: str, nonce: str = "") -> list[dict]:
+    return _msgs(SMS_PARSE, {"sms": untrusted(scrub(text), 320)}, nonce)  # phone numbers and IDs never reach the AI

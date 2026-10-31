@@ -23,6 +23,7 @@ Open `http://localhost:8000`. (macOS/Linux: `.venv/bin/python`.)
 
 - **AI on:** copy `.env.example` to `.env` (repo root), add the Prune keys and the two model names. Without them every AI feature uses its standard text and everything else works.
 - **Phones:** run a tunnel (`cloudflared tunnel --url http://localhost:8000`), put the https URL in `PUBLIC_URL`, restart. Geolocation needs https.
+- **SOS by SMS (optional):** set `SOS_SMS_NUMBER` (the number tourists text) and `SMS_WEBHOOK_SECRET`, then point an SMS gateway (for example an Android SMS-gateway app on the demo phone, or Twilio) at `https://<tunnel>/api/sms/inbound?secret=<SMS_WEBHOOK_SECRET>`. It accepts JSON `{"from", "text"}` or a form post with `From`/`Body`. The app's coded SOS SMS is parsed without AI; free text from a registered phone becomes an SOS at once and the `sms_parse` AI job only fills in unknown details; texts from unknown numbers go to responders as call-back requests.
 - **Frontend dev mode:** `npm run dev` in `frontend/` (port 5173, proxies `/api` to port 8000).
 
 ## Screens
@@ -56,7 +57,7 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 |---|---|
 | `X-Prune-Run-Id` | one run per AI job, e.g. `pack_kedarnath_hi_senior_v1`, `adv_<zone>`, `inc_<incident>_<n>`, `clu_<incident>_<n>`, `cop_<incident>_<n>` |
 | `X-Prune-Run-Budget-Usd` / `X-Prune-Max-Steps` | the job's budget and step limit (below) |
-| `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot` or `repair` |
+| `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot`, `sms_parse` or `repair` |
 | `X-Prune-Customer-Id` | `route_<route_id>`, so Prune's dashboard shows cost per route |
 | `X-Prune-Cache` | `exact` (`PRUNE_CACHE_MODE`): never semantic, so a similar note can't return another incident's report |
 | `X-Prune-Model-Policy` | `balanced` (`PRUNE_MODEL_POLICY`) |
@@ -65,7 +66,7 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 **Keys:** provider keys live only in Prune's vault. `.env` (never committed) holds two Prune keys: `PRUNE_API_KEY` (ops, with a daily spend cap set in the Prune dashboard) and `PRUNE_PUBLIC_API_KEY` (the Break-it round: small cap, allowlisted to `MODEL_SMALL`, plus a local cap `PUBLIC_BUDGET_USD`). Nothing secret is in the frontend bundle.
 
 **Three budget layers:**
-1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.01, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01.
+1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.01, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01, SMS parse $0.003.
 2. **Prune's run guard** enforces those budgets and step limits per job (`X-Prune-Run-Budget-Usd`, `X-Prune-Max-Steps`). A 429 `run_budget` is never retried: the job uses standard text.
 3. **Prune's key caps** are the outer wall: a daily spend cap on each key.
 
@@ -74,7 +75,7 @@ Errors: Prune's fail-closed 503s are retried once after `Retry-After`; rate-limi
 ## How cost per trip and per emergency are computed
 Every cost is Prune's own `cost_with_prune_usd` from the stored response metadata (`LlmCall` table). If Prune didn't return a cost, the screen shows n/a, never a guess.
 - **Cost per monitored trip** = cost of all `pack` and `advisory` calls ÷ trips started (simulated stage dots excluded).
-- **Cost per emergency** = cost of all `report`, `cluster` and `copilot` calls ÷ incidents (incidents merged into another one excluded).
+- **Cost per emergency** = cost of all `report`, `cluster`, `copilot` and `sms_parse` calls ÷ incidents (incidents merged into another one excluded).
 - A repair call counts toward the feature of the job it repaired. Prune's `cost_without_prune_usd` is always labelled "Prune estimate (list price)".
 
 ## Benchmark method

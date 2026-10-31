@@ -121,7 +121,13 @@ export function useOpsFeed(routeId: string, token: string | null) {
           break;
         case "sos.received":
           setDots((x) => (x[d.trip_label] ? { ...x, [d.trip_label]: { ...x[d.trip_label], status: "sos" } } : x));
-          tick(`SOS from ${d.trip_label}: ${d.kind}${d.delay_s > 10 ? ` · arrived ${duration(d.delay_s)} after it was pressed` : ""}`, "danger");
+          tick(`SOS from ${d.trip_label}${d.channel === "sms" ? " by SMS" : ""}: ${d.kind}${d.delay_s > 10 ? ` · arrived ${duration(d.delay_s)} after it was pressed` : ""}`, "danger");
+          break;
+        case "sms.unmatched":
+          tick(`SMS from a number ending ${d.from_last4 || "????"}, not linked to any trip: "${d.text}". Call back.`, "danger");
+          break;
+        case "sms.parsed":
+          tick(`SMS read ${d.source === "ai" ? "by AI" : "(standard text, AI not used)"}: ${d.kind ?? "unknown"}, ${d.people_bucket ?? "unknown"} people${d.place_hint ? `, place: "${d.place_hint}"` : ""}${d.applied && Object.keys(d.applied).length ? " · applied" : ""}`, "info");
           break;
         case "incident.updated":
           setIncidents((x) => ({ ...x, [d.id]: d }));
@@ -407,7 +413,7 @@ function Meter({ label, v, max, color, dark }: { label: string; v: number | null
 
 /* ================================================================ incidents */
 const PRI = { P1: "bg-danger text-white", P2: "bg-caution text-white", P3: "bg-info text-white" } as const;
-const FLAG_LABEL: Record<string, string> = { suspicious_text: "Suspicious text", prune_injection_signal: "Prune injection signal", flood: "SOS flood", duplicate_seen: "Duplicate resent", impossible_travel: "Impossible travel", breakit: "Break-it test" };
+const FLAG_LABEL: Record<string, string> = { suspicious_text: "Suspicious text", prune_injection_signal: "Prune injection signal", flood: "SOS flood", duplicate_seen: "Duplicate resent", impossible_travel: "Impossible travel", breakit: "Break-it test", sms_free_text: "Free-text SMS", call_back: "Call back", people_unknown: "Head count unknown", location_unknown: "Location unknown", place_mentioned: "Place named in SMS" };
 
 export function IncidentRow({ i, selected, onClick }: { i: IncidentSummary; selected?: boolean; onClick: () => void }) {
   return (

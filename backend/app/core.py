@@ -286,7 +286,9 @@ def attach_to_incident(s: Session, sos: SosEvent, trip: Trip) -> tuple[Incident,
 
 
 def receive_sos(s: Session, trip: Trip, body: dict, channel: str = "data") -> dict:
-    existing = s.exec(select(SosEvent).where(SosEvent.client_id == body["client_id"])).first()
+    existing = s.exec(select(SosEvent).where(SosEvent.client_id == body["client_id"])).first() or \
+        s.exec(select(SosEvent).where(SosEvent.trip_id == trip.id,  # the same SOS that already arrived by SMS
+                                      SosEvent.client_id == f"sms-{str(body['client_id'])[:8]}")).first()
     if existing:
         if "duplicate_seen" not in (existing.flags or []):
             existing.flags = (existing.flags or []) + ["duplicate_seen"]
@@ -535,7 +537,8 @@ def family_status(s: Session, trip: Trip) -> dict:
 
 
 def _feature_of(job_key: str) -> str:
-    for p, f in (("pack_", "pack"), ("adv_", "advisory"), ("inc_", "report"), ("clu_", "cluster"), ("cop_", "copilot")):
+    for p, f in (("pack_", "pack"), ("adv_", "advisory"), ("inc_", "report"), ("clu_", "cluster"), ("cop_", "copilot"),
+                 ("sms_", "sms_parse")):
         if job_key.startswith(p):
             return f
     return "other"
@@ -564,7 +567,7 @@ def ai_stats(s: Session, route_id: str | None = None) -> dict:
     total = sum(c.cost_with_prune_usd for c in known) if known else None
     without = [c.cost_without_prune_usd for c in ok if c.cost_without_prune_usd is not None]
     trip_cost = sum(by.get(f, {}).get("cost_usd", 0) for f in ("pack", "advisory"))
-    emerg_cost = sum(by.get(f, {}).get("cost_usd", 0) for f in ("report", "cluster", "copilot"))
+    emerg_cost = sum(by.get(f, {}).get("cost_usd", 0) for f in ("report", "cluster", "copilot", "sms_parse"))
     return {
         "calls": len(calls), "ok_calls": len(ok), "errors": len(calls) - len(ok),
         "cost_usd": total, "cost_inr": total * settings.usd_inr if total is not None else None,
