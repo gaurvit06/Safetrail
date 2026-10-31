@@ -343,6 +343,52 @@ def test_every_ai_job_gets_its_own_prune_run_id(monkeypatch):
     assert len(set(sent)) == 2 and all(r.startswith("same_id_") for r in sent)
 
 
+def _provider_quota_error():
+    """What Prune really sends when Google's quota runs out. The SDK reduces body to the error string."""
+    data = {"error": "gemini rejected the request (429)", "code": "provider_upstream_4xx", "upstream_status": 429}
+    resp = httpx.Response(429, request=httpx.Request("POST", "https://api.withprune.com/v1/chat/completions"), json=data)
+    return openai.APIStatusError("429", response=resp, body=data["error"])
+
+
+def test_provider_quota_error_does_not_pause_all_ai(monkeypatch):
+    try:
+        _run_chat(FakeClient([_provider_quota_error()]), monkeypatch)
+        assert False, "expected AIUnavailable"
+    except prune_client.AIUnavailable as e:
+        assert e.code == "provider_upstream_4xx"
+    assert prune_client._paused_until == 0
+
+
+def _run_with_models(monkeypatch, outcomes, **extra):
+    """Run one job with chat() answering in turn from outcomes, and return the job result and the tiers tried."""
+    monkeypatch.setattr(jobs, "configured", lambda key="ops": True)
+    tiers, seq = [], list(outcomes)
+
+    async def fake_chat(**kw):
+        tiers.append(kw["tier"])
+        o = seq.pop(0)
+        if isinstance(o, Exception):
+            raise o
+        return prune_client.ChatResult(content=o, llm_call_id=1, cache_hit=False, cost_with_prune_usd=0.0001,
+                                       estimated_cost_usd=0.0001, model_used="m", shield_code=None)
+    monkeypatch.setattr(jobs, "chat", fake_chat)
+    res = asyncio.run(jobs.run_job(job_key=f"fb_{uuid.uuid4().hex}", feature="cluster", route_id="hall", run_id="fb",
+                                   messages=[{"role": "user", "content": "hi"}], validate=lambda o: (o, []),
+                                   template=lambda: {"t": 1}, **extra))
+    return res, tiers
+
+
+def test_large_model_out_of_quota_falls_back_to_the_small_model(monkeypatch):
+    quota = prune_client.AIUnavailable("provider_upstream_4xx", 429)
+    res, tiers = _run_with_models(monkeypatch, [quota, '{"summary": "ok"}'])
+    assert tiers == ["large", "small"] and res.source == "ai" and res.stopped_by is None and not res.escalated
+
+
+def test_budget_stops_never_fall_back_to_another_model(monkeypatch):
+    res, tiers = _run_with_models(monkeypatch, [prune_client.AIUnavailable("run_budget", 429)])
+    assert tiers == ["large"] and res.source == "template" and res.stopped_by == "run_budget"
+
+
 def test_public_key_jobs_only_ever_use_the_small_model(monkeypatch):
     monkeypatch.setattr(jobs, "configured", lambda key="ops": True)
     monkeypatch.setattr(jobs, "public_spent_usd", lambda: 0)

@@ -334,7 +334,7 @@ def main() -> int:
         print(f"{'app_path':<13}", end=" ", flush=True)
         for attempt in range(4):  # chat() already retried once; same provider trouble as in send()
             results["app_path"] = run_app_path(f"{nonce}{attempt}")
-            if results["app_path"]["ok"] or results["app_path"].get("error_code") not in ("http_503", "timeout"):
+            if results["app_path"]["ok"] or results["app_path"].get("error_code") not in ("provider_upstream_5xx", "http_503", "timeout"):
                 break
             time.sleep(8)
         print("ok" if results["app_path"]["ok"] else results["app_path"].get("error_code"))

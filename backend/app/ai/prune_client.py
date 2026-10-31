@@ -180,6 +180,11 @@ def _err_code(e: Exception) -> str:
     body = getattr(e, "body", None)
     if not code and isinstance(body, dict):
         code = _first(body, "error.code", "code", "error.type", "shield_code")
+    if not code:  # Prune's own errors are {"error": "...", "code": "..."}, and the SDK keeps only the first part in body
+        try:
+            code = e.response.json().get("code")
+        except (AttributeError, ValueError):
+            pass
     if not code:
         status = getattr(e, "status_code", None)
         code = {402: "plan_limit", 429: "rate_limit", 403: "forbidden"}.get(status, f"http_{status}")

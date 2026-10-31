@@ -142,7 +142,7 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
                            events.OPS)
         else:
             for i, t in enumerate(tiers):
-                if i > 0:
+                if i > 0 and t == "large":
                     escalated = True
                 est = _estimate(messages, max_tokens, t)
                 if governor and spent + est > budget:
@@ -189,10 +189,17 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
                     if e.is_budget_stop:
                         events.publish("ai.stopped", {"job_id": job_key, "feature": feature, "by": e.code,
                                                       "spent_usd": spent, "budget_usd": budget}, events.OPS)
-                    break
+                        break
+                    # The model is busy or out of quota, but the other one may still answer.
+                    if t == "large" and "small" not in tiers and not (b and b.get("tier")):
+                        tiers.append("small")
+                    if i + 1 == len(tiers):
+                        break
 
     if result is None:
         result, source = template(), "template"
+    else:
+        stopped = None
     with Session(engine) as s:
         job = s.exec(select(AiJob).where(AiJob.job_key == job_key)).first()
         job.status = "done" if source == "ai" else "template"
