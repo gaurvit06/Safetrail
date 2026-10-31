@@ -2,7 +2,7 @@
 
 **Read this first, then SPEC.md.** SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
-_Last updated: backend complete and tested; starting the frontend._
+_Last updated: backend + interactive app built and tested end to end (join → zone alert → SOS → responder accept → "Help acknowledged" on the phone)._
 
 ## Plan and status
 - [x] Repo, spec, `.gitignore`, `.env.example`, `requirements.txt`
@@ -15,12 +15,15 @@ _Last updated: backend complete and tested; starting the frontend._
 - [x] Stage `stage.py`: landslide here, crowd surge, safety check, budget stress test, walk simulation, reset; Break-it (8 tricks)
 - [x] API `api.py` + `main.py` (SSE at `/api/events?token=`, serves `frontend/dist`)
 - [x] Backend tests: 20 passing (`pytest -q`); live smoke test `scripts/smoke_test.py` passes
-- [ ] **NEXT** Frontend: Vite + React + TS + Tailwind + MapLibre PWA scaffold, `api/types.ts`, `api/client.ts`, `api/sse.ts`
-- [ ] Frontend tourist flow: Welcome, Trip setup, Preparing, Home map + geofence + zone alert, SOS flow + offline queue + status, safety check, pack, pass, family share
-- [ ] Frontend responder: login, control map, incident panel + timeline verify, draw zone, safety check tally, AI & cost
-- [ ] Frontend stage: Stage, Stage control, Join (`/j`, `/jr`), Break it; Family view; Benchmark page
-- [ ] Benchmark runner R1–R4 (needs Prune keys)
-- [ ] Docs: `docs/EXPLAINER.md`, `docs/PRUNE_FIELDS.md` (needs a real Prune call), README
+- [x] Frontend scaffold: Vite + React + TS + Tailwind + MapLibre (OpenStreetMap tiles) + installable PWA; `lib/api.ts` (REST + SSE), `lib/types.ts`, `lib/offline.ts` (IndexedDB SOS/ping queues), `lib/geofence.ts` (+ 6 vitest tests), `lib/i18n.tsx` (English/Hindi), `lib/signals.ts`, `lib/verify.ts`
+- [x] Tourist: Welcome, Trip setup (3 steps), Judge join `/j`, Preparing, Trip map `/t` (zone alerts with hysteresis, approach banner, safe way back, crowd sheet, hold-to-SOS flow with voice note, live SOS tracker with SMS fallback, "Are you safe?", safety pack with "Show to a local", whistle/strobe/read-to-112 signal tools, compass guide to help points, pass QR, family sharing, demo location mode, checkpoint `/c/:id`), Family view `/f/:token`
+- [x] Responder `/r`: live map, incident queue + panel (counts, AI summary with receipt tag, translated notes, accept/en route/resolved, copilot, verify timeline), tap-to-draw zones (shape or circle), safety check + tally, pass scanner, AI & cost (cost meters, Routing River, receipts); simple judge-responder mode `/jr`
+- [x] Stage `/stage` (projector), Stage control `/stage/control`, Break it `/break`
+- [x] README, DECISIONS, CONTRACT_CHANGES
+- [ ] **NEXT** Add Prune keys to `.env`, do the SPEC Section 2 hour-1 tasks, write `docs/PRUNE_FIELDS.md` and fix any field names in `ai/prune_client.py::_extract`
+- [ ] Benchmark runner R1–R4 + `/benchmark` page (needs Prune keys)
+- [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ phones over a tunnel
+- [ ] `docs/EXPLAINER.md` for the team (SPEC Section 16)
 
 ## How to run (backend)
 Clone into a **short path** (Windows: `C:\Users\<you>\safetrail`; long paths break Python and `node_modules`).

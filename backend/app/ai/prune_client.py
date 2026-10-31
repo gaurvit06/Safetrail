@@ -189,7 +189,7 @@ def _log(fields: dict) -> int:
 
 def _publish_call(call_id: int, feature: str, fields: dict) -> None:
     events.publish("ai.call", {
-        "call_id": call_id, "feature": feature, "requested_model": fields.get("requested_model"),
+        "call_id": call_id, "feature": feature, "tier": fields.get("tier"), "requested_model": fields.get("requested_model"),
         "routed_model": fields.get("routed_model"), "route_applied": fields.get("route_applied"),
         "route_reason": fields.get("route_reason"), "cache_hit": fields.get("cache_hit"),
         "cost_with_usd": fields.get("cost_with_prune_usd"), "cost_without_usd": fields.get("cost_without_prune_usd"),
@@ -215,7 +215,8 @@ async def chat(*, job_key: str, run_id: str, feature: str, route_id: str, model:
     counts = _payload_counts.setdefault(run_id, Counter())
     est = _estimate(messages, max_tokens, tier)
     preview = scrub(json.dumps(messages[-1:], ensure_ascii=False))[:1500]
-    base = {"job_key": job_key, "run_id": run_id, "feature": feature, "route_id": route_id, "requested_model": model,
+    base = {"job_key": job_key, "run_id": run_id, "feature": feature, "route_id": route_id, "tier": tier,
+            "requested_model": model,
             "cache_mode": cache, "model_policy": policy, "estimated_cost_usd": est, "prompt_preview": preview,
             "escalated": escalated, "key_used": key, "benchmark_run_id": benchmark_run_id}
 

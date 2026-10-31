@@ -242,6 +242,7 @@ class LlmCall(SQLModel, table=True):
     run_id: str = ""
     feature: str = Field(index=True)
     route_id: str = ""
+    tier: str = ""  # small|large (what SafeTrail asked for)
     requested_model: str = ""
     original_model: Optional[str] = None
     routed_model: Optional[str] = None

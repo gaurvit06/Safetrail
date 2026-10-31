@@ -10,3 +10,8 @@ Deviations from SPEC.md and why. Newest last.
 6. **SMS parsing (5.8.6) is deferred.** It's first in the cut order. Coded SMS can still be added later without AI.
 7. **`.env` is read from the repo root**, then `backend/.env` (overrides), so `.env.example` sits at the root as in SPEC.md Section 11.
 8. **Signing keys** are generated into `backend/keys/` on first run when `PASS_SIGNING_KEY` / `LOG_SIGNING_KEY` are empty. That folder is git-ignored.
+9. **Map tiles are OpenStreetMap raster tiles** (CARTO basemaps now require an API key). Light use only, never bulk-prefetched; viewed tiles are cached by the service worker. Offline, the route, zones and help points still draw as GeoJSON on a plain background. The projector uses a dimmed copy.
+10. **No shadcn/ui generator:** small Tailwind components in `frontend/src/components/ui.tsx` instead, to avoid a CLI step.
+11. **Hold-to-SOS completes on a timer**, not on animation frames, so it can't get stuck when the browser throttles frames.
+12. **`db.init_db()` adds missing columns** to an existing SQLite database (forward-only), so pulling an update never breaks a local database.
+13. **Demo location mode** (tourist sheet → "Demo: tap the map") moves your dot by tapping the map, for rehearsals and indoor demos where GPS is poor. It's clearly labelled on screen.

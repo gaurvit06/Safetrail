@@ -365,7 +365,8 @@ def incident_summary(s: Session, inc: Incident) -> dict:
 
 
 def _call_brief(c: LlmCall) -> dict:
-    return {"id": c.id, "feature": c.feature, "requested_model": c.requested_model, "routed_model": c.routed_model,
+    return {"id": c.id, "feature": c.feature, "tier": c.tier, "requested_model": c.requested_model,
+            "routed_model": c.routed_model,
             "route_applied": c.route_applied, "cache_hit": c.cache_hit, "cost_with_prune_usd": c.cost_with_prune_usd,
             "cost_without_prune_usd": c.cost_without_prune_usd, "latency_ms": c.latency_ms, "status": c.status,
             "error_code": c.error_code, "shield_code": c.shield_code, "escalated": c.escalated,

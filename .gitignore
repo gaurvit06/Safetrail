@@ -23,6 +23,9 @@ node_modules/
 dist/
 .vite/
 
+# Local tool config (machine-specific paths)
+.claude/
+
 # OS / editors
 .DS_Store
 Thumbs.db
