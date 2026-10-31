@@ -1,8 +1,9 @@
 import maplibregl, { type GeoJSONSource, type Map as MLMap, type Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { centroid } from "../lib/geo";
 import { KIND_ICON } from "../lib/format";
+import { useT } from "../lib/i18n";
 import type { Checkpoint, Dot, HeatCell, HelpPoint, Zone } from "../lib/types";
 
 export type IncidentPin = { id: number; lat: number; lon: number; count: number; priority: string; selected?: boolean; status: string };
@@ -73,6 +74,8 @@ export default function MapView(p: Props) {
   props.current = p;
   const markers = useRef<Record<string, Marker>>({});
   const followed = useRef(false);
+  const [failed, setFailed] = useState(false);
+  const { t } = useT();
 
   const set = (id: string, data: any) => {
     const src = map.current?.getSource(id) as GeoJSONSource | undefined;
@@ -146,13 +149,19 @@ export default function MapView(p: Props) {
   useEffect(() => {
     if (!el.current) return;
     const bb = p.bbox;
-    const m = new maplibregl.Map({
-      container: el.current,
-      style: style(!!p.dark),
-      center: bb ? [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2] : [76.37, 30.354],
-      zoom: 15,
-      attributionControl: { compact: true },
-    });
+    let m: MLMap;
+    try {
+      m = new maplibregl.Map({
+        container: el.current,
+        style: style(!!p.dark),
+        center: bb ? [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2] : [76.37, 30.354],
+        zoom: 15,
+        attributionControl: { compact: true },
+      });
+    } catch {
+      setFailed(true); // no WebGL on this device: without this the whole screen goes blank, SOS button included
+      return;
+    }
     map.current = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), "top-right");
     m.on("load", () => {
@@ -220,5 +229,9 @@ export default function MapView(p: Props) {
     if (bb && bb.length === 4 && map.current && loaded.current) map.current.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, maxZoom: 17, duration: 500 });
   }, [p.bbox?.join(",")]);
 
-  return <div ref={el} className={p.className ?? "absolute inset-0"} />;
+  return (
+    <div ref={el} className={p.className ?? "absolute inset-0"}>
+      {failed && <p className="grid h-full place-items-center bg-bg px-8 pb-40 text-center font-semibold text-muted">{t("map_unavailable")}</p>}
+    </div>
+  );
 }

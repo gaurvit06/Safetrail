@@ -62,6 +62,13 @@ def spawn(coro) -> None:
         asyncio.run(coro)
 
 
+def spawn_later(delay_s: float, make_coro: Callable) -> None:
+    """Run a coroutine later on the server's event loop. Does nothing when no server is running (tests, benchmark)."""
+    loop = events._loop
+    if loop is not None and loop.is_running():
+        loop.call_soon_threadsafe(loop.call_later, delay_s, lambda: spawn(make_coro()))
+
+
 def public_spent_usd() -> float:
     """Spend on the public (Break-it) key: Prune's actual cost where known, else the governor's estimate."""
     from ..models import LlmCall

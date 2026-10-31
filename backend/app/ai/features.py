@@ -11,10 +11,11 @@ from ..geo import haversine_m
 from ..models import HelpPoint, Incident, SafetyPack, SosEvent, Trip, Zone, ZoneAdvisory
 from ..seeddata import route_facts, route_seed, sops
 from . import prompts, validators
-from .jobs import run_job
+from .jobs import run_job, spawn_later
 from .templates import cluster_template, copilot_template, pack_template, permit_template, report_template, sms_template, zone_text
 
 PEOPLE_MID = {"1": 1, "2-5": 3, "6+": 8}
+_refresh_due: set[int] = set()  # cluster incidents with an AI summary refresh already scheduled
 
 
 # ---------------------------------------------------------------- 5.8.1 safety pack
@@ -189,6 +190,22 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
             if inc.summary_member_count == inc.member_count and inc.summary_source == "ai":
                 return
             if inc.summary_last_at and now - inc.summary_last_at < settings.cluster_summary_min_interval_s:
+                # Too soon for more AI, but the numbers on screen must stay exact: show them now, AI text follows.
+                wait = settings.cluster_summary_min_interval_s - (now - inc.summary_last_at) + 0.5
+                out = cluster_template("en", inc.people_total, inc.injured_total, inc.segment_name)
+                route_id = inc.route_id
+                inc.cluster_summary, inc.summary_source = out, "template"
+                s.add(inc)
+                s.commit()
+                events.publish("incident.summary_ready", {"incident_id": incident_id, "source": "template", "content": out,
+                                                          "llm_call_ids": []}, events.OPS, route_id=route_id)
+                if incident_id not in _refresh_due:
+                    _refresh_due.add(incident_id)
+
+                    def again():
+                        _refresh_due.discard(incident_id)
+                        return build_cluster_summary(incident_id, key=key)
+                    spawn_later(wait, again)
                 return
         counts = cluster_counts(inc)
         notes = [r.note_text for r in s.exec(select(SosEvent).where(SosEvent.incident_id == incident_id)
@@ -224,6 +241,8 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
             out = {**out, "budget_limit": True}
     with Session(engine) as s:
         inc = s.get(Incident, incident_id)
+        if not inc or inc.member_count != members:  # more SOS arrived while the AI was writing, so its counts are old
+            return
         inc.cluster_summary, inc.summary_source, inc.summary_llm_call_ids = out, source, ids
         inc.summary_member_count = members
         inc.summary_refreshes = refreshes + (1 if ids else 0)

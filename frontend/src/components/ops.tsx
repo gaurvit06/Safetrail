@@ -493,11 +493,9 @@ export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: nu
         </div>
         <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-black/5"><X size={16} /></button>
       </div>
-      {!compact && (
-        <div className="flex gap-1 border-b border-line px-3 py-2">
-          {(["details", "timeline"] as const).map((x) => <button key={x} onClick={() => setTab(x)} className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize ${tab === x ? "bg-ink text-white" : "text-muted"}`}>{x}</button>)}
-        </div>
-      )}
+      <div className="flex gap-1 border-b border-line px-3 py-2">
+        {(["details", "timeline"] as const).map((x) => <button key={x} onClick={() => setTab(x)} className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize ${tab === x ? "bg-ink text-white" : "text-muted"}`}>{x}</button>)}
+      </div>
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         {tab === "details" ? (
           <>

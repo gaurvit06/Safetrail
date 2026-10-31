@@ -221,6 +221,7 @@ def reset_demo(s: Session) -> dict:
             s.add(tr)
     s.commit()
     _device_attempts.clear()
+    _ip_attempts.clear()
     events.publish("stage.reset", {}, events.ALL)
     return {"ok": True}
 
@@ -283,7 +284,7 @@ def _limit(device_id: str, ip: str) -> str | None:
         return "You've used your 3 attempts on this device."
     now_ = time.time()
     hits = [t for t in _ip_attempts.get(ip, []) if now_ - t < 3600]
-    if len(hits) >= 15:
+    if len(hits) >= 60:  # a whole room shares one address on venue Wi-Fi or behind the tunnel
         return "Too many attempts from this network. Try again later."
     _ip_attempts[ip] = hits + [now_]
     if device_id:

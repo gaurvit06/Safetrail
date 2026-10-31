@@ -343,6 +343,52 @@ def test_every_ai_job_gets_its_own_prune_run_id(monkeypatch):
     assert len(set(sent)) == 2 and all(r.startswith("same_id_") for r in sent)
 
 
+def _cluster_of_two(s):
+    t1, _ = make_trip(s, name="A")
+    t2, _ = make_trip(s, name="B")
+    sos(s, t1)
+    return sos(s, t2, lat=LAT + 0.0003)["incident_id"]
+
+
+def test_summary_numbers_stay_exact_when_an_sos_arrives_during_the_refresh_wait(s, monkeypatch):
+    later = []
+    features._refresh_due.clear()
+    monkeypatch.setattr(features, "spawn_later", lambda delay, make: (later.append(delay), make().close()))
+    _cluster_of_two(s)
+    t3, _ = make_trip(s, name="C")
+    iid = sos(s, t3, bucket="6+", lon=LON + 0.0003)["incident_id"]
+    s.expire_all()
+    inc = s.get(Incident, iid)
+    assert inc.member_count == 3 and inc.summary_source == "template"
+    assert str(inc.people_total) in inc.cluster_summary["summary"]
+    assert len(later) == 1 and 0 < later[0] <= 61  # and a fresh AI summary is on its way
+
+
+def test_ai_summary_with_out_of_date_counts_is_dropped(s, monkeypatch):
+    iid = _cluster_of_two(s)
+
+    async def job_overtaken_by_a_new_sos(**_):
+        with Session(engine) as other:
+            inc = other.get(Incident, iid)
+            inc.member_count += 1
+            other.add(inc)
+            other.commit()
+        return jobs.JobResult({"summary": "OLD COUNTS"}, "ai")
+    monkeypatch.setattr(features, "run_job", job_overtaken_by_a_new_sos)
+    asyncio.run(features.build_cluster_summary(iid, force=True))
+    s.expire_all()
+    assert s.get(Incident, iid).cluster_summary["summary"] != "OLD COUNTS"
+
+
+def test_break_it_survives_a_full_room_and_every_new_round(s):
+    for i in range(40):  # behind the tunnel, every judge has the same address
+        assert stage._limit(f"judge-{i}", "tunnel") is None
+    stage._ip_attempts["tunnel"] = [time.time()] * 60
+    assert stage._limit("one-more", "tunnel") is not None
+    stage.reset_demo(s)
+    assert stage._limit("next-round", "tunnel") is None
+
+
 def _watch_job(monkeypatch, read):
     """Replace the AI job with one that records what a responder could see while the AI is still working."""
     seen = []
