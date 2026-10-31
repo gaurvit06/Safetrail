@@ -2,7 +2,7 @@
 
 **Read this first, then SPEC.md.** Claude: also read `CLAUDE.md`, `CONTINUE.md` (prompts and laptop handover) and `docs/SESSION_LOG.md`. SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
-_Last updated: the AI is live through Prune with Gemini. Every AI feature produced validated AI text in live tests, and `scripts/prune_check.py` gives 10 OK and 1 warning. Prune's exact cache is on, with two guards that must stay: read `docs/DECISIONS.md` 28 to 39 before touching the AI layer. 70 backend tests and 6 frontend tests pass, and the whole of `docs/DEMO_SCRIPT.md` ran in real browsers with and without WebGL. What is left needs a screenshot and a setting in Prune, the real venue map, real phones and a backup video._
+_Last updated: the AI is live through Prune with Gemini. Every AI feature produced validated AI text in live tests, and `scripts/prune_check.py` gives 10 OK and 1 warning. Prune's exact cache is on, with two guards that must stay: read `docs/DECISIONS.md` 28 to 43 before touching the AI layer. 76 backend tests and 6 frontend tests pass, and the whole of `docs/DEMO_SCRIPT.md` ran in real browsers with and without WebGL. What is left needs a screenshot and a setting in Prune, the real venue map, real phones and a backup video._
 
 ## Plan and status
 - [x] Repo, spec, `.gitignore`, `.env.example`, `requirements.txt`

@@ -101,8 +101,8 @@ Rehearse with a timer. The demo is the most important part: if time is short, cu
   - **Three budget layers:** our governor → Prune run budget + step limit → daily key cap
   - Prune injection detection + no personal data in prompts
   - **Signed receipt on every call** (Ed25519, verifiable at withprune.com/verify)
-- **The honest twist (judges will love this):** *"We tested Prune's cache on real incident data. It returned one incident's summary for a different incident. In an emergency app that's unacceptable, so we turned it off for live calls and built our own exact reuse instead."*
-- **Say:** "Prune lets us make AI cheap and controlled, but we verified everything. Our Prune check script ran 10 live checks: receipts are signed, a run over budget gets stopped with a 429, injection attempts are flagged. One thing failed our safety bar, the cache, so we turned it off."
+- **The honest twist (judges will love this):** *"We tested Prune's cache on real incident prompts. At first it returned one incident's summary for a different incident, even in exact mode. In an emergency app that's unacceptable, so every call now carries a fingerprint of the request and a strict setting. Only identical requests can match, and a live check fails if that ever changes."*
+- **Say:** "Prune lets us make AI cheap and controlled, but we verified everything. Our Prune check script runs 11 live checks: receipts are signed, a run over budget gets stopped with a 429, injection attempts are flagged, and a different request never gets a cached answer."
 
 ### Slide 11 · What it costs
 - **On the slide:** the measured numbers from the benchmark (fill in after it runs, Section 3):
@@ -165,9 +165,9 @@ Rehearse with a timer. The demo is the most important part: if time is short, cu
 ### Backup slides (only for questions)
 - **B1 · No network at all?** "Nothing can transmit with zero network: not our app, not 112. So we warn before people reach danger, the control room sees when someone goes silent and where they were last seen, and the phone guides them offline to the nearest shelter. Relay and satellite are next."
 - **B2 · Why not just call 112?** "If any network is available, call 112, and our app tells you to. We add what a call can't: warnings before danger, an SOS that waits and sends itself, no need to speak the language, and 40 calls grouped into one incident."
-- **B3 · Engineering proof:** 65 backend tests + 6 app tests · a checker that fails on direct AI calls or committed keys · Prune check script: 9 of 10 live checks OK · signed receipt verified locally against Prune's public key, and a tampered copy fails.
+- **B3 · Engineering proof:** 76 backend tests + 6 app tests · the whole demo played in real browsers with and without the map · a checker that fails on direct AI calls or committed keys · Prune check script: 10 of 11 live checks OK · signed receipt verified locally against Prune's public key, and a tampered copy fails.
 - **B4 · Honest limits:** not yet tested on real phones in the mountains · the free Gemini key is sometimes busy, so standard text shows · our injection scanner matches English only (Hindi and Assamese rely on Prune's detection) · Sikkim and Corbett routes are drawn by hand and simulated.
-- **B5 · The cache story:** the test results from `docs/DECISIONS.md` 28 (the cache returned the first incident's summary for a different incident; with the cache off, every test gave the correct facts).
+- **B5 · The cache story:** the test results from `docs/DECISIONS.md` 28 (exact mode alone returned the first incident's summary for a different incident; with a request fingerprint and a strict setting, all six changes to a real prompt got their own correct answer, and a true repeat still hit the cache).
 
 ---
 
@@ -179,7 +179,7 @@ Rehearse with a timer. The demo is the most important part: if time is short, cu
 **Lines to remember:**
 - "Rules decide; the AI only writes and translates."
 - "We never claim it works with no network: it warns you offline, keeps your SOS, and sends it on the first signal."
-- "We tested Prune's cache, found it unsafe for incident data, and turned it off."
+- "We tested Prune's cache on real prompts, caught it mixing up incidents, and fixed it so only identical requests match."
 - "Every number on our screens comes from Prune's receipts. If we don't know a number, the screen says n/a."
 
 ---
@@ -189,18 +189,18 @@ Rehearse with a timer. The demo is the most important part: if time is short, cu
 **Safe to say (verified by us):**
 - The Kedarnath trail in the app is the real OpenStreetMap trek path: **15.1 km**.
 - Live weather from Open-Meteo, per section, refreshed every 15–30 minutes (example on 31 Oct: −0.5 °C at 3,549 m near Kedarnath).
-- **65 backend tests and 6 app tests pass**; the no-direct-AI-calls checker passes.
-- `scripts/prune_check.py`: **9 of 10 live checks OK** (the remaining warning is a setting we change in Prune's dashboard).
+- **76 backend tests and 6 app tests pass**; the no-direct-AI-calls checker passes.
+- `scripts/prune_check.py`: **10 of 11 live checks OK** (the remaining warning is about a Prune dashboard setting; the app enforces the same limit itself).
 - Prune returns a **signed receipt** on every call (Ed25519); a sample receipt passed a local check against Prune's public key, and a tampered copy failed.
 - A run over budget is stopped by Prune with a **429**, and the app falls back to standard text.
 
 **Fill in after the benchmark runs** (`backend\.venv\Scripts\python scripts\benchmark.py --trips 100`, results in `docs/BENCHMARK.md` and on `/benchmark`):
 - Cost per monitored trip, cost per emergency, and counts correct for R1–R3.
-- **Before quoting them:** fix R3/R4's cache setting (HANDOFF says they still send `exact`) and check Prune's Gemini costs against Google's own usage page (`docs/DECISIONS.md` 35: Prune's reported Gemini costs look wrong).
+- **Before quoting them:** check Prune's Gemini costs against Google's own usage page (`docs/DECISIONS.md` 35: Prune's reported Gemini costs ignore output).
 
 **Do NOT say:**
 - Any rupee or paise figure until it's measured and checked.
-- "Works with no network", "guaranteed rescue", "predicts stampedes", "catches all GPS spoofing", "integrated with government permits", "Prune's cache saves us money" (it's off).
+- "Works with no network", "guaranteed rescue", "predicts stampedes", "catches all GPS spoofing", "integrated with government permits", "Prune's cache saves us money" as a rupee figure (not checked yet), "Prune picks the cheapest model" (no call was rerouted in our tests).
 - "PostgreSQL / PostGIS / React Native / WebSockets": we use SQLite, an installable web app (judges join by QR, no app store) and Server-Sent Events.
 - "DBSCAN": say "density-based grouping, like DBSCAN: SOS within 150 m and 30 minutes form one incident".
 
@@ -251,7 +251,7 @@ Crop tightly, keep the phone frame, and don't show real names or phone numbers.
                                                 ▼               ▼
                                    ┌──────────────────┐  ┌──────────────────────┐
                                    │  PRUNE gateway   │  │ OpenStreetMap (trail, │
-                                   │  budgets, routing│  │ hospital, shelters)   │
+                                   │  budgets, cache  │  │ hospital, shelters)   │
                                    │  receipts, shield│  │ Open-Meteo (weather)  │
                                    └────────┬─────────┘  └──────────────────────┘
                                             ▼
@@ -267,10 +267,10 @@ Put one red banner across the bottom: **"The AI is never in the emergency path."
 
 1. **Explain it in one sentence.** An offline-first safety app for treks, pilgrimages and parks that warns before danger, keeps an SOS when there's no signal, and gives responders one clear picture.
 2. **Why do you need AI at all?** For language work: safety packs per route and language, warnings in each tourist's language, translating SOS notes, summarising a group of SOS. Everything safety-critical is plain code.
-3. **Why Prune, not a direct API?** One gateway for every call: budgets and step limits it enforces, model routing, injection detection, and signed receipts so we can prove cost. Our checker fails the build if anything bypasses it.
+3. **Why Prune, not a direct API?** One gateway for every call: budgets and step limits it enforces, an exact cache, injection detection, and signed receipts so we can prove cost. Our checker fails the build if anything bypasses it.
 4. **What if Prune or the AI is down?** Cards show standard text. Alerts, SOS, grouping and the timeline keep working. You'll see this on stage, because the free Gemini key is sometimes busy.
 5. **How do you keep AI costs low?** No AI in safety logic; shared safety packs; small model by default; refresh limits; hard budgets per job; daily key caps.
-6. **Do you use Prune's cache?** We tested it on real incident prompts and it returned one incident's summary for a different incident, so it's off for live calls. Our own job store makes sure the same work is never paid for twice.
+6. **Do you use Prune's cache?** Yes, but only for identical requests. In testing, exact mode alone returned one incident's summary for a different incident, so every call now sends a fingerprint of the request and a strict setting, and a live check fails if that stops working. Our own job store also makes sure the same work is never paid for twice.
 7. **How much does one tourist cost?** Give the benchmark numbers if they're measured and checked. Otherwise: "It's measured from Prune's receipts on our benchmark page. We don't quote a number we haven't verified."
 8. **Can an SOS go out with zero signal?** No, and nothing can. It's saved with its exact time and place and sent on the first signal, by SMS if data is down, or at a checkpoint. If any network is available, the app tells you to call 112.
 9. **Why not just 112?** We don't replace it. We add warnings before danger, an SOS that waits and sends itself, no need to speak, and grouped incidents.
@@ -309,9 +309,9 @@ Put one red banner across the bottom: **"The AI is never in the emergency path."
 
 ## 8. Before you present
 
-- [ ] In Prune: set the public key's model allowlist to the small model only (HANDOFF)
-- [ ] Verify the sample receipt at withprune.com/verify and screenshot it (shot 13)
-- [ ] Run the benchmark with real keys (after fixing R3/R4's cache setting) and fill in slide 11
+- [x] The public key stays on the small model: the app enforces it (`docs/DECISIONS.md` 40)
+- [x] Verified the sample receipt at withprune.com/verify: `docs/receipts/receipt-verified.png` (shot 13)
+- [ ] Check the benchmark's numbers against Google's usage page, then fill in slide 11
 - [ ] Draw the real venue in `backend/seed/routes/hall.json`; test GPS with 3+ phones over the tunnel
 - [ ] Rehearse `docs/DEMO_SCRIPT.md` twice with real phones (Android and iPhone); record a backup video
 - [ ] Every teammate can give the 30-second pitch and answer questions 1–10 without notes
