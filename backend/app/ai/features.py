@@ -235,7 +235,8 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
                             feature="cluster", route_id=route_id, run_id=f"clu_{incident_id}_{members}",
                             messages=prompts.cluster_messages(counts, seg, notes, span),
                             validate=lambda o: validators.validate_cluster(o, allowed), template=tmpl,
-                            governor=governor, run_budget_header=run_budget_header, key=key)
+                            governor=governor, run_budget_header=run_budget_header, key=key,
+                            cache="off" if run_budget_header else None)  # a cached answer would dodge the budget stop
         out, source, ids, shields = res.output, res.source, res.llm_call_ids, res.shield_codes
         if res.stopped_by in ("run_budget", "agent_step_budget", "governor", "spend_cap"):
             out = {**out, "budget_limit": True}

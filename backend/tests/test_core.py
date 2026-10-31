@@ -405,6 +405,20 @@ def test_public_key_jobs_only_ever_use_the_small_model(monkeypatch):
     assert tiers == ["small", "small"]
 
 
+def test_budget_stress_test_skips_the_cache_so_prune_really_stops_it(s, monkeypatch):
+    iid = _cluster_of_two(s)
+    sent = {}
+
+    async def fake_job(**kw):
+        sent.update(kw)
+        return jobs.JobResult({"summary": "x"}, "template", stopped_by="run_budget")
+    monkeypatch.setattr(features, "run_job", fake_job)
+    asyncio.run(features.build_cluster_summary(iid, force=True, governor=False, run_budget_header=0.000001))
+    assert sent["cache"] == "off"
+    asyncio.run(features.build_cluster_summary(iid, force=True))
+    assert sent["cache"] is None
+
+
 def _cluster_of_two(s):
     t1, _ = make_trip(s, name="A")
     t2, _ = make_trip(s, name="B")
