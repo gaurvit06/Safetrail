@@ -88,6 +88,14 @@ async def _rate_gate() -> None:
         await asyncio.sleep(0.5)
 
 
+def case_tagged(messages: list[dict]) -> list[dict]:
+    """Keeps Prune's cache to truly identical requests. Its template cache matches on the system prompt alone, so a
+    different emergency got the first one's answer. A fingerprint of the whole request in the system prompt stops
+    that, and X-Prune-Max-Cache-Error: 0 stops the semantic layer. Neither is enough alone (docs/DECISIONS.md, 28)."""
+    tag = hashlib.sha256(json.dumps(messages, sort_keys=True).encode()).hexdigest()[:12]
+    return [{**messages[0], "content": f"{messages[0]['content']} [case {tag}]"}] + messages[1:]
+
+
 def prune_headers(run_id: str, budget_usd: float | None, max_steps: int | None, feature: str, route_id: str,
                   cache: str, policy: str) -> dict:
     h = {
@@ -95,6 +103,7 @@ def prune_headers(run_id: str, budget_usd: float | None, max_steps: int | None, 
         "X-Prune-Feature-Id": feature,
         "X-Prune-Customer-Id": f"route_{route_id}",
         "X-Prune-Cache": cache,
+        "X-Prune-Max-Cache-Error": "0",  # see case_tagged
         "X-Prune-Model-Policy": policy,
         "X-Prune-Injection": settings.prune_injection_mode,
     }
@@ -218,6 +227,8 @@ async def chat(*, job_key: str, run_id: str, feature: str, route_id: str, model:
     cache = cache or settings.prune_cache_mode
     policy = policy or settings.prune_model_policy
     max_tokens += LARGE_THINKING_TOKENS if tier == "large" else 0
+    if cache != "off":
+        messages = case_tagged(messages)
     headers = prune_headers(run_id, budget_usd, max_steps, feature, route_id, cache, policy)
     payload_hash = hashlib.sha256(json.dumps([model, messages, max_tokens], sort_keys=True).encode()).hexdigest()
     counts = _payload_counts.setdefault(run_id, Counter())

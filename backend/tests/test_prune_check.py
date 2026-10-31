@@ -89,8 +89,14 @@ def test_an_empty_reply_through_the_app_fails_the_check():
 
 def test_only_the_cache_checks_use_prunes_cache():
     calls = {c["name"]: c["headers"]["X-Prune-Cache"] for c in pc.plan("abc")}
-    assert calls.pop("basic") == calls.pop("cache") == calls.pop("cache_new_run") == "exact"
+    for name in ("basic", "cache", "cache_new_run", "cache_safety"):
+        assert calls.pop(name) == "exact"
     assert set(calls.values()) == {"off"}
+
+
+def test_a_cached_answer_for_a_different_request_fails_the_check():
+    assert pc.verdicts({"cache_safety": _ok({}, {"x-prune-cache-hit": "true"})})[0]["level"] == "fail"
+    assert pc.verdicts({"cache_safety": _ok({}, {"x-prune-cache-hit": "false"})})[0]["level"] == "ok"
 
 
 def test_no_signal_and_missing_receipt_are_warnings():

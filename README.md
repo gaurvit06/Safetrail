@@ -61,14 +61,14 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 | `X-Prune-Run-Budget-Usd` / `X-Prune-Max-Steps` | the job's budget and step limit (below) |
 | `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot`, `sms_parse`, `permit` or `repair` |
 | `X-Prune-Customer-Id` | `route_<route_id>`, so Prune's dashboard shows cost per route |
-| `X-Prune-Cache` | `off` on every live call: in testing, `exact` returned one incident's summary for another (`docs/DECISIONS.md`, 28). The app's own `job_key` stops repeat work from being paid for twice |
+| `X-Prune-Cache` | `exact` (`PRUNE_CACHE_MODE`), never semantic. Every call also sends `X-Prune-Max-Cache-Error: 0` and a fingerprint of the request in the system prompt: without both, `exact` returned one incident's summary for another (`docs/DECISIONS.md`, 28) |
 | `X-Prune-Model-Policy` | `balanced` (`PRUNE_MODEL_POLICY`) |
 | `X-Prune-Injection` | `detect` (`PRUNE_INJECTION_MODE`): a signal becomes a flag, never a block |
 
 **Keys:** provider keys live only in Prune's vault. `.env` (never committed) holds two Prune keys: `PRUNE_API_KEY` (ops, with a daily spend cap set in the Prune dashboard) and `PRUNE_PUBLIC_API_KEY` (the Break-it round: small cap, allowlisted to `MODEL_SMALL`, plus a local cap `PUBLIC_BUDGET_USD`). Nothing secret is in the frontend bundle.
 
 **Three budget layers:**
-1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.01, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01, SMS parse $0.003, permit card $0.004.
+1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.03, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01, SMS parse $0.003, permit card $0.004.
 2. **Prune's run guard** enforces those budgets and step limits per job (`X-Prune-Run-Budget-Usd`, `X-Prune-Max-Steps`). A 429 `run_budget` is never retried: the job uses standard text.
 3. **Prune's key caps** are the outer wall: a daily spend cap on each key.
 

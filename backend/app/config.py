@@ -32,9 +32,7 @@ class Settings:
     prune_api_key = _s("PRUNE_API_KEY")
     prune_public_api_key = _s("PRUNE_PUBLIC_API_KEY")
     prune_model_policy = _s("PRUNE_MODEL_POLICY", "balanced")
-    # Not read from .env, because old copies still say "exact": that mode returned one emergency's summary for
-    # another (docs/DECISIONS.md, 28).
-    prune_cache_mode = "off"
+    prune_cache_mode = _s("PRUNE_CACHE_MODE", "exact")
     prune_injection_mode = _s("PRUNE_INJECTION_MODE", "detect")
     model_small = _s("MODEL_SMALL")
     model_large = _s("MODEL_LARGE")

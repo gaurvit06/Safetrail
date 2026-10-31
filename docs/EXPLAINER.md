@@ -12,7 +12,7 @@ Read this before you present. It's written for beginners: what each part does, w
 6. Responders see one grouped incident instead of 40 confused calls, with exact counts and a report in their language.
 7. When an officer accepts, the tourist sees "Help acknowledged", and every step goes into a signed log nobody can quietly edit.
 8. AI only writes and translates: safety packs, zone warnings, reports, summaries, next steps.
-9. Every AI call goes through Prune, which picks the cheapest model that works, reuses answers we've already paid for, and caps spending.
+9. Every AI call goes through Prune, which reuses answers we've already paid for and caps spending. We use a small model first and keep a stronger one for harder jobs.
 10. If the AI is down or over budget, standard text is used and every safety feature keeps working.
 
 ```mermaid
@@ -21,7 +21,7 @@ flowchart LR
   S -- "zones, alerts, 'Are you safe?'" --> P
   S -- "live map, incidents" --> R["Responder app"]
   R -- "accept, draw zone" --> S
-  S -. "AI jobs (async, optional)" .-> PR["Prune gateway<br/>routing, budgets,<br/>injection check, receipts"]
+  S -. "AI jobs (async, optional)" .-> PR["Prune gateway<br/>exact cache, budgets,<br/>injection check, receipts"]
   PR -.-> M["Small model / Large model"]
 ```
 
@@ -65,7 +65,7 @@ The dotted lines are the AI. Everything on the solid lines works without it.
 | IndexedDB | The storage inside the browser where the phone keeps the SOS queue and the safety pack. |
 | SSE | Server-Sent Events: the server pushes live updates to the screen without it asking. |
 | Grouping (like DBSCAN) | Putting SOS alerts that are close in space and time into one incident. We use a simpler distance rule (150 m, 30 min) that works the same way for this. |
-| Prune's cache | Off for every live call. It treated similar requests as the same one and returned another incident's summary. |
+| Exact cache | Prune reuses an answer only when the request is identical. We send a strict setting and a fingerprint of each request, because without them it matched similar requests too. |
 | Routing | Prune sends an easy request to a cheaper model when it can. |
 | Run budget | A prepaid card for one AI job. When it's used up, Prune stops that job and we use standard text. |
 | Receipt | A record of each AI call, signed by Prune, that anyone can verify on withprune.com/verify. |
@@ -84,7 +84,7 @@ The dotted lines are the AI. Everything on the solid lines works without it.
 - **"Does it work with no network?"** Warnings, the safety pack and saving the SOS work offline. Sending needs some signal: data, SMS or a checkpoint. We never claim more.
 - **"Is the AI deciding emergencies?"** No. Rules set priority, and plain code counts people and runs zones. The AI only writes and translates, and validators stop it inventing facts.
 - **"Is the 'without Prune' number real?"** There are two numbers. One is measured: R2 against R3, the same design with Prune's routing and cache off and on. The other is Prune's own list-price estimate, always labelled as an estimate.
-- **"Why is Prune's cache off?"** Correctness. In our tests, Prune's cache returned one incident's summary for a different incident, with the wrong head count and place, even in `exact` mode. A wrong emergency summary costs far more than a cached call saves, so every live call sends `X-Prune-Cache: off`. We still avoid paying twice, because each AI job runs once (`job_key`), and we still use Prune's budgets, injection checks and signed receipts.
+- **"Why exact cache, not semantic?"** Correctness. In our tests, even `exact` mode at first returned one incident's summary for a different incident, with the wrong head count and place. So every call now sends a strict setting and a fingerprint of the request, which means only truly identical requests can match. We retested by changing the count, place, time, emergency type and note, and each got its own answer. A live check fails if that ever stops being true.
 - **"Why detect injections instead of blocking them?"** Blocking would drop the report for a real SOS that happens to contain odd text. Detecting turns it into a flag, and priority never depends on the AI. Our own scanner only understands English tricks; Prune's detection covers the rest, and the benchmark measures both.
 - **"Isn't this surveillance?"** It's opt-in per trip, with a Stop button, location history deleted after 7 days, and family see status only.
 - **"Can GPS be faked?"** We flag impossible jumps, replayed SOS and forged passes. We don't claim to stop all spoofing.

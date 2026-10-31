@@ -274,12 +274,29 @@ def test_gemini_replies_are_read_instead_of_coming_back_empty(s, monkeypatch):
     assert (row.prompt_tokens, row.completion_tokens) == (34, 7)
 
 
-def test_live_ai_calls_turn_prune_cache_off(monkeypatch):
-    client, sent = FakeClient([_Raw('{"ok": 1}')]), {}
+def _send_notes(monkeypatch, notes, cache):
+    client, sent = FakeClient([_Raw('{"ok": 1}') for _ in notes]), []
     fake_create = client.create
-    client.create = lambda **kw: sent.update(kw["extra_headers"]) or fake_create(**kw)
-    _run_chat(client, monkeypatch)
-    assert sent["X-Prune-Cache"] == "off"
+    client.create = lambda **kw: sent.append(kw) or fake_create(**kw)
+    monkeypatch.setattr(prune_client, "_client", lambda key: client)
+    for i, note in enumerate(notes):
+        asyncio.run(prune_client.chat(job_key="t", run_id=f"r{i}", feature="cluster", route_id="hall", model="m", tier="small",
+                                      messages=[{"role": "system", "content": "Summarise."}, {"role": "user", "content": note}],
+                                      max_tokens=50, budget_usd=0.01, max_steps=3, cache=cache))
+    return sent
+
+
+def test_prune_cache_can_only_match_identical_requests(monkeypatch):
+    sent = _send_notes(monkeypatch, ["3 injured at Gaurikund", "3 injured at Gaurikund", "7 injured at Rambara"], "exact")
+    systems = [kw["messages"][0]["content"] for kw in sent]
+    assert systems[0] == systems[1] != systems[2]
+    assert all(kw["extra_headers"]["X-Prune-Cache"] == "exact" for kw in sent)
+    assert all(kw["extra_headers"]["X-Prune-Max-Cache-Error"] == "0" for kw in sent)
+
+
+def test_cache_off_leaves_the_prompt_alone(monkeypatch):
+    sent = _send_notes(monkeypatch, ["3 injured at Gaurikund"], "off")
+    assert sent[0]["messages"][0]["content"] == "Summarise." and sent[0]["extra_headers"]["X-Prune-Cache"] == "off"
 
 
 def test_large_tier_gets_room_to_think_and_small_tier_does_not(monkeypatch):
