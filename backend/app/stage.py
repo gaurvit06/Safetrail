@@ -17,8 +17,8 @@ from .core import (answer_check, create_trip, ingest_pings, position_event, publ
                    scan_injection, send_check, set_incident_status, start_trip)
 from .db import engine
 from .geo import centroid, circle_polygon, haversine_m, offset_point, point_in_polygon
-from .models import (BreakItAttempt, CheckResponse, DemoState, Incident, LlmCall, Ping, Route, SafetyCheck, SosEvent,
-                     Trip, Zone)
+from .models import (AiJob, BreakItAttempt, CheckResponse, DemoState, Incident, LlmCall, Ping, Route, SafetyCheck,
+                     SosEvent, Trip, Zone)
 from .security import b64u, b64u_dec, canonical, check_role_token, issue_pass, verify_pass
 from .seeddata import route_seed, segment_for
 
@@ -208,6 +208,9 @@ def reset_demo(s: Session) -> dict:
     for model in (CheckResponse, SafetyCheck, BreakItAttempt, SosEvent, Incident):
         for row in s.exec(select(model)).all():
             s.delete(row)
+    for job in s.exec(select(AiJob)).all():  # jobs are keyed by incident number and numbers restart after this
+        if job.job_key.startswith(("inc_", "clu_", "cop_")):
+            s.delete(job)
     for tr in s.exec(select(Trip)).all():
         if tr.kind in ("sim", "breakit"):
             for p in s.exec(select(Ping).where(Ping.trip_id == tr.id)).all():

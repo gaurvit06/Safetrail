@@ -16,7 +16,7 @@ from openai import OpenAI
 from sqlmodel import Session
 
 from .. import events
-from ..config import settings
+from ..config import LARGE_THINKING_TOKENS, settings
 from ..db import engine
 from ..models import LlmCall
 from .pii import scrub
@@ -158,6 +158,13 @@ def _extract(meta: dict, headers: dict) -> dict:
     }
 
 
+def _gemini_text(body: dict) -> str:
+    """Prune answers Gemini models in Google's shape (`candidates`), even on /chat/completions through the OpenAI SDK.
+    Thought parts are the model's reasoning, not its answer."""
+    parts = ((body.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
+    return "".join(p.get("text", "") for p in parts if not p.get("thought"))
+
+
 def _err_code(e: Exception) -> str:
     headers = getattr(getattr(e, "response", None), "headers", {}) or {}
     code = headers.get("x-prune-shield-code") if hasattr(headers, "get") else None
@@ -210,6 +217,7 @@ async def chat(*, job_key: str, run_id: str, feature: str, route_id: str, model:
     client = _client(key)
     cache = cache or settings.prune_cache_mode
     policy = policy or settings.prune_model_policy
+    max_tokens += LARGE_THINKING_TOKENS if tier == "large" else 0
     headers = prune_headers(run_id, budget_usd, max_steps, feature, route_id, cache, policy)
     payload_hash = hashlib.sha256(json.dumps([model, messages, max_tokens], sort_keys=True).encode()).hexdigest()
     counts = _payload_counts.setdefault(run_id, Counter())
@@ -235,17 +243,19 @@ async def chat(*, job_key: str, run_id: str, feature: str, route_id: str, model:
             parsed = raw.parse()
             body = parsed.model_dump()
             meta = body.get("prune_metadata") or {}
-            content = (parsed.choices[0].message.content or "") if parsed.choices else ""
+            content = (parsed.choices[0].message.content or "") if parsed.choices else _gemini_text(body)
             usage = body.get("usage") or {}
+            gemini_usage = body.get("usageMetadata") or {}
             fields = {**base, **_extract(meta, resp_headers), "http_status": raw.status_code,
-                      "prompt_tokens": usage.get("prompt_tokens"), "completion_tokens": usage.get("completion_tokens"),
+                      "prompt_tokens": usage.get("prompt_tokens", gemini_usage.get("promptTokenCount")),
+                      "completion_tokens": usage.get("completion_tokens", gemini_usage.get("candidatesTokenCount")),
                       "latency_ms": int((time.time() - t0) * 1000), "raw_metadata": meta, "raw_headers": resp_headers,
                       "status": "ok" if attempt == 0 else "retried"}
             cid = _log(fields)
             _publish_call(cid, feature, fields)
             return ChatResult(content=content, llm_call_id=cid, cache_hit=fields["cache_hit"],
                               cost_with_prune_usd=fields["cost_with_prune_usd"], estimated_cost_usd=est,
-                              model_used=fields.get("routed_model") or body.get("model") or model,
+                              model_used=fields.get("routed_model") or body.get("model") or body.get("modelVersion") or model,
                               shield_code=fields["shield_code"], metadata=meta, headers=resp_headers)
         except openai.APIStatusError as e:
             status, code = e.status_code, _err_code(e)

@@ -5,6 +5,7 @@ Every job: governor check -> Prune call -> parse + validate -> 1 repair call -> 
 """
 import asyncio
 import time
+import uuid
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Callable
@@ -83,7 +84,7 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
                   tier: str | None = None, budget_usd: float | None = None, max_steps: int | None = None,
                   max_tokens: int | None = None, key: str = "ops", escalate_upfront: bool = False,
                   allow_escalation: bool = False, governor: bool = True, policy: str | None = None,
-                  cache: str | None = None, timeout: float = 20, benchmark_run_id: int | None = None,
+                  cache: str | None = None, timeout: float = 45, benchmark_run_id: int | None = None,
                   run_budget_header: float | None = None) -> JobResult:
     cfg = JOB_CFG[feature]
     tier = tier or cfg["tier"]
@@ -103,6 +104,9 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
             escalate_upfront = allow_escalation = False
         if b.get("naive"):
             governor, send_budget = False, False
+    # Prune remembers a run's spend and steps for good, but incident numbers restart after a reset and a pack keeps one
+    # job key: reusing an id gets the next call stopped as a loop or as over budget.
+    run_id = f"{run_id}_{uuid.uuid4().hex[:6]}"
 
     with Session(engine) as s:
         job = s.exec(select(AiJob).where(AiJob.job_key == job_key)).first()

@@ -82,6 +82,17 @@ def test_verdicts_and_markdown_come_only_from_results():
     assert "x-prune-shield-code" not in md.split("## Every Prune header seen")[1].split("##")[0]  # basic call had none
 
 
+def test_an_empty_reply_through_the_app_fails_the_check():
+    assert pc.verdicts({"app_path": {"ok": True, "row": {}, "reply_chars": 0}})[0]["level"] == "fail"
+    assert pc.verdicts({"app_path": {"ok": True, "row": {}, "reply_chars": 9}})[0]["level"] == "ok"
+
+
+def test_only_the_cache_checks_use_prunes_cache():
+    calls = {c["name"]: c["headers"]["X-Prune-Cache"] for c in pc.plan("abc")}
+    assert calls.pop("basic") == calls.pop("cache") == calls.pop("cache_new_run") == "exact"
+    assert set(calls.values()) == {"off"}
+
+
 def test_no_signal_and_missing_receipt_are_warnings():
     results = {"basic": _ok({"cost_with_prune_usd": 0.1}), "cache": _ok({}, {"x-prune-cache-hit": "false"}),
                "injection": _ok({}, {})}

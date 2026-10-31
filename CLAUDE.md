@@ -23,6 +23,7 @@ SafeTrail is our BIOS V2 hackathon app (Thapar Institute; Prune track "Ship It L
 - Never fake a number: costs come from Prune's stored data; unknown values show "n/a".
 - Label everything simulated as "Simulated". Honest copy: "sends on first signal", "incident report draft", "flags impossible travel".
 - Never commit `.env`, `backend/keys/`, `*.db` or raw receipts with personal data.
+- Prune's cache stays `off` on live calls, even though SPEC says `exact`: `exact` returned one incident's summary for another (`docs/DECISIONS.md`, 28).
 
 ## How we work
 - Small steps. After each working step: run the tests and the checker, update the checklist in `HANDOFF.md` (and `docs/DECISIONS.md` if you chose something), commit with a clear message, then `git push origin main`.

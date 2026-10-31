@@ -26,6 +26,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import uuid
 from pathlib import Path
 
@@ -51,8 +52,9 @@ def messages(check: str, nonce: str, note: str | None = None) -> list[dict]:
             {"role": "user", "content": user}]
 
 
-def headers(run_id: str, *, budget: float | None = 0.01, policy: str | None = None, injection: str | None = None) -> dict:
-    h = prune_client.prune_headers(run_id, budget, 3, "check", "hall", "exact", policy or settings.prune_model_policy)
+def headers(run_id: str, *, budget: float | None = 0.01, policy: str | None = None, injection: str | None = None,
+            cache: str = "off") -> dict:
+    h = prune_client.prune_headers(run_id, budget, 3, "check", "hall", cache, policy or settings.prune_model_policy)
     if injection:
         h["X-Prune-Injection"] = injection
     return h
@@ -62,12 +64,12 @@ def plan(nonce: str) -> list[dict]:
     """The probe calls, in order. Each entry is sent with prune_client.probe()."""
     small, large = settings.model_small, settings.model_large
     rid = lambda name: f"chk_{nonce}_{name}"
-    basic = {"model": small, "messages": messages("basic", nonce), "headers": headers(rid("basic"))}
+    basic = {"model": small, "messages": messages("basic", nonce), "headers": headers(rid("basic"), cache="exact")}
     p = [
         {"name": "basic", "expect": "200 with prune_metadata and a receipt signature", **basic},
         {"name": "cache", "expect": "200 and an exact cache hit (identical request, same run id)", **copy.deepcopy(basic)},
         {"name": "cache_new_run", "expect": "cache hit even with a different run id (decides how the benchmark's R4 can hit)",
-         **{**copy.deepcopy(basic), "headers": headers(rid("basic2"))}},
+         **{**copy.deepcopy(basic), "headers": headers(rid("basic2"), cache="exact")}},
         {"name": "run_budget", "expect": "429 run_budget", "model": small, "messages": messages("run_budget", nonce),
          "headers": headers(rid("budget"), budget=0.000001)},
         {"name": "injection", "expect": f"200 with an injection signal (X-Prune-Injection: {settings.prune_injection_mode})",
@@ -96,10 +98,11 @@ def run_app_path(nonce: str) -> dict:
     try:
         r = asyncio.run(prune_client.chat(job_key=f"chk_{nonce}_app", run_id=f"chk_{nonce}_app", feature="check",
                                           route_id="hall", model=settings.model_small, tier="small",
-                                          messages=messages("app_path", nonce), max_tokens=60, budget_usd=0.01, max_steps=3))
+                                          messages=messages("app_path", nonce), max_tokens=60, budget_usd=0.01, max_steps=3,
+                                          timeout=45))
         with Session(engine) as s:
             row = s.get(LlmCall, r.llm_call_id).model_dump()
-        return {"ok": True, "row": row}
+        return {"ok": True, "row": row, "reply_chars": len(r.content.strip())}
     except prune_client.AIUnavailable as e:
         return {"ok": False, "error_code": e.code, "status": e.http_status}
 
@@ -186,7 +189,7 @@ def verdicts(results: dict) -> list[dict]:
     c = results.get("cache")
     if c:
         hit = cache_hit(c) if c["ok"] else None
-        add("cache", "ok" if hit else "warn", "exact cache hit on the identical repeat" if hit else
+        add("cache", "ok" if hit else "warn", f"cache hit on the identical repeat, type {(c.get('headers') or {}).get('x-prune-cache-type')}" if hit else
             f"not reported as a cache hit (cache_hit={hit}); see the header and metadata tables")
     cn = results.get("cache_new_run")
     if cn:
@@ -216,7 +219,10 @@ def verdicts(results: dict) -> list[dict]:
         if ap.get("ok"):
             row = ap["row"]
             filled = [k for k in TRACKED_FIELDS if row.get(k) is not None]
-            add("app_path", "ok", f"{len(filled)} of {len(TRACKED_FIELDS)} Prune fields filled in LlmCall")
+            if ap.get("reply_chars"):
+                add("app_path", "ok", f"{len(filled)} of {len(TRACKED_FIELDS)} Prune fields filled in LlmCall")
+            else:
+                add("app_path", "fail", "the call worked but the app read an empty reply: see _gemini_text in prune_client.py")
         else:
             add("app_path", "fail", f"prune_client.chat raised {ap.get('error_code')}")
     ps, pl = results.get("public_small"), results.get("public_large")
@@ -268,6 +274,16 @@ def fields_markdown(results: dict, when: str) -> str:
 
 
 # ---------------------------------------------------------------- main
+def send(c: dict) -> dict:
+    """Gemini's free tier often answers 503 or times out, which says nothing about Prune, so try a few times."""
+    for _ in range(4):
+        r = prune_client.probe(model=c["model"], messages=c["messages"], headers=c["headers"], key=c.get("key", "ops"), timeout=60)
+        if r["status"] != 503 and r.get("error_code") != "timeout":
+            return r
+        time.sleep(8)
+    return r
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--dry-run", action="store_true", help="print the planned calls; no network")
@@ -294,7 +310,7 @@ def main() -> int:
     results: dict = {}
     for c in calls:
         print(f"{c['name']:<13}", end=" ", flush=True)
-        r = prune_client.probe(model=c["model"], messages=c["messages"], headers=c["headers"], key=c.get("key", "ops"))
+        r = send(c)
         r["headers"] = clean_headers(r["headers"])
         r["request"] = {"model": c["model"], "headers": c["headers"], "messages": c["messages"], "key": c.get("key", "ops")}
         results[c["name"]] = r
@@ -305,7 +321,11 @@ def main() -> int:
             break
     if results.get("basic", {}).get("ok"):
         print(f"{'app_path':<13}", end=" ", flush=True)
-        results["app_path"] = run_app_path(nonce)
+        for attempt in range(4):  # chat() already retried once; same provider trouble as in send()
+            results["app_path"] = run_app_path(f"{nonce}{attempt}")
+            if results["app_path"]["ok"] or results["app_path"].get("error_code") not in ("http_503", "timeout"):
+                break
+            time.sleep(8)
         print("ok" if results["app_path"]["ok"] else results["app_path"].get("error_code"))
 
     when = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")

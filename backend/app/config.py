@@ -32,7 +32,9 @@ class Settings:
     prune_api_key = _s("PRUNE_API_KEY")
     prune_public_api_key = _s("PRUNE_PUBLIC_API_KEY")
     prune_model_policy = _s("PRUNE_MODEL_POLICY", "balanced")
-    prune_cache_mode = _s("PRUNE_CACHE_MODE", "exact")
+    # Not read from .env, because old copies still say "exact": that mode returned one emergency's summary for
+    # another (docs/DECISIONS.md, 28).
+    prune_cache_mode = "off"
     prune_injection_mode = _s("PRUNE_INJECTION_MODE", "detect")
     model_small = _s("MODEL_SMALL")
     model_large = _s("MODEL_LARGE")
@@ -72,7 +74,7 @@ settings = Settings()
 
 # Per-job budgets (Section 5.12). Placeholders: tune after real runs, log changes in docs/DECISIONS.md.
 JOB_CFG = {
-    "pack": {"budget_usd": 0.01, "max_steps": 3, "tier": "small", "max_tokens": 900},
+    "pack": {"budget_usd": 0.03, "max_steps": 3, "tier": "small", "max_tokens": 1600},
     "advisory": {"budget_usd": 0.005, "max_steps": 2, "tier": "small", "max_tokens": 200},  # per language; run scales
     "report": {"budget_usd": 0.02, "max_steps": 4, "tier": "small", "max_tokens": 450},
     "cluster": {"budget_usd": 0.03, "max_steps": 3, "tier": "large", "max_tokens": 350},
@@ -80,6 +82,10 @@ JOB_CFG = {
     "sms_parse": {"budget_usd": 0.003, "max_steps": 2, "tier": "small", "max_tokens": 120},
     "permit": {"budget_usd": 0.004, "max_steps": 3, "tier": "small", "max_tokens": 350},
 }
+
+# Added to max_tokens on the large tier. Gemini 3.5 Flash thinks before it answers and that counts against the limit:
+# 641 to 1,299 tokens of thinking for a 115-token cluster summary. Without this room its JSON is cut off.
+LARGE_THINKING_TOKENS = 2000
 
 # Planning-only price table (USD per 1M tokens) used by the governor to ESTIMATE before a call.
 # Never shown as an actual cost. Actual costs always come from Prune's metadata.

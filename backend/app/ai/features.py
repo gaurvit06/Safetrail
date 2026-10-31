@@ -138,16 +138,26 @@ async def build_report(incident_id: int, *, key: str = "ops") -> None:
         sos = rows[-1]
         inp = report_input(s, inc, sos)
         hp, hd = _nearest_help(s, inc.route_id, sos.lat, sos.lon)
-        route_id, n = inc.route_id, len(rows)
+        route_id, n, has_report = inc.route_id, len(rows), bool(inc.report)
     note = inp["note_text"]
     lang = inp["tourist_language"]
+    tmpl = lambda: report_template("en", inp["kind"], inp["people_bucket"], inp["segment_name"],
+                                   hp.name if hp else None, hd, note)
+    if not has_report:  # the responder gets this now; the AI text replaces it when it arrives, however slow the model
+        with Session(engine) as s:
+            inc = s.get(Incident, incident_id)
+            inc.report, inc.report_source = tmpl(), "template"
+            s.add(inc)
+            s.commit()
+            flags = inc.flags
+        events.publish("incident.report_ready", {"incident_id": incident_id, "source": "template", "content": tmpl(),
+                                                 "llm_call_ids": [], "flags": flags, "escalated": False},
+                       events.OPS, route_id=route_id)
     res = await run_job(job_key=f"inc_{incident_id}_{n}", feature="report", route_id=route_id,
                         run_id=f"inc_{incident_id}_{n}", messages=prompts.report_messages(inp),
-                        validate=lambda o: validators.validate_report(o, inp),
-                        template=lambda: report_template("en", inp["kind"], inp["people_bucket"], inp["segment_name"],
-                                                         hp.name if hp else None, hd, note),
+                        validate=lambda o: validators.validate_report(o, inp), template=tmpl,
                         escalate_upfront=len(note) > 150 or lang not in settings.small_ok_langs,
-                        allow_escalation=True, timeout=8, key=key)
+                        allow_escalation=True, key=key)
     with Session(engine) as s:
         inc = s.get(Incident, incident_id)
         inc.report, inc.report_source, inc.report_llm_call_ids = res.output, res.source, res.llm_call_ids
@@ -185,7 +195,7 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
                                               .order_by(SosEvent.id)).all() if r.note_text][:15]
         span = int((inc.last_sos_at - inc.first_sos_at) / 60)
         seg, route_id, members = inc.segment_name, inc.route_id, inc.member_count
-        refreshes = inc.summary_refreshes
+        refreshes, has_summary = inc.summary_refreshes, bool(inc.cluster_summary)
         inc.summary_last_at = now
         s.add(inc)
         s.commit()
@@ -196,6 +206,14 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
         source, ids = "template", []
     else:
         allowed = {**counts, "time_span_minutes": span}
+        if not has_summary:  # same as the single report: template now, AI text when it arrives
+            with Session(engine) as s:
+                inc = s.get(Incident, incident_id)
+                inc.cluster_summary, inc.summary_source = tmpl(), "template"
+                s.add(inc)
+                s.commit()
+            events.publish("incident.summary_ready", {"incident_id": incident_id, "source": "template", "content": tmpl(),
+                                                      "llm_call_ids": []}, events.OPS, route_id=route_id)
         res = await run_job(job_key=f"clu_{incident_id}_{members}{'_stress' if run_budget_header else ''}",
                             feature="cluster", route_id=route_id, run_id=f"clu_{incident_id}_{members}",
                             messages=prompts.cluster_messages(counts, seg, notes, span),
@@ -290,5 +308,5 @@ async def build_permit_card(trip_id: str) -> dict | None:
     key = f"permit_{slug}_{inp['language']}_v1"
     res = await run_job(job_key=key, feature="permit", route_id=trip.route_id, run_id=key,
                         messages=prompts.permit_messages(inp), validate=lambda o: validators.validate_permit(o, inp),
-                        template=lambda: permit_template(inp))
+                        template=lambda: permit_template(inp), timeout=20)  # a tourist's screen waits on this one
     return {"content": res.output, "source": res.source, "llm_call_ids": res.llm_call_ids, "simulated": True}

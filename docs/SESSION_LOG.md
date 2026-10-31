@@ -29,7 +29,7 @@ Tests at the end: 56 backend, 6 frontend, checker clean.
 
 ## Known limits (be honest about these)
 - Only tested in simulated browsers so far: no real phones, no real GPS, no real venue map yet.
-- No Prune keys yet: every AI card shows "Standard text"; the benchmark page is empty until a real run.
+- The benchmark page is empty until a real run. (Prune and Gemini went live later on 31 Oct: see `docs/DECISIONS.md` 28 to 35.)
 - Sikkim and Corbett lines were drawn by hand (OpenStreetMap was unreachable from the cloud machine): approximate, simulated, not for navigation.
 - The Nepali phrasebook is machine-translated; check it with a native speaker.
 - The injection scanner only matches English tricks; Hindi and Assamese ones rely on Prune's detection.
@@ -37,7 +37,7 @@ Tests at the end: 56 backend, 6 frontend, checker clean.
 
 ## Still to do (also in HANDOFF.md)
 1. Done 31 Oct: bundle merged and pushed to GitHub; `~/safetrail` on Hardik's Mac tracks `origin/main`.
-2. Prune keys in `.env` → `scripts/prune_check.py` → verify one receipt (Prompt 3). The ops key is in `.env`; Prune still needs a provider key in its vault (see HANDOFF.md).
+2. Done 31 Oct: keys in `.env`, Gemini in Prune's vault, `scripts/prune_check.py` run. Still to do: the receipt screenshot and the public key's allowlist (see HANDOFF.md).
 3. Benchmark with real keys → numbers on the cost slide (Prompt 4).
 4. Real venue map in `hall.json` (Prompt 5).
 5. Real-phone test and two rehearsals, then a backup video (Prompt 6).

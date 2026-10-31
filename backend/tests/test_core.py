@@ -5,13 +5,16 @@ import uuid
 
 import httpx
 import openai
-from sqlmodel import select
+from openai.types.chat import ChatCompletion
+from sqlmodel import Session, select
 
-from app import core, eventlog
-from app.ai import jobs, prompts, prune_client, validators
+from app import core, eventlog, stage
+from app.ai import features, jobs, prompts, prune_client, validators
 from app.ai.pii import find_pii
 from app.ai.templates import zone_text
-from app.models import EventLog, SosEvent
+from app.config import LARGE_THINKING_TOKENS
+from app.db import engine
+from app.models import AiJob, EventLog, Incident, LlmCall, SosEvent
 from app.security import b64u, b64u_dec, canonical, issue_pass, verify_pass
 from app.seeddata import route_facts
 
@@ -249,6 +252,120 @@ def test_402_blocks_ai_but_reports_template(monkeypatch):
     except prune_client.AIUnavailable as e:
         assert e.code == "plan_limit"
     assert prune_client._plan_blocked
+
+
+class _RawGemini:
+    """The body Prune really returns for a Gemini model, parsed by the real SDK class."""
+    status_code = 200
+    headers = {"x-prune-provider": "gemini"}
+
+    def parse(self):
+        return ChatCompletion.construct(
+            candidates=[{"content": {"role": "model", "parts": [{"text": "let me think", "thought": True},
+                                                                {"text": '{"ok": 1}'}]}, "finishReason": "STOP"}],
+            usageMetadata={"promptTokenCount": 34, "candidatesTokenCount": 7, "thoughtsTokenCount": 15},
+            modelVersion="gemini-3.6-flash", prune_metadata={"cost_with_prune_usd": 0.0001})
+
+
+def test_gemini_replies_are_read_instead_of_coming_back_empty(s, monkeypatch):
+    r = _run_chat(FakeClient([_RawGemini()]), monkeypatch)
+    assert r.content == '{"ok": 1}' and r.model_used == "gemini-3.6-flash" and r.cost_with_prune_usd == 0.0001
+    row = s.get(LlmCall, r.llm_call_id)
+    assert (row.prompt_tokens, row.completion_tokens) == (34, 7)
+
+
+def test_live_ai_calls_turn_prune_cache_off(monkeypatch):
+    client, sent = FakeClient([_Raw('{"ok": 1}')]), {}
+    fake_create = client.create
+    client.create = lambda **kw: sent.update(kw["extra_headers"]) or fake_create(**kw)
+    _run_chat(client, monkeypatch)
+    assert sent["X-Prune-Cache"] == "off"
+
+
+def test_large_tier_gets_room_to_think_and_small_tier_does_not(monkeypatch):
+    client, sent = FakeClient([_Raw('{"ok": 1}'), _Raw('{"ok": 1}')]), []
+    fake_create = client.create
+    client.create = lambda **kw: sent.append(kw["max_tokens"]) or fake_create(**kw)
+    monkeypatch.setattr(prune_client, "_client", lambda key: client)
+    for tier in ("large", "small"):
+        asyncio.run(prune_client.chat(job_key="t", run_id=f"t_{tier}", feature="cluster", route_id="hall", model="m",
+                                      tier=tier, messages=[{"role": "user", "content": "hi"}], max_tokens=350,
+                                      budget_usd=0.01, max_steps=3))
+    assert sent == [350 + LARGE_THINKING_TOKENS, 350]
+
+
+def test_reset_never_gives_a_new_incident_the_old_incidents_ai_text(s):
+    trip, _ = make_trip(s, name="A")
+    old_id = sos(s, trip, note="old emergency")["incident_id"]
+    job = s.exec(select(AiJob).where(AiJob.job_key == f"inc_{old_id}_1")).first()
+    job.status, job.source, job.output = "done", "ai", {"headline": "OLD INCIDENT"}
+    s.add(job)
+    s.commit()
+    stage.reset_demo(s)
+    trip2, _ = make_trip(s, name="B")
+    new_id = sos(s, trip2, note="new emergency")["incident_id"]
+    assert new_id == old_id  # ids really do restart, which is what makes this dangerous
+    s.expire_all()
+    assert s.get(Incident, new_id).report["headline"] != "OLD INCIDENT"
+
+
+def test_every_ai_job_gets_its_own_prune_run_id(monkeypatch):
+    monkeypatch.setattr(jobs, "configured", lambda key="ops": True)
+    sent = []
+
+    async def fake_chat(**kw):
+        sent.append(kw["run_id"])
+        return prune_client.ChatResult(content='{"title": "t", "body": "b", "action": "a"}', llm_call_id=1, cache_hit=False,
+                                       cost_with_prune_usd=0.0001, estimated_cost_usd=0.0001, model_used="m", shield_code=None)
+    monkeypatch.setattr(jobs, "chat", fake_chat)
+    inp = {"zone_kind": "landslide", "severity": "danger", "segment_name": "Linchauli", "language": "en"}
+    for _ in range(2):
+        asyncio.run(jobs.run_job(job_key=f"adv_{uuid.uuid4().hex}", feature="advisory", route_id="hall", run_id="same_id",
+                                 messages=prompts.advisory_messages(inp), validate=lambda o: validators.validate_advisory(o, inp),
+                                 template=lambda: zone_text("en", "landslide", "Linchauli")))
+    assert len(set(sent)) == 2 and all(r.startswith("same_id_") for r in sent)
+
+
+def _watch_job(monkeypatch, read):
+    """Replace the AI job with one that records what a responder could see while the AI is still working."""
+    seen = []
+
+    async def fake_job(**_):
+        with Session(engine) as check:
+            seen.append(read(check))
+        return jobs.JobResult({"headline": "AI", "summary": "AI"}, "ai")
+    monkeypatch.setattr(features, "run_job", fake_job)
+    return seen
+
+
+def test_responder_gets_the_report_template_before_the_ai_answers(s, monkeypatch):
+    trip, _ = make_trip(s)
+    iid = sos(s, trip)["incident_id"]
+    inc = s.get(Incident, iid)
+    inc.report, inc.report_source = None, None
+    s.add(inc)
+    s.commit()
+    seen = _watch_job(monkeypatch, lambda check: check.get(Incident, iid).report_source)
+    asyncio.run(features.build_report(iid))
+    s.expire_all()
+    assert seen == ["template"] and s.get(Incident, iid).report_source == "ai"
+
+
+def test_responder_gets_the_summary_template_before_the_ai_answers(s, monkeypatch):
+    t1, _ = make_trip(s, name="A")
+    t2, _ = make_trip(s, name="B")
+    sos(s, t1)
+    iid = sos(s, t2, lat=LAT + 0.0003)["incident_id"]
+    inc = s.get(Incident, iid)
+    s.refresh(inc)
+    assert inc.type == "cluster"
+    inc.cluster_summary, inc.summary_source = None, None
+    s.add(inc)
+    s.commit()
+    seen = _watch_job(monkeypatch, lambda check: check.get(Incident, iid).summary_source)
+    asyncio.run(features.build_cluster_summary(iid, force=True))
+    s.expire_all()
+    assert seen == ["template"] and s.get(Incident, iid).summary_source == "ai"
 
 
 def _job(validate_out, monkeypatch, replies):

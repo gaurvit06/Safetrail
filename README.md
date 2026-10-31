@@ -57,11 +57,11 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 
 | Header | Value |
 |---|---|
-| `X-Prune-Run-Id` | one run per AI job, e.g. `pack_kedarnath_hi_senior_v1`, `adv_<zone>`, `inc_<incident>_<n>`, `clu_<incident>_<n>`, `cop_<incident>_<n>` |
+| `X-Prune-Run-Id` | one run per AI job, e.g. `pack_kedarnath_hi_senior_v1`, `adv_<zone>`, `inc_<incident>_<n>`, `clu_<incident>_<n>`, `cop_<incident>_<n>`, plus a random suffix, because Prune remembers a stopped run for good |
 | `X-Prune-Run-Budget-Usd` / `X-Prune-Max-Steps` | the job's budget and step limit (below) |
 | `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot`, `sms_parse`, `permit` or `repair` |
 | `X-Prune-Customer-Id` | `route_<route_id>`, so Prune's dashboard shows cost per route |
-| `X-Prune-Cache` | `exact` (`PRUNE_CACHE_MODE`): never semantic, so a similar note can't return another incident's report |
+| `X-Prune-Cache` | `off` on every live call: in testing, `exact` returned one incident's summary for another (`docs/DECISIONS.md`, 28). The app's own `job_key` stops repeat work from being paid for twice |
 | `X-Prune-Model-Policy` | `balanced` (`PRUNE_MODEL_POLICY`) |
 | `X-Prune-Injection` | `detect` (`PRUNE_INJECTION_MODE`): a signal becomes a flag, never a block |
 
