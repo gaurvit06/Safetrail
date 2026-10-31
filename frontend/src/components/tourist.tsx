@@ -7,7 +7,7 @@ import { bearing, cardinal, fmtDistance, haversine } from "../lib/geo";
 import { useT } from "../lib/i18n";
 import type { QueuedSos } from "../lib/offline";
 import { speak, vibrate, whistleBlasts } from "../lib/signals";
-import type { HelpPoint, PackContent, PassPayload, PermitCard, PermitInfo, StartBundle, Weather, Zone } from "../lib/types";
+import type { HelpPoint, PackContent, PassPayload, PermitCard, PermitInfo, Segment, StartBundle, Weather, Zone } from "../lib/types";
 import { HoldButton, Overlay, SheetHeader, SourceTag, Step } from "./ui";
 
 export type Fix = { lat: number; lon: number; accuracy: number };
@@ -162,7 +162,7 @@ export function SosStatus({ sos, label, smsNumber, offerAfterS, onCancel, onClos
 }
 
 /* ---------------------------------------------------------------- safety pack */
-export function PackSheet({ pack, source, helpPoints, me, initialTab, onGuide, onShowLocal, onClose }: { pack: PackContent; source: string; helpPoints: HelpPoint[]; me: Fix | null; initialTab?: number; onGuide: (hp: HelpPoint) => void; onShowLocal: (p: { local: string; user: string }) => void; onClose: () => void }) {
+export function PackSheet({ pack, source, helpPoints, segments, currentSegment, me, initialTab, onGuide, onShowLocal, onClose }: { pack: PackContent; source: string; helpPoints: HelpPoint[]; segments: Segment[]; currentSegment: string; me: Fix | null; initialTab?: number; onGuide: (hp: HelpPoint) => void; onShowLocal: (p: { local: string; user: string }) => void; onClose: () => void }) {
   const { t, lang } = useT();
   const [tab, setTab] = useState(initialTab ?? 0);
   const tabs = [t("briefing"), t("phrases"), t("if_cards"), t("help_points")];
@@ -185,6 +185,22 @@ export function PackSheet({ pack, source, helpPoints, me, initialTab, onGuide, o
                 <ul className="list-disc pl-5 text-sm">{pack.altitude_signs.do_now.map((s) => <li key={s}>{s}</li>)}</ul>
               </div>
             )}
+            {pack.segments.some((sg) => sg.risks.length > 0) && <p className="pt-2 font-bold">{t("section_risks")}</p>}
+            {pack.segments.filter((sg) => sg.risks.length > 0).map((sg) => {
+              const name = segments.find((x) => x.id === sg.segment_id)?.name ?? sg.segment_id;
+              const help = helpPoints.find((hp) => hp.id === sg.nearest_help_id);
+              const here = name === currentSegment;
+              return (
+                <div key={sg.segment_id} className={`card p-4 ${here ? "border-2 border-brand" : ""}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-bold">{name}</p>
+                    {here && <span className="chip shrink-0 bg-brand/10 text-brand">{t("you_are_here")}</span>}
+                  </div>
+                  <ul className="mt-2 list-disc pl-5 text-sm">{sg.risks.map((r) => <li key={r}>{r}</li>)}</ul>
+                  {help && <button className="mt-2 flex items-center gap-1 text-left text-sm font-semibold text-brand" onClick={() => onGuide(help)}><Navigation size={16} /> {t("nearest_help")}: {help.name}</button>}
+                </div>
+              );
+            })}
           </>
         )}
         {tab === 1 && pack.phrasebook.map((p) => (

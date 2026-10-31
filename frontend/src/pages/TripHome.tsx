@@ -569,7 +569,7 @@ export default function TripHome() {
       {/* overlays */}
       {overlay === "sos" && <SosFlow bundle={bundle} preset={sosPreset} onSend={sendSos} onClose={() => { setOverlay(null); setSosPreset(undefined); }} />}
       {statusSos && <SosStatus sos={statusSos} label={session.trip.label} smsNumber={bundle.config.sms_number} offerAfterS={bundle.config.sms_offer_after_s} groupMessage={groupMsg} onCancel={() => cancelSos(statusSos)} onClose={() => setStatusId(null)} />}
-      {overlay === "pack" && <PackSheet pack={pack.content} source={pack.source} helpPoints={route.help_points} me={me} initialTab={packTab} onGuide={(hp) => { setOverlay(null); setGuide(hp); }} onShowLocal={setPhrase} onClose={() => setOverlay(null)} />}
+      {overlay === "pack" && <PackSheet pack={pack.content} source={pack.source} helpPoints={route.help_points} segments={route.segments} currentSegment={segment} me={me} initialTab={packTab} onGuide={(hp) => { setOverlay(null); setGuide(hp); }} onShowLocal={setPhrase} onClose={() => setOverlay(null)} />}
       {overlay === "signal" && <SignalSheet me={me} segment={segment} nearestHelp={nh ? `${nh.item.name} (${fmtDistance(nh.d)})` : ""} emergency={route.facts.emergency_number} onStrobe={() => { setOverlay(null); setStrobe(true); }} onClose={() => setOverlay(null)} />}
       {overlay === "pass" && <PassSheet qr={bundle.pass_qr} label={session.trip.label} pass={(bundle.pass as unknown as PassPayload) ?? null} tripId={tripId} token={token} revoked={passRevoked} onUpgraded={upgradePass} onClose={() => setOverlay(null)} />}
       {overlay === "weather" && <WeatherSheet weather={weather} templates={bundle.templates.weather} current={segment} online={online} onClose={() => setOverlay(null)} />}
