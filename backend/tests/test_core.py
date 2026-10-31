@@ -301,6 +301,49 @@ def test_demo_scenario_fills_every_screen(s, monkeypatch):
     assert t["asked"] >= 8 and t["safe"] == 3 and t["need_help"] == 1
 
 
+def test_weather_risks_use_fixed_thresholds():
+    from app import weather
+    base = {"codes": [1], "rain_max_h": 0, "rain_12h": 0, "rain_prob_max": 10, "snow_12h": 0, "gust_max": 20, "temp_min": 5}
+    assert weather.risks_for(base) == []
+    keys = lambda s: {(r["key"], r["level"]) for r in weather.risks_for({**base, **s})}
+    assert ("heavy_rain", "danger") in keys({"rain_max_h": 9})
+    assert ("rain", "warn") in keys({"rain_prob_max": 80})
+    assert ("thunderstorm", "danger") in keys({"codes": [95]})
+    assert ("freezing", "warn") in keys({"temp_min": -1})
+    assert ("cold", "danger") in keys({"temp_min": -9})
+    assert ("wind", "warn") in keys({"gust_max": 65})
+    assert ("snow", "danger") in keys({"snow_12h": 6})
+
+
+def test_weather_fetch_parses_sections_and_survives_failure(monkeypatch):
+    from app import weather
+    now = time.time()
+    hours = [now + 3600 * i for i in range(-1, 24)]
+    point = {"elevation": 3500, "hourly": {"time": hours, "temperature_2m": [-2.0] * len(hours),
+                                           "precipitation": [0.5] * len(hours), "precipitation_probability": [40] * len(hours),
+                                           "weather_code": [3] * len(hours), "wind_gusts_10m": [30] * len(hours),
+                                           "snowfall": [0.0] * len(hours)}}
+    n = len(weather.section_points("kedarnath"))
+
+    class Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return [point] * n
+    monkeypatch.setattr(weather.httpx, "get", lambda *a, **k: Resp())
+    weather._cache.clear()
+    w = weather.get("kedarnath")
+    assert w["available"] and len(w["sections"]) == n and w["level"] == "warn"
+    assert w["sections"][0]["risks"][0]["key"] == "freezing"
+
+    def boom(*a, **k):
+        raise httpx.ConnectError("offline")
+    monkeypatch.setattr(weather.httpx, "get", boom)
+    stale = weather.get("kedarnath", max_age_s=0)
+    assert stale["available"] and stale.get("stale") is True
+
+
 def test_ai_not_configured_uses_template():
     inp = {"zone_kind": "landslide", "severity": "danger", "segment_name": "Linchauli", "language": "en"}
     res = asyncio.run(jobs.run_job(job_key="adv_nokey", feature="advisory", route_id="hall", run_id="adv_nokey",

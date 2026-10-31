@@ -128,7 +128,7 @@ export default function MapView(p: Props) {
       keep.add(marker("me", [q.me.lon, q.me.lat], `<div class="st-me ${q.me.demo ? "st-me-demo" : ""}"><div class="st-me-ring"></div>${hd}<div class="st-me-dot"></div></div>`));
     }
     for (const hp of q.helpPoints ?? [])
-      keep.add(marker(`hp:${hp.id}`, [hp.lon, hp.lat], `<div class="st-pin st-pin-${hp.kind}" title="${hp.name}">${HP_ICON[hp.kind] ?? "•"}</div>`, () => props.current.onHelpClick?.(hp)));
+      keep.add(marker(`hp:${hp.id}`, [hp.lon, hp.lat], `<div class="st-pin st-pin-${hp.kind} ${hp.source === "osm" ? "st-pin-real" : ""}" title="${hp.name.replace(/"/g, "")} (${hp.source === "osm" ? "OpenStreetMap" : "simulated"})">${HP_ICON[hp.kind] ?? "•"}</div>`, () => props.current.onHelpClick?.(hp)));
     for (const cp of q.checkpoints ?? []) keep.add(marker(`cp:${cp.id}`, [cp.lon, cp.lat], `<div class="st-pin st-pin-checkpoint" title="${cp.name}">◆</div>`));
     for (const z of q.zones ?? []) {
       const [lat, lon] = centroid(z.polygon);

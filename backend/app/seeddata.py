@@ -73,14 +73,36 @@ def seed_db(s: Session) -> None:
         rf = s.get(RouteFacts, rid) or RouteFacts(route_id=rid)
         rf.version, rf.facts = facts.get("version", 1), facts
         s.add(rf)
+        # Upsert from the seed files, so re-generated data (e.g. scripts/fetch_osm.py) replaces old rows.
+        keep = {hp["id"] for hp in r.get("help_points", [])}
+        for old in s.exec(select(HelpPoint).where(HelpPoint.route_id == rid)).all():
+            if old.id not in keep:
+                s.delete(old)
         for hp in r.get("help_points", []):
-            obj = s.get(HelpPoint, hp["id"]) or HelpPoint(**hp, route_id=rid)
+            obj = s.get(HelpPoint, hp["id"]) or HelpPoint(id=hp["id"], route_id=rid, kind=hp["kind"], name=hp["name"],
+                                                          lat=hp["lat"], lon=hp["lon"])
+            obj.kind, obj.name, obj.lat, obj.lon = hp["kind"], hp["name"], hp["lat"], hp["lon"]
+            obj.simulated, obj.source = hp.get("simulated", True), hp.get("source", "seed")
             s.add(obj)
+        keep = {cp["id"] for cp in r.get("checkpoints", [])}
+        for old in s.exec(select(Checkpoint).where(Checkpoint.route_id == rid)).all():
+            if old.id not in keep:
+                s.delete(old)
         for cp in r.get("checkpoints", []):
             obj = s.get(Checkpoint, cp["id"]) or Checkpoint(**cp, route_id=rid)
+            obj.name, obj.lat, obj.lon = cp["name"], cp["lat"], cp["lon"]
             s.add(obj)
         for z in r.get("zones", []):
-            if s.get(Zone, z["id"]):
+            existing = s.get(Zone, z["id"])
+            if existing:
+                existing.polygon, existing.segment_name = z["polygon"], z.get("segment_name", "")
+                existing.kind, existing.severity = z["kind"], z.get("severity", "danger")
+                s.add(existing)
+                for adv in s.exec(select(ZoneAdvisory).where(ZoneAdvisory.zone_id == z["id"],
+                                                             ZoneAdvisory.source == "template")).all():
+                    t = zone_text(adv.lang, z["kind"], z.get("segment_name", ""))
+                    adv.title, adv.body, adv.action = t["title"], t["body"], t["action"]
+                    s.add(adv)
                 continue
             s.add(Zone(id=z["id"], route_id=rid, kind=z["kind"], severity=z.get("severity", "danger"),
                        polygon=z["polygon"], source="seeded", segment_name=z.get("segment_name", ""),

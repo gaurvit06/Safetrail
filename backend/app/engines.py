@@ -195,6 +195,19 @@ def retention_tick() -> None:
         s.commit()
 
 
+def weather_tick() -> None:
+    """Refresh live weather for routes with travellers and push changes to every screen."""
+    from . import weather
+
+    with Session(engine) as s:
+        routes = {tr.route_id for tr in s.exec(select(Trip).where(Trip.status != "ended")).all()} | {"kedarnath"}
+    for rid in routes:
+        before = (weather.cached(rid) or {}).get("fetched_at")
+        w = weather.get(rid)
+        if w.get("available") and w.get("fetched_at") != before:
+            events.publish("weather.updated", {"route_id": rid, "weather": w}, events.ALL, route_id=rid)
+
+
 async def _loop(fn, every_s: float) -> None:
     while True:
         await asyncio.sleep(every_s)
@@ -207,4 +220,6 @@ async def _loop(fn, every_s: float) -> None:
 def start_engines() -> list[asyncio.Task]:
     return [asyncio.create_task(_loop(crowd_tick, settings.crowd_tick_s)),
             asyncio.create_task(_loop(quiet_tick, 30)),
-            asyncio.create_task(_loop(retention_tick, 3600))]
+            asyncio.create_task(_loop(retention_tick, 3600)),
+            asyncio.create_task(asyncio.to_thread(weather_tick)),  # warm the weather cache at startup
+            asyncio.create_task(_loop(weather_tick, 900))]

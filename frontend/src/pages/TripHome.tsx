@@ -3,18 +3,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MapView from "../components/MapView";
 import {
-  FamilySheet, GuideCard, PackSheet, PassSheet, PhraseShow, SafetyCheckPrompt, SignalSheet, SosFlow, SosStatus, Strobe, useHeading, ZoneAlert, zoneText,
+  FamilySheet, GuideCard, PackSheet, PassSheet, PhraseShow, SafetyCheckPrompt, SignalSheet, SosFlow, SosStatus, Strobe, useHeading, WeatherSheet, ZoneAlert, zoneText,
 } from "../components/tourist";
 import { BottomSheet, HoldButton, Overlay, SheetHeader, Spinner, useToast } from "../components/ui";
 import { api, connectEvents, isNetworkError } from "../lib/api";
-import { KIND_ICON } from "../lib/format";
+import { ago, KIND_ICON, riskText, weatherIcon } from "../lib/format";
 import { distanceToPolygon, fmtDistance, haversine, nearest, nearestSegmentName, safeWayOut } from "../lib/geo";
 import { Geofence } from "../lib/geofence";
 import { useT } from "../lib/i18n";
 import { flush, kv, onQueueChange, pingQueue, queueSos, sosStore, type QueuedSos } from "../lib/offline";
 import { getBundle, getSession, setBundle, setSession } from "../lib/session";
 import { ackChime, cautionChime, dangerAlert, unlockAudio, vibrate } from "../lib/signals";
-import type { Evt, HelpPoint, Pack, StartBundle, Zone } from "../lib/types";
+import type { Evt, HelpPoint, Pack, StartBundle, Weather, Zone } from "../lib/types";
 import { LangSwitch } from "./Welcome";
 
 type Fix = { lat: number; lon: number; accuracy: number; source?: "gps" | "checkpoint" | "sim" };
@@ -41,7 +41,9 @@ export default function TripHome() {
   const [approach, setApproach] = useState<Zone | null>(null);
   const [crowd, setCrowd] = useState<{ message: string; alt: string; wait: number } | null>(null);
   const [check, setCheck] = useState<{ check_id: number; message: string } | null>(null);
-  const [overlay, setOverlay] = useState<null | "sos" | "pack" | "signal" | "pass" | "family" | "end">(null);
+  const [overlay, setOverlay] = useState<null | "sos" | "pack" | "signal" | "pass" | "family" | "end" | "weather">(null);
+  const [weather, setWeather] = useState<Weather | null>(null);
+  const routeIdRef = useRef("");
   const [packTab, setPackTab] = useState(0);
   const [sosPreset, setSosPreset] = useState<string | undefined>();
   const [statusId, setStatusId] = useState<string | null>(null);
@@ -74,6 +76,12 @@ export default function TripHome() {
     setQueued(all.filter((s) => s.status === "queued").length + (await pingQueue.count()));
   }, [tripId]);
 
+  const saveWeather = async (w: Weather) => {
+    setWeather((cur) => (cur?.fetched_at && w.fetched_at && cur.fetched_at >= w.fetched_at ? cur : w));
+    const b = await getBundle();
+    if (b && (!b.weather?.fetched_at || (w.fetched_at ?? 0) > b.weather.fetched_at)) await setBundle({ ...b, weather: w });
+  };
+
   const persistZones = async (zs: Zone[]) => {
     const b = await getBundle();
     if (b) {
@@ -88,6 +96,7 @@ export default function TripHome() {
       const r = await api(`/trips/${tripId}/sync`, { token });
       setZones(r.zones);
       persistZones(r.zones);
+      if (r.weather?.available) saveWeather(r.weather);
       if (r.checks_pending?.length) setCheck(r.checks_pending[0]);
       for (const s of r.sos) {
         const q = await sosStore.get(s.client_id);
@@ -134,6 +143,11 @@ export default function TripHome() {
       setZones(b.route.zones);
       setPack(b.pack);
       setSharing(b.trip.sharing !== false);
+      routeIdRef.current = b.route.id;
+      if (b.weather?.available) setWeather(b.weather);
+      else api<Weather>(`/weather?route_id=${b.route.id}`).then((w) => {
+          if (w.available) saveWeather(w);
+        }).catch(() => {});
     });
     refreshQueue();
     const off = onQueueChange(refreshQueue);
@@ -214,6 +228,8 @@ export default function TripHome() {
           toast(`${t("st_ack")} · ${d.team ?? ""}`, "ok");
         }
         if (d.message) setGroupMsg(d.message);
+      } else if (e.type === "weather.updated") {
+        if (d.route_id === routeIdRef.current && d.weather?.available) saveWeather(d.weather);
       } else if (e.type === "stage.reset") {
         toast("The demo was reset. Thanks for trying SafeTrail!");
         setSession(null);
@@ -379,6 +395,8 @@ export default function TripHome() {
   const route = bundle?.route;
   const segment = me && route ? nearestSegmentName(me.lat, me.lon, route.segments) : "";
   const nh = me && route ? nearest(me.lat, me.lon, route.help_points) : null;
+  const wsec = weather?.sections.find((s) => s.name === segment) ?? weather?.sections[0] ?? null;
+  const wDanger = wsec?.risks.find((r) => r.level === "danger");
   const insideZone = zones.find((z) => inside.includes(z.id));
   const statusSos = sosList.find((s) => s.client_id === statusId) ?? null;
   const activeSos = sosList.find((s) => s.status !== "cancelled" && s.incident_status !== "resolved" && Date.now() / 1000 - s.created_at_device < 6 * 3600);
@@ -423,6 +441,7 @@ export default function TripHome() {
       <div className="absolute inset-x-3 top-[72px] z-20 mx-auto flex max-w-lg flex-col gap-2">
         {acked && <div className="animate-slideup rounded-xl bg-safe px-4 py-3 font-semibold text-white shadow-float"><CheckCircle2 className="mr-2 inline" size={18} />{t("help_ack_banner", { team: activeSos?.team ?? "" })}</div>}
         {activeSos && !acked && <button onClick={() => setStatusId(activeSos.client_id)} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float">SOS · {activeSos.status === "received" ? t("st_received") : t("st_pending")} →</button>}
+        {wDanger && wsec && <button onClick={() => setOverlay("weather")} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float">{weatherIcon(wsec.now.code)} {riskText(bundle.templates.weather, wDanger.key, wDanger.value)}</button>}
         {insideZone && !alertZone && <button onClick={() => showWayOut(insideZone)} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float">{KIND_ICON[insideZone.kind]} {zoneText(insideZone, lang, bundle).title} · {t("show_way_back")} →</button>}
         {approach && !insideZone && me && <button onClick={() => setZoneCard(approach)} className="animate-slideup rounded-xl bg-caution px-4 py-3 text-left font-semibold text-white shadow-float">{KIND_ICON[approach.kind]} {zoneText(approach, lang, bundle).title}: {fmtDistance(distanceToPolygon(me.lat, me.lon, approach.polygon))} {t("ahead")}</button>}
         {gps === "rough" && me && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-caution shadow-float"><AlertTriangle className="mr-1 inline" size={16} />{t("rough", { m: Math.round(me.accuracy) })}</div>}
@@ -477,6 +496,18 @@ export default function TripHome() {
           </div>
           {nh && <button className="btn-ghost shrink-0" onClick={() => setGuide(nh.item)}><Navigation size={18} /> {t("guide_me")}</button>}
         </div>
+        {wsec && (
+          <button onClick={() => setOverlay("weather")} className="card mt-3 flex w-full items-center gap-3 p-3 text-left">
+            <span className="text-3xl">{weatherIcon(wsec.now.code)}</span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold">{Math.round(wsec.now.temp_c)}° · {wsec.now.desc}</p>
+              <p className={`truncate text-sm ${wsec.level === "danger" ? "text-danger" : wsec.level === "warn" ? "text-caution" : "text-muted"}`}>
+                {wsec.risks[0] ? riskText(bundle.templates.weather, wsec.risks[0].key, wsec.risks[0].value) : bundle.templates.weather?.none}
+              </p>
+              <p className="text-xs text-muted">{weather?.stale || !online ? t("last_update") : t("updated")} {ago(weather?.fetched_at)} · Open-Meteo</p>
+            </div>
+          </button>
+        )}
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
             { icon: <BookOpen />, label: t("safety_pack"), on: () => { setPackTab(0); setOverlay("pack"); } },
@@ -517,6 +548,7 @@ export default function TripHome() {
       {overlay === "pack" && <PackSheet pack={pack.content} source={pack.source} helpPoints={route.help_points} me={me} initialTab={packTab} onGuide={(hp) => { setOverlay(null); setGuide(hp); }} onShowLocal={setPhrase} onClose={() => setOverlay(null)} />}
       {overlay === "signal" && <SignalSheet me={me} segment={segment} nearestHelp={nh ? `${nh.item.name} (${fmtDistance(nh.d)})` : ""} emergency={route.facts.emergency_number} onStrobe={() => { setOverlay(null); setStrobe(true); }} onClose={() => setOverlay(null)} />}
       {overlay === "pass" && <PassSheet qr={bundle.pass_qr} label={session.trip.label} validTo={(bundle.pass as any)?.valid_to} onClose={() => setOverlay(null)} />}
+      {overlay === "weather" && <WeatherSheet weather={weather} templates={bundle.templates.weather} current={segment} online={online} onClose={() => setOverlay(null)} />}
       {overlay === "family" && <FamilySheet url={familyUrl} token={session.family_token ?? bundle.family_token} tripId={tripId} touristToken={token} onClose={() => setOverlay(null)} />}
       {overlay === "end" && (
         <Overlay onClose={() => setOverlay(null)}>

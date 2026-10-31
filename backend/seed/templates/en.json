@@ -52,5 +52,16 @@
     "call_family": "Please call my family.",
     "thank_you": "Thank you."
   },
-  "ui": {"standard_text": "Standard text", "ai_text": "AI"}
+  "ui": {"standard_text": "Standard text", "ai_text": "AI"},
+  "weather": {
+    "thunderstorm": "Thunderstorms expected. Avoid exposed ridges and take shelter early.",
+    "heavy_rain": "Heavy rain expected ({v} mm). Landslide and rockfall risk is higher on steep sections.",
+    "rain": "Rain likely. Paths may be slippery.",
+    "snow": "Snow expected ({v} cm). Paths may be icy; carry warm layers.",
+    "wind": "Strong gusts up to {v} km/h. Take care on exposed sections.",
+    "freezing": "Freezing temperatures (down to {v} °C). Keep warm and dry.",
+    "cold": "Severe cold (down to {v} °C). Do not trek after dark.",
+    "fog": "Fog likely. Stay on the marked path.",
+    "none": "No weather warnings for the next 12 hours."
+  }
 }

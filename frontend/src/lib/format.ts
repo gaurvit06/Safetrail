@@ -51,4 +51,21 @@ export const KIND_LABEL: Record<string, string> = {
   custom: "Custom",
 };
 
+export function weatherIcon(code: number): string {
+  if (code >= 95) return "⛈️";
+  if (code >= 71 && code <= 77) return "🌨️";
+  if (code === 85 || code === 86) return "🌨️";
+  if (code >= 61 || (code >= 80 && code <= 82)) return "🌧️";
+  if (code >= 51) return "🌦️";
+  if (code === 45 || code === 48) return "🌫️";
+  if (code === 3) return "☁️";
+  if (code === 2) return "⛅";
+  return "☀️";
+}
+
+export function riskText(templates: Record<string, string> | undefined, key: string, value?: number): string {
+  const t = templates?.[key] ?? key.replace("_", " ");
+  return t.replace("{v}", value === undefined || value === null ? "" : String(Math.round(value * 10) / 10));
+}
+
 export const SOS_ICON: Record<string, string> = { injured: "🩹", lost: "🧭", stuck: "🪨", medical: "❤️", unsafe: "⚠️", unknown: "❔" };

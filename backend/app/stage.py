@@ -16,7 +16,7 @@ from .ai.jobs import spawn
 from .core import (answer_check, create_trip, ingest_pings, position_event, publish_zone, receive_sos, remove_zone,
                    scan_injection, send_check, set_incident_status, start_trip)
 from .db import engine
-from .geo import centroid, circle_polygon, haversine_m, offset_point
+from .geo import centroid, circle_polygon, haversine_m, offset_point, point_in_polygon
 from .models import (BreakItAttempt, CheckResponse, Incident, Ping, Route, SafetyCheck, SosEvent, Trip, Zone)
 from .security import b64u, b64u_dec, canonical, check_role_token, issue_pass, verify_pass
 from .seeddata import route_seed, segment_for
@@ -148,11 +148,14 @@ async def demo_scenario(route_id: str = "kedarnath") -> dict:
                         polygon=circle_polygon(*_along(route_id, 0.5), 120), source="drawn", simulated=True,
                         created_by="demo")
             publish_zone(s, zone, "demo")
-        zlat, zlon = centroid(zone.polygon)
+        # The group stands on the real trail, inside the landslide zone.
+        on_trail = [(p[1], p[0]) for p in route_seed(route_id)["line"] if point_in_polygon(p[1], p[0], zone.polygon)]
+        if not on_trail:
+            on_trail = [centroid(zone.polygon)]
         group = []
         for i in range(8):
-            a = 2 * math.pi * i / 8
-            lat, lon = offset_point(zlat, zlon, 35 * math.cos(a), 35 * math.sin(a))
+            lat, lon = on_trail[(i * len(on_trail)) // 8]
+            lat, lon = offset_point(lat, lon, rnd.uniform(-6, 6), rnd.uniform(-6, 6))
             group.append(_demo_trip(s, f"Demo-G{i + 1}", route_id, lat, lon, "hi" if i in (1, 5) else "en", 90))
 
         t = time.time()

@@ -2,12 +2,12 @@ import { QRCodeSVG } from "qrcode.react";
 import { ArrowUp, Copy, Megaphone, Mic, Navigation, Share2, Sun, Volume2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
-import { ago, clock, duration, KIND_ICON } from "../lib/format";
+import { ago, clock, duration, KIND_ICON, riskText, weatherIcon } from "../lib/format";
 import { bearing, cardinal, fmtDistance, haversine } from "../lib/geo";
 import { useT } from "../lib/i18n";
 import type { QueuedSos } from "../lib/offline";
 import { speak, vibrate, whistleBlasts } from "../lib/signals";
-import type { HelpPoint, PackContent, StartBundle, Zone } from "../lib/types";
+import type { HelpPoint, PackContent, StartBundle, Weather, Zone } from "../lib/types";
 import { HoldButton, Overlay, SheetHeader, SourceTag, Step } from "./ui";
 
 export type Fix = { lat: number; lon: number; accuracy: number };
@@ -207,6 +207,7 @@ export function PackSheet({ pack, source, helpPoints, me, initialTab, onGuide, o
             <div>
               <p className="font-bold">{hp.name}</p>
               <p className="text-sm text-muted">{hp.kind}{me ? ` · ${fmtDistance(haversine(me.lat, me.lon, hp.lat, hp.lon))} ${cardinal(bearing(me.lat, me.lon, hp.lat, hp.lon))}` : ""}</p>
+              <span className={`chip mt-1 ${hp.source === "osm" ? "bg-safe/10 text-safe" : "bg-black/5 text-muted"}`}>{hp.source === "osm" ? "OpenStreetMap" : "simulated"}</span>
             </div>
             <button className="btn-ghost" onClick={() => onGuide(hp)}><Navigation size={18} /> {t("guide_me")}</button>
           </div>
@@ -320,6 +321,34 @@ export function FamilySheet({ url, token, tripId, touristToken, onClose }: { url
           ) : <p className="mt-2 text-sm text-muted">{revoked ? "Link turned off." : "Preview unavailable offline."}</p>}
         </div>
         {!revoked && <button className="btn-ghost w-full text-danger" onClick={() => api(`/family/${tripId}/revoke`, { token: touristToken, body: {} }).then(() => { setRevoked(true); setPreview(null); })}>{t("revoke")}</button>}
+      </div>
+    </Overlay>
+  );
+}
+
+/* ---------------------------------------------------------------- live weather along the route */
+export function WeatherSheet({ weather, templates, current, online, onClose }: { weather: Weather | null; templates?: Record<string, string>; current: string; online: boolean; onClose: () => void }) {
+  const { t } = useT();
+  const sub = weather?.fetched_at ? `${weather.stale || !online ? t("last_update") : t("updated")} ${ago(weather.fetched_at)} · ${weather.source ?? ""}` : undefined;
+  return (
+    <Overlay onClose={onClose}>
+      <SheetHeader title={t("weather_title")} sub={sub} onClose={onClose} />
+      <div className="space-y-3 px-5 py-4">
+        {!weather?.available && <p className="text-muted">{t("weather_unavailable")}</p>}
+        {weather?.sections.map((s) => (
+          <div key={s.segment_id} className={`card p-3 ${s.name === current ? "border-2 border-brand" : ""}`}>
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-bold">{weatherIcon(s.now.code)} {s.name}</p>
+              <span className="font-mono text-xl font-bold">{Math.round(s.now.temp_c)}°</span>
+            </div>
+            <p className="text-sm text-muted">
+              {s.now.desc}{s.elevation_m ? ` · ${Math.round(s.elevation_m)} m` : ""} · {t("next_12h")}: {s.next12h.temp_min != null ? Math.round(s.next12h.temp_min) : "–"}° to {s.next12h.temp_max != null ? Math.round(s.next12h.temp_max) : "–"}°, {s.next12h.rain_12h} mm, {s.next12h.gust_max} km/h
+            </p>
+            {s.risks.map((r) => <p key={r.key} className={`mt-1 text-sm font-semibold ${r.level === "danger" ? "text-danger" : "text-caution"}`}>⚠ {riskText(templates, r.key, r.value)}</p>)}
+            {s.name === current && <p className="mt-1 text-xs font-semibold text-brand">{t("you_are_here")}</p>}
+          </div>
+        ))}
+        {weather?.available && <p className="text-center text-xs text-muted">{weather.attribution}</p>}
       </div>
     </Overlay>
   );

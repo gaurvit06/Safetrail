@@ -20,7 +20,10 @@ _Last updated: backend + interactive app built and tested end to end (join → z
 - [x] Responder `/r`: live map, incident queue + panel (counts, AI summary with receipt tag, translated notes, accept/en route/resolved, copilot, verify timeline), tap-to-draw zones (shape or circle), safety check + tally, pass scanner, AI & cost (cost meters, Routing River, receipts); simple judge-responder mode `/jr`
 - [x] Stage `/stage` (projector), Stage control `/stage/control`, Break it `/break`
 - [x] README, DECISIONS, CONTRACT_CHANGES
-- [ ] **NEXT** Add Prune keys to `.env`, do the SPEC Section 2 hour-1 tasks, write `docs/PRUNE_FIELDS.md` and fix any field names in `ai/prune_client.py::_extract`
+- [x] Real data: Kedarnath trail, hospital and rain shelters from OpenStreetMap (`scripts/fetch_osm.py`, 15.1 km real trek); live weather per section from Open-Meteo (`backend/app/weather.py`, no key, fixed-threshold warnings, cached 30 min, `weather.updated` event); tourist weather card + danger banner + weather sheet; 23 backend tests
+- [ ] **NEXT** Responder weather panel: add `weather` state to `useOpsFeed` in `frontend/src/components/ops.tsx` (load `/api/weather?route_id=`, handle `weather.updated`) and show per-section chips above the incident list
+- [ ] Write `scripts/prune_check.py` (SPEC 2 hour-1 checks via `ai/prune_client.chat`: one call, cache-hit repeat, run-budget 429, injection signal; write `docs/PRUNE_FIELDS.md`)
+- [ ] Add Prune keys to `.env`, do the SPEC Section 2 hour-1 tasks, write `docs/PRUNE_FIELDS.md` and fix any field names in `ai/prune_client.py::_extract`
 - [ ] Benchmark runner R1–R4 + `/benchmark` page (needs Prune keys)
 - [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ phones over a tunnel
 - [ ] `docs/EXPLAINER.md` for the team (SPEC Section 16)

@@ -154,7 +154,15 @@ def judge_join(body: JoinIn, s: Session = Depends(get_session)):
 def ui_templates(lang: str) -> dict:
     t = templates(lang)
     return {k: t[k] for k in ("zone", "approach", "crowd_inside", "crowd_ahead", "check", "kind", "phrases", "ui",
-                              "message_to_group")}
+                              "message_to_group", "weather")}
+
+
+@router.get("/weather")
+async def route_weather(route_id: str):
+    """Live weather per route section (Open-Meteo). Public: no personal data."""
+    import asyncio
+    from . import weather
+    return await asyncio.to_thread(weather.get, route_id)
 
 
 @router.post("/trips/{trip_id}/start")
@@ -165,10 +173,16 @@ def start(trip_id: str, request: Request, s: Session = Depends(get_session)):
     if pack["pending"]:
         spawn(features.build_pack(trip.route_id, trip.language, trip.profile_bucket))
     ps = s.exec(select(core.Pass).where(core.Pass.trip_id == trip.id)).first()
+    from . import weather
+    w = weather.cached(trip.route_id)
+    if not w:  # never block trip start on the network: fetch in the background, the phone gets weather.updated
+        import threading
+        from .engines import weather_tick
+        threading.Thread(target=weather_tick, daemon=True).start()
     return {"trip": core.trip_public(trip), "route": route_detail(s, s.get(Route, trip.route_id)), "pack": pack,
             "templates": ui_templates(trip.language), "server_pubkey": pass_signer().public_b64,
             "pass_qr": ps.qr if ps else None, "pass": ps.payload if ps else None,
-            "family_token": trip.family_token, "config": config()}
+            "family_token": trip.family_token, "config": config(), "weather": w}
 
 
 @router.get("/trips/{trip_id}")
@@ -230,8 +244,10 @@ def trip_events(trip_id: str, body: list[dict], request: Request, s: Session = D
 @router.get("/trips/{trip_id}/sync")
 def sync(trip_id: str, request: Request, s: Session = Depends(get_session)):
     trip = tourist_trip(request, s, trip_id)
+    from . import weather
     return {"trip": core.trip_public(trip), "zones": [core.zone_public(s, z) for z in core.active_zones(s, trip.route_id)],
-            "checks_pending": core.pending_checks(s, trip), "sos": core.trip_sos_status(s, trip)}
+            "checks_pending": core.pending_checks(s, trip), "sos": core.trip_sos_status(s, trip),
+            "weather": weather.cached(trip.route_id)}
 
 
 @router.get("/checkpoints/{checkpoint_id}")

@@ -18,7 +18,31 @@ export type Zone = {
   advisories: Record<string, Advisory>;
 };
 
-export type HelpPoint = { id: string; route_id: string; kind: string; name: string; lat: number; lon: number; simulated: boolean };
+export type HelpPoint = { id: string; route_id: string; kind: string; name: string; lat: number; lon: number; simulated: boolean; source?: string };
+
+export type WeatherRisk = { key: string; level: "warn" | "danger"; value?: number };
+export type WeatherSection = {
+  segment_id: string;
+  name: string;
+  lat: number;
+  lon: number;
+  elevation_m: number | null;
+  now: { temp_c: number; code: number; desc: string };
+  next12h: { temp_min: number | null; temp_max: number | null; rain_12h: number; rain_prob_max: number; snow_12h: number; gust_max: number };
+  risks: WeatherRisk[];
+  level: "none" | "warn" | "danger";
+};
+export type Weather = {
+  route_id: string;
+  available: boolean;
+  fetched_at?: number;
+  source?: string;
+  attribution: string;
+  hours_ahead?: number;
+  sections: WeatherSection[];
+  level: string;
+  stale?: boolean;
+};
 export type Checkpoint = { id: string; route_id: string; name: string; lat: number; lon: number };
 export type Segment = { id: string; name: string; coords: number[][]; risky?: boolean; length_km?: number; nearest_help_id?: string };
 
@@ -83,6 +107,7 @@ export type Templates = {
   phrases: Record<string, string>;
   ui: Record<string, string>;
   message_to_group: string;
+  weather?: Record<string, string>;
 };
 
 export type Config = {
@@ -107,6 +132,7 @@ export type StartBundle = {
   pass: Record<string, unknown>;
   family_token: string;
   config: Config;
+  weather?: Weather | null;
 };
 
 export type TripCreated = { trip: Trip; pass_qr: string; tourist_token: string; family_url: string; family_token: string };

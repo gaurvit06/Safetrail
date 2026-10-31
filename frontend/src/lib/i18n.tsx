@@ -124,6 +124,11 @@ const en = {
   close: "Close",
   tap_to_flip: "Tap for big text",
   checkpoint_ok: "Checkpoint confirmed: {name}",
+  weather_title: "Weather on your route",
+  weather_unavailable: "Weather isn't available right now. It updates when you're back online.",
+  updated: "Updated",
+  last_update: "Last update",
+  next_12h: "next 12 h",
 };
 export type Key = keyof typeof en;
 
@@ -205,6 +210,11 @@ const hi: Partial<Record<Key, string>> = {
   read_to_operator: "यह 112 ऑपरेटर को पढ़कर सुनाएँ",
   stop: "रोकें",
   close: "बंद करें",
+  weather_title: "आपके रास्ते का मौसम",
+  weather_unavailable: "अभी मौसम की जानकारी उपलब्ध नहीं है। ऑनलाइन होने पर अपडेट होगी।",
+  updated: "अपडेट",
+  last_update: "पिछला अपडेट",
+  next_12h: "अगले 12 घंटे",
 };
 
 const dicts: Record<Lang, Partial<Record<Key, string>>> = { en, hi };

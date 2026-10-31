@@ -41,6 +41,7 @@ class HelpPoint(SQLModel, table=True):
     lat: float
     lon: float
     simulated: bool = True
+    source: str = "seed"  # seed (simulated) | osm (OpenStreetMap, real)
 
 
 class Checkpoint(SQLModel, table=True):
