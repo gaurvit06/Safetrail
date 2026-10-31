@@ -187,7 +187,8 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
             return
         now = time.time()
         if not force:
-            if inc.summary_member_count == inc.member_count and inc.summary_source == "ai":
+            if inc.summary_member_count == inc.member_count and (
+                    inc.summary_source == "ai" or (inc.cluster_summary or {}).get("budget_limit")):
                 return
             if inc.summary_last_at and now - inc.summary_last_at < settings.cluster_summary_min_interval_s:
                 # Too soon for more AI, but the numbers on screen must stay exact: show them now, AI text follows.

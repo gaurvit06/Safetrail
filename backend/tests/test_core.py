@@ -419,6 +419,24 @@ def test_budget_stress_test_skips_the_cache_so_prune_really_stops_it(s, monkeypa
     assert sent["cache"] is None
 
 
+def test_a_refresh_does_not_undo_a_budget_stop(s, monkeypatch):
+    iid = _cluster_of_two(s)
+    calls = []
+
+    async def stopped_job(**kw):
+        calls.append(kw)
+        return jobs.JobResult({"summary": "standard"}, "template", stopped_by="run_budget")
+    monkeypatch.setattr(features, "run_job", stopped_job)
+    asyncio.run(features.build_cluster_summary(iid, force=True, governor=False, run_budget_header=0.000001))
+    inc = s.get(Incident, iid)
+    s.refresh(inc)
+    inc.summary_last_at = 0
+    s.add(inc)
+    s.commit()
+    asyncio.run(features.build_cluster_summary(iid))  # the scheduled refresh
+    assert len(calls) == 1
+
+
 def _cluster_of_two(s):
     t1, _ = make_trip(s, name="A")
     t2, _ = make_trip(s, name="B")
