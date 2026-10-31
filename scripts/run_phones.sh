@@ -15,6 +15,10 @@ PORT=8000
 
 command -v cloudflared >/dev/null 2>&1 || { echo "cloudflared is needed. On macOS: brew install cloudflared" >&2; exit 1; }
 [ -x backend/.venv/bin/python ] && [ -f frontend/dist/index.html ] || { echo "Run this first: bash scripts/run_local.sh --no-run" >&2; exit 1; }
+if lsof -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "Port $PORT is already in use, probably by another copy of the app. Stop that first, or add --port 8001." >&2
+  exit 1
+fi
 
 LOG="$(mktemp)"
 cloudflared tunnel --url "http://localhost:$PORT" --no-autoupdate >"$LOG" 2>&1 &
