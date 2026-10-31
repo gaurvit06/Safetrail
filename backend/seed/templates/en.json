@@ -18,7 +18,7 @@
   },
   "kind": {"injured": "Injured", "lost": "Lost", "stuck": "Stuck", "medical": "Medical", "unsafe": "Unsafe", "unknown": "Unknown"},
   "report_headline": "{kind} · {people} · near {segment}",
-  "cluster_summary": "{people} people · {injured} injured reports · near {segment}",
+  "cluster_summary": "{people} people · injury reports: {injured} · near {segment}",
   "message_to_group": "Help has been informed. Stay where you are if it is safe, and keep your phone on.",
   "pack": {
     "briefing": [

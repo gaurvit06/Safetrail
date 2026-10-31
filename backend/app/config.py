@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
 SEED_DIR = BACKEND_DIR / "seed"
+# Real environment variables win, then backend/.env, then the repo-root .env.
+load_dotenv(BACKEND_DIR / ".env")
 load_dotenv(REPO_DIR / ".env")
-load_dotenv(BACKEND_DIR / ".env", override=True)
 
 
 def _s(name: str, default: str = "") -> str:
