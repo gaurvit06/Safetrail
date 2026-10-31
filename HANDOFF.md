@@ -1,6 +1,6 @@
 # Handoff: where the build is right now
 
-**Read this first, then SPEC.md.** SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
+**Read this first, then SPEC.md.** Claude: also read `CLAUDE.md`, `CONTINUE.md` (prompts and laptop handover) and `docs/SESSION_LOG.md`. SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
 _Last updated: projector live counter, confetti + cheer on Accept and one-tap Next round added; 56 backend tests and 6 frontend tests pass. What is left needs your Prune keys, the real venue map, real phones, a backup video and a push to GitHub._
 
@@ -66,12 +66,7 @@ git push origin main
 The pull is a fast-forward when the bundle was built on top of the latest `main`; if someone pushed in between, git merges as usual.
 
 ## Prompt to continue on another laptop
+Use the prompts in `CONTINUE.md` (Prompt 1 on your own desktop, Prompt 2 in another Claude or on another laptop). Short version:
 ```
-Clone https://github.com/gaurvit06/Safetrail.git into a SHORT folder (Windows: C:\Users\<you>\safetrail). If it's already there, run git pull.
-
-Read HANDOFF.md and SPEC.md completely. SPEC.md is the source of truth; HANDOFF.md says what's built, how to run it, and what's next.
-
-Continue building SafeTrail from the first unchecked item in HANDOFF.md. You build everything (backend and frontend). Don't redo finished work; read the existing code first.
-
-After every working step: run the tests, update the checklist in HANDOFF.md, commit, and push to main.
+Clone https://github.com/gaurvit06/Safetrail.git into a SHORT folder (Windows: C:\Users\<you>\safetrail), or git pull if it's already there. Read CLAUDE.md, HANDOFF.md, CONTINUE.md and docs/SESSION_LOG.md, then SPEC.md where needed. Continue from the first unchecked item in HANDOFF.md without redoing finished work. After every working step: run the tests and scripts/check_no_direct_calls.sh, update HANDOFF.md, commit, and push to main.
 ```
