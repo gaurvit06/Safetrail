@@ -122,7 +122,7 @@ export default function Benchmark() {
               </table>
             </section>
             <Explain id="benchmark" />
-            <p className="text-xs text-muted">Counts are computed by plain code, so count accuracy must be 100%. Every cost here is Prune's own figure from stored responses, which leaves out Gemini output tokens, so these run low; missing values show n/a. docs/BENCHMARK.md has the cost at Google's list price.</p>
+            <p className="text-xs text-muted">Counts are computed by plain code, so count accuracy must be 100%. Every cost here is Prune's own figure from stored responses. Prune prices input at a flat rate and leaves out output, so these aren't true Gemini costs; missing values show n/a. docs/BENCHMARK.md has the cost at Google's list price.</p>
           </>
         )}
       </main>
