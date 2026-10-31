@@ -241,7 +241,7 @@ def verdicts(results: dict) -> list[dict]:
         add("public_small", "ok" if ps["ok"] else "fail", "public key works with SMALL" if ps["ok"] else f"error {ps.get('error_code')}")
     if pl:
         add("public_large", "ok" if not pl["ok"] else "warn", f"blocked: {pl.get('error_code')}" if not pl["ok"]
-            else "LARGE was allowed on the public key: set its model allowlist to MODEL_SMALL only")
+            else "Prune allows LARGE on the public key, but the app keeps it on SMALL. Optional: limit it in Prune's Shield")
     return out
 
 

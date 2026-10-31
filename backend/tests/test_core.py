@@ -343,6 +343,22 @@ def test_every_ai_job_gets_its_own_prune_run_id(monkeypatch):
     assert len(set(sent)) == 2 and all(r.startswith("same_id_") for r in sent)
 
 
+def test_public_key_jobs_only_ever_use_the_small_model(monkeypatch):
+    monkeypatch.setattr(jobs, "configured", lambda key="ops": True)
+    monkeypatch.setattr(jobs, "public_spent_usd", lambda: 0)
+    tiers = []
+
+    async def fake_chat(**kw):
+        tiers.append(kw["tier"])
+        return prune_client.ChatResult(content="{}", llm_call_id=1, cache_hit=False, cost_with_prune_usd=0.0001,
+                                       estimated_cost_usd=0.0001, model_used="m", shield_code=None)
+    monkeypatch.setattr(jobs, "chat", fake_chat)
+    for feature, extra in (("cluster", {}), ("report", {"escalate_upfront": True})):
+        asyncio.run(jobs.run_job(job_key=f"pub_{uuid.uuid4().hex}", feature=feature, route_id="hall", run_id="pub", key="public",
+                                 messages=[{"role": "user", "content": "hi"}], validate=lambda o: (o, []), template=dict, **extra))
+    assert tiers == ["small", "small"]
+
+
 def _cluster_of_two(s):
     t1, _ = make_trip(s, name="A")
     t2, _ = make_trip(s, name="B")

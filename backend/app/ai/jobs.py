@@ -111,6 +111,8 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
             escalate_upfront = allow_escalation = False
         if b.get("naive"):
             governor, send_budget = False, False
+    if key == "public":  # judges' Break-it traffic stays on the small model, whatever is set in Prune's dashboard
+        tier, escalate_upfront, allow_escalation = "small", False, False
     # Prune remembers a run's spend and steps for good, but incident numbers restart after a reset and a pack keeps one
     # job key: reusing an id gets the next call stopped as a loop or as over budget.
     run_id = f"{run_id}_{uuid.uuid4().hex[:6]}"
