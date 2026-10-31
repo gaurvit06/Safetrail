@@ -31,7 +31,7 @@ def clean_db():
     with Session(engine) as s:
         for m in (models.SosEvent, models.Incident, models.Ping, models.Trip, models.Pass, models.AiJob,
                   models.LlmCall, models.SafetyCheck, models.CheckResponse, models.EventLog, models.BreakItAttempt,
-                  models.SmsInbound, models.PermitRecord, models.PassRevocation):
+                  models.SmsInbound, models.PermitRecord, models.PassRevocation, models.DemoState):
             for row in s.exec(select(m)).all():
                 s.delete(row)
         s.commit()

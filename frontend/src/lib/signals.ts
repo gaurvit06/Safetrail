@@ -56,6 +56,32 @@ export function ackChime() {
   vibrate([120, 80, 120]);
 }
 
+/** Projector cheer when help is accepted: a short "ta-da" and a burst of synthesised applause. */
+export function cheer() {
+  if (!ctx) return;
+  [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 0.25, i * 0.09, "triangle"));
+  [523, 659, 784].forEach((f) => tone(f, 0.9, 0.18, 0.4, "triangle"));
+  try {
+    const len = Math.floor(ctx.sampleRate * 0.03);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    for (let k = 0; k < 70; k++) {
+      const src = ctx.createBufferSource();
+      const bp = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      src.buffer = buf;
+      bp.type = "bandpass";
+      bp.frequency.value = 1200 + Math.random() * 1800;
+      g.gain.value = 0.08 + Math.random() * 0.12;
+      src.connect(bp).connect(g).connect(ctx.destination);
+      src.start(ctx.currentTime + 0.35 + Math.random() * 1.6);
+    }
+  } catch {
+    /* applause is a nice-to-have */
+  }
+}
+
 /** Distress whistle: three loud blasts (the international distress signal), repeated. */
 export function whistleBlasts() {
   for (let i = 0; i < 3; i++) tone(3150, 0.45, 0.9, i * 0.7, "square");

@@ -1,9 +1,10 @@
-﻿import { Activity, BellRing, Database, Footprints, LocateFixed, Mountain, RotateCcw, Users, Zap } from "lucide-react";
-import { useState } from "react";
+﻿import { Activity, BellRing, Database, Footprints, LocateFixed, Mountain, RotateCcw, SkipForward, Users, Zap } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { LoginCard } from "../components/ops";
 import { HoldButton, Spinner, useToast } from "../components/ui";
 import { api } from "../lib/api";
 import { getRoleToken } from "../lib/session";
+import type { RoundState } from "../lib/types";
 
 /** Presenter's phone (SPEC 9.4.2): one tap per demo beat. */
 export default function StageControl() {
@@ -12,6 +13,41 @@ export default function StageControl() {
   const [busy, setBusy] = useState<string | null>(null);
   const [useMine, setUseMine] = useState(false);
   const [last, setLast] = useState<string>("");
+  const [round, setRound] = useState<RoundState | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const timer = useRef<number | null>(null);
+  useEffect(() => {
+    if (token) api<RoundState>("/stage/round", { token }).then(setRound).catch(() => {});
+  }, [token]);
+  useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
+  /** One tap starts the next judging round after 3 seconds; tapping again in that time cancels it.
+   *  The countdown lives in a ref and the request is sent outside any state update, so it can only fire once. */
+  const left = useRef(0);
+  const nextRound = () => {
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+      setCountdown(null);
+      toast("Cancelled. Nothing was reset.", "info");
+      return;
+    }
+    left.current = 3;
+    setCountdown(3);
+    timer.current = window.setInterval(() => {
+      left.current -= 1;
+      if (left.current > 0) return void setCountdown(left.current);
+      if (timer.current) clearInterval(timer.current);
+      timer.current = null;
+      setCountdown(null);
+      api<RoundState & { message: string }>("/stage/scenario", { token, body: { action: "next_round" } })
+        .then((r) => {
+          setRound(r);
+          setLast(r.message);
+          toast(r.message, "ok");
+        })
+        .catch((e) => toast(e.message, "danger"));
+    }, 1000);
+  };
 
   const run = async (action: string) => {
     setBusy(action);
@@ -44,6 +80,18 @@ export default function StageControl() {
   return (
     <div className="mx-auto max-w-lg space-y-3 px-4 py-5">
       <div className="flex items-center gap-2 text-lg font-bold"><img src="/icon.svg" className="h-8 w-8" alt="" /> Stage control</div>
+      <button className={`btn h-auto w-full justify-start gap-4 p-4 text-left ${countdown !== null ? "bg-caution text-white" : "btn-primary"}`} disabled={!!busy} onClick={nextRound}>
+        <SkipForward size={28} className="shrink-0" />
+        <span>
+          <span className="block text-lg">{countdown !== null ? `Starting round ${(round?.round ?? 0) + 1} in ${countdown}… tap to cancel` : `Next round${round ? ` (now: round ${round.round})` : ""}`}</span>
+          <span className="block text-sm font-normal opacity-90">Recaps this round on the projector, resets the demo, shows the Join QR again.</span>
+        </span>
+      </button>
+      {round?.last && (
+        <div className="card p-3 text-sm">
+          <b>Round {round.last.round}:</b> {round.last.judges} judges · {round.last.sos} SOS → {round.last.incidents} incident(s) · {round.last.accepted} accepted · {round.last.tricks_caught}/{round.last.tricks} tricks caught
+        </div>
+      )}
       <label className="card flex items-center gap-3 p-3">
         <input type="checkbox" className="h-5 w-5 accent-brand" checked={useMine} onChange={(e) => setUseMine(e.target.checked)} />
         <span className="text-sm"><LocateFixed size={14} className="inline" /> Place zones at <b>my</b> location (otherwise: around the judges)</span>

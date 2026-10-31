@@ -17,7 +17,8 @@ from .core import (answer_check, create_trip, ingest_pings, position_event, publ
                    scan_injection, send_check, set_incident_status, start_trip)
 from .db import engine
 from .geo import centroid, circle_polygon, haversine_m, offset_point, point_in_polygon
-from .models import (BreakItAttempt, CheckResponse, Incident, Ping, Route, SafetyCheck, SosEvent, Trip, Zone)
+from .models import (BreakItAttempt, CheckResponse, DemoState, Incident, LlmCall, Ping, Route, SafetyCheck, SosEvent,
+                     Trip, Zone)
 from .security import b64u, b64u_dec, canonical, check_role_token, issue_pass, verify_pass
 from .seeddata import route_seed, segment_for
 
@@ -219,6 +220,51 @@ def reset_demo(s: Session) -> dict:
     _device_attempts.clear()
     events.publish("stage.reset", {}, events.ALL)
     return {"ok": True}
+
+
+# ------------------------------------------------------------------------------------------ judging rounds
+
+def round_state(s: Session) -> dict:
+    row = s.get(DemoState, "round")
+    if not row:
+        row = DemoState(key="round", value={"round": 1, "started_at": time.time(), "last": None})
+        s.add(row)
+        s.commit()
+    return dict(row.value)
+
+
+def round_summary(s: Session, n: int, started_at: float) -> dict:
+    """What happened in one judging round, counted from the database (AI cost only from Prune's own figures)."""
+    judges = s.exec(select(Trip).where(Trip.kind == "tourist", Trip.consent_at >= started_at)).all()
+    sos = [x for x in s.exec(select(SosEvent).where(SosEvent.received_at_server >= started_at)).all()
+           if "breakit" not in (x.flags or [])]
+    inc_ids = {x.incident_id for x in sos if x.incident_id}
+    incs = [i for i in s.exec(select(Incident).where(Incident.id.in_(inc_ids))).all() if i.status != "cancelled"] if inc_ids else []
+    answers = s.exec(select(CheckResponse).where(CheckResponse.ts >= started_at)).all()
+    calls = [c for c in s.exec(select(LlmCall).where(LlmCall.created_at >= started_at, LlmCall.benchmark_run_id == None)).all()  # noqa: E711
+             if c.status in ("ok", "retried")]
+    known = [c.cost_with_prune_usd for c in calls if c.cost_with_prune_usd is not None]
+    tricks = s.exec(select(BreakItAttempt).where(BreakItAttempt.created_at >= started_at)).all()
+    return {"round": n, "minutes": round((time.time() - started_at) / 60, 1), "judges": len(judges), "sos": len(sos),
+            "incidents": len(incs), "accepted": sum(1 for i in incs if i.status in ("accepted", "en_route", "resolved")),
+            "safe": sum(1 for a in answers if a.answer == "safe"), "need_help": sum(1 for a in answers if a.answer == "need_help"),
+            "ai_calls": len(calls), "ai_cost_usd": round(sum(known), 8) if known else None,
+            "tricks": len(tricks), "tricks_caught": sum(1 for a in tricks if a.outcome in ("caught", "flagged"))}
+
+
+def next_round(s: Session) -> dict:
+    """One tap between judging rounds: recap the round that just ended, reset the demo, start the next round."""
+    cur = round_state(s)
+    summary = round_summary(s, cur["round"], cur["started_at"])
+    reset_demo(s)
+    nxt = {"round": cur["round"] + 1, "started_at": time.time(), "last": summary}
+    row = s.get(DemoState, "round")
+    row.value = nxt
+    s.add(row)
+    s.commit()
+    events.publish("stage.round", nxt, events.OPS)
+    return {"ok": True, **nxt, "message": f"Round {nxt['round']} started. Round {summary['round']}: {summary['judges']} judges, "
+                                           f"{summary['sos']} SOS in {summary['incidents']} incident(s)."}
 
 
 # ------------------------------------------------------------------------------------------ Break it

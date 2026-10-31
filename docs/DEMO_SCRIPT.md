@@ -10,12 +10,12 @@ Say once, early: **"Demo zones and dispatches are simulated."**
 - [ ] Tunnel running (`cloudflared tunnel --url http://localhost:8000`). Put the https URL in `PUBLIC_URL` in `.env` and restart the backend, so the QR codes point to it. Phones need https for GPS.
 - [ ] The `hall` route is the real venue (drawn on geojson.io), and the landslide zone covers **the whole room**: indoor GPS is only accurate to 10–30 m.
 - [ ] Checkpoint QR printed and stuck on a door (backup way to fix a phone's location).
-- [ ] Projector: `/stage` (presenter PIN, default 1357), showing the **Join** QR.
+- [ ] Projector: `/stage` (log in as **Presenter**, default PIN 1357), showing the **Join** QR. Tap the speaker icon once so the cheer can play when help is accepted.
 - [ ] Presenter's phone: `/stage/control` (presenter PIN).
 - [ ] Responder: a judge on `/jr` (responder PIN, default 2468), or a teammate on `/r`.
 - [ ] Prune keys in `.env`, `scripts/prune_check.py` passed, daily cap set. The demo was rehearsed twice, so Prune's normal-rate baseline includes demo traffic.
 - [ ] Phone hotspot ready for the laptop.
-- [ ] On Stage control, hold **Hold to reset the demo**.
+- [ ] On Stage control, tap **Next round** (3-second countdown, tap again to cancel). It recaps the last round on the projector, resets the demo and shows the Join QR again.
 
 ## Run of show
 
@@ -28,7 +28,7 @@ Say once, early: **"Demo zones and dispatches are simulated."**
 | 1:20–1:50 | "One of you is hurt and has no signal." | A judge turns on airplane mode, holds **SOS**, picks **Injured**, taps **Send SOS**, sees "Pending transmission", then turns airplane mode off. | The SOS pin drops on the projector with how long it waited. |
 | 1:50–2:10 | "Three more of you press SOS." | 2–3 more judges send an SOS. | One incident card, not four: exact counts (computed by code) and a summary for the responder. |
 | 2:10–2:25 | "Is everyone safe?" | Stage control: **Send "Are you safe?"** | Judges tap **I'm safe** or **I need help**; the tally updates live. |
-| 2:25–2:40 | "The control room accepts." | The responder judge taps **Accept**, then **Verify timeline**. | The SOS judge's phone shows **Help acknowledged**; the timeline shows ✓ on every step. |
+| 2:25–2:40 | "The control room accepts." | The responder judge taps **Accept**, then **Verify timeline**. | Confetti and a cheer on the projector; the SOS judge's phone shows **Help acknowledged**; the timeline shows ✓ on every step. |
 | 2:40–2:50 | "Your family sees only this." | A judge opens their family link (**Family** on the trip screen). | "On trip · last check-in …", never the location. |
 | 2:50–3:00 | "Every AI call went through Prune. Here's the cost." | Responder → **AI & cost**: open a receipt and **Verify on Prune**; then open `/benchmark`. | Cost for this session, cost per trip vs naive, a verified signed receipt. |
 
@@ -45,7 +45,7 @@ Then **Break it**: switch the projector QR to **Break it** (`/break`). Judges tr
 - **Prune is down or over budget:** cards show "Standard text". Say: "This is the safety rule working: the AI is never in the emergency path."
 - **Responder screen shows "Reconnecting…":** it retries on its own; refresh if it takes more than a few seconds.
 - **iPhone doesn't vibrate:** it uses sound and a full-screen flash instead; ask judges to turn the volume up.
-- **Between rehearsals:** hold **Hold to reset the demo** on Stage control.
+- **Between judging rounds:** tap **Next round** on Stage control. The projector shows the last round's recap until the first new judge joins. **Hold to reset the demo** is still there as an emergency reset.
 
 ## Lines to remember
 

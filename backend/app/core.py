@@ -544,10 +544,12 @@ def _feature_of(job_key: str) -> str:
     return "other"
 
 
-def ai_stats(s: Session, route_id: str | None = None) -> dict:
+def ai_stats(s: Session, route_id: str | None = None, since: float | None = None) -> dict:
     q = select(LlmCall).where(LlmCall.benchmark_run_id == None)  # noqa: E711
     if route_id:
         q = q.where(LlmCall.route_id == route_id)
+    if since:  # e.g. "this judging round" on the projector
+        q = q.where(LlmCall.created_at >= since)
     calls = s.exec(q).all()
     ok = [c for c in calls if c.status in ("ok", "retried")]
     known = [c for c in ok if c.cost_with_prune_usd is not None]
@@ -561,7 +563,8 @@ def ai_stats(s: Session, route_id: str | None = None) -> dict:
         if c.cost_with_prune_usd is not None:
             b["cost_usd"] += c.cost_with_prune_usd
             b["cost_known"] += 1
-    jobs = s.exec(select(AiJob).where(AiJob.benchmark_run_id == None)).all()  # noqa: E711
+    jobs = [j for j in s.exec(select(AiJob).where(AiJob.benchmark_run_id == None)).all()  # noqa: E711
+            if not since or (j.completed_at or j.created_at or 0) >= since]
     trips_started = len(s.exec(select(Trip).where(Trip.start_at != None, Trip.kind != "sim")).all())  # noqa: E711
     incidents = len([i for i in s.exec(select(Incident)).all() if not any(str(f).startswith("merged") for f in (i.flags or []))])
     total = sum(c.cost_with_prune_usd for c in known) if known else None

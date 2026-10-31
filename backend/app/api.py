@@ -591,8 +591,9 @@ async def permit_card(trip_id: str, request: Request, s: Session = Depends(get_s
 # ------------------------------------------------------------------------------------------ AI & cost
 
 @router.get("/ai/stats")
-def ai_stats(route_id: str | None = None, role: str = Depends(RESP), s: Session = Depends(get_session)):
-    return core.ai_stats(s, route_id)
+def ai_stats(route_id: str | None = None, since: float | None = None, role: str = Depends(RESP),
+             s: Session = Depends(get_session)):
+    return core.ai_stats(s, route_id, since)
 
 
 @router.get("/ai/calls")
@@ -671,7 +672,15 @@ async def scenario(body: ScenarioIn, role: str = Depends(PRES)):
     if body.action == "reset":
         with session_scope() as s:
             return stage.reset_demo(s)
+    if body.action == "next_round":
+        with session_scope() as s:
+            return stage.next_round(s)
     raise HTTPException(400, "Unknown action")
+
+
+@router.get("/stage/round")
+def stage_round(role: str = Depends(RESP), s: Session = Depends(get_session)):
+    return stage.round_state(s)
 
 
 @router.get("/stage/state")

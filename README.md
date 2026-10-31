@@ -35,8 +35,8 @@ Open `http://localhost:8000`. (macOS/Linux: `.venv/bin/python`.)
 | `/f/<token>` | Family | Trip status only, never location |
 | `/r` | Responder (PIN) | Live map, incidents, draw zones, safety checks, verify passes, AI & cost |
 | `/jr` | Judge as responder (PIN) | Simple incident queue with Accept |
-| `/stage` | Projector (PIN) | Live map, join QR, counters, Routing River, Break-it board |
-| `/stage/control` | Presenter (PIN) | Landslide here, crowd surge, safety check, budget stress test, reset |
+| `/stage` | Projector (PIN) | Live map, join QR, headline counter, confetti on Accept, round recap, Routing River, Break-it board |
+| `/stage/control` | Presenter (PIN) | Next round, landslide here, crowd surge, safety check, budget stress test, reset |
 | `/break` | Judges | Try 8 real abuse tricks and see what catches them |
 | `/benchmark` | Everyone | R1–R4 cost per trip and per emergency, measured (after `scripts/benchmark.py`) |
 | `/c/<id>` | Tourist | Checkpoint QR: confirms your location precisely |

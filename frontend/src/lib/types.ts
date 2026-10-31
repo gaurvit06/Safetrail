@@ -296,3 +296,9 @@ export type PermitInfo = {
 };
 
 export type PermitCard = { content: { title: string; allows: string[]; not_allowed: string[]; carry: string[] }; source: string; simulated: boolean };
+
+export type RoundSummary = {
+  round: number; minutes: number; judges: number; sos: number; incidents: number; accepted: number; safe: number;
+  need_help: number; ai_calls: number; ai_cost_usd: number | null; tricks: number; tricks_caught: number;
+};
+export type RoundState = { round: number; started_at: number; last: RoundSummary | null };
