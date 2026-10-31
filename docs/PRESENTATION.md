@@ -105,21 +105,21 @@ Rehearse with a timer. The demo is the most important part: if time is short, cu
 - **Say:** "Prune lets us make AI cheap and controlled, but we verified everything. Our Prune check script runs 11 live checks: receipts are signed, a run over budget gets stopped with a 429, injection attempts are flagged, and a different request never gets a cached answer."
 
 ### Slide 11 · What it costs
-- **On the slide:** the measured numbers from the benchmark (fill in after it runs, Section 3):
+- **On the slide:** the measured numbers from the benchmark (100 simulated trips, at Google's list price):
 
-| | R1 Naive (big model for everything) | R2 SafeTrail, no Prune features | R3 SafeTrail + Prune |
+| | R1 Naive (a low estimate) | R2 SafeTrail, no Prune features | R3 SafeTrail + Prune |
 |---|---|---|---|
-| Cost per monitored trip | [fill] | [fill] | [fill] |
-| Cost per emergency | [fill] | [fill] | [fill] |
-| Counts correct | [fill] | [fill] | [fill] |
+| Cost per monitored trip | 15.9 paise | 2.9 paise | 3.1 paise |
+| Cost per emergency | not comparable | 9.6 paise | 10.0 paise |
+| Counts correct | 100% | 100% | 100% |
 
 - **Plus the levers that make it cheap** (true today):
   1. Safety logic is plain code: **zero AI cost** for alerts, crowd, SOS, grouping and weather warnings
   2. One safety pack per route + language + profile, **shared by every tourist** (pack #2 onward costs nothing)
   3. Small model by default; group summaries at most once a minute, max 3; SOS floods never trigger AI
   4. Hard budgets per job, enforced by Prune
-- **Say:** "We don't guess costs. Every number comes from Prune's own receipts, and we compare four setups on the same 500-trip scenario."
-- ⚠️ **If the benchmark hasn't run yet,** show only the levers and say: "Measured numbers are on our benchmark page after the run." Don't quote any rupee figure. See Section 3.
+- **Say:** "We don't guess costs. Every number comes from Google's own token counts at its list price, and we compare four setups on the same 100-trip scenario."
+- ⚠️ **Don't quote Prune's dollar or paise figures.** They leave out output tokens. R1 ran on the small model because the free key's large model quota ran out, so it's a low estimate. See `docs/BENCHMARK.md`.
 
 ### Slide 12 · Trust and safety
 - **Visual:** Verify timeline ✓ screenshot + Break-it "CAUGHT" screenshot (Shots 6 and 10).
@@ -199,7 +199,7 @@ Rehearse with a timer. The demo is the most important part: if time is short, cu
 - **Before quoting them:** check Prune's Gemini costs against Google's own usage page (`docs/DECISIONS.md` 35: Prune's reported Gemini costs ignore output).
 
 **Do NOT say:**
-- Any rupee or paise figure until it's measured and checked.
+- Any rupee or paise figure other than the ones in `docs/BENCHMARK.md`.
 - "Works with no network", "guaranteed rescue", "predicts stampedes", "catches all GPS spoofing", "integrated with government permits", "Prune's cache saves us money" as a rupee figure (not checked yet), "Prune picks the cheapest model" (no call was rerouted in our tests).
 - "PostgreSQL / PostGIS / React Native / WebSockets": we use SQLite, an installable web app (judges join by QR, no app store) and Server-Sent Events.
 - "DBSCAN": say "density-based grouping, like DBSCAN: SOS within 150 m and 30 minutes form one incident".

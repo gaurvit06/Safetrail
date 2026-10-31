@@ -29,7 +29,7 @@ Tests at the end: 56 backend, 6 frontend, checker clean.
 
 ## Known limits (be honest about these)
 - Only tested in simulated browsers so far: no real phones, no real GPS, no real venue map yet.
-- The benchmark page is empty until a real run. (Prune and Gemini went live later on 31 Oct: see `docs/DECISIONS.md` 28 to 35.)
+- The benchmark page was empty until the real run on 31 Oct (`docs/BENCHMARK.md`). Prune and Gemini went live that day: see `docs/DECISIONS.md` 28 to 35.
 - Sikkim and Corbett lines were drawn by hand (OpenStreetMap was unreachable from the cloud machine): approximate, simulated, not for navigation.
 - The Nepali phrasebook is machine-translated; check it with a native speaker.
 - The injection scanner only matches English tricks; Hindi and Assamese ones rely on Prune's detection.
@@ -37,7 +37,7 @@ Tests at the end: 56 backend, 6 frontend, checker clean.
 
 ## Still to do (also in HANDOFF.md)
 1. Done 31 Oct: bundle merged and pushed to GitHub; `~/safetrail` on Hardik's Mac tracks `origin/main`.
-2. Done 31 Oct: keys in `.env`, Gemini in Prune's vault, `scripts/prune_check.py` run. Still to do: the receipt screenshot and the public key's allowlist (see HANDOFF.md).
-3. Benchmark with real keys → numbers on the cost slide (Prompt 4).
-4. Real venue map in `hall.json` (Prompt 5).
+2. Done 31 Oct: keys in `.env`, Gemini in Prune's vault, `scripts/prune_check.py` run, receipt verified. The public key stays on the small model in code (`docs/DECISIONS.md` 40).
+3. Done 1 Nov: benchmark on 100 trips, numbers in `docs/BENCHMARK.md` and on the deck's cost slide (`docs/SafeTrail-Deck.pptx`).
+4. Done 1 Nov: `hall.json` is the CSED block loop. Its help desk, lobby and doors are still placeholders.
 5. Real-phone test and two rehearsals, then a backup video (Prompt 6).

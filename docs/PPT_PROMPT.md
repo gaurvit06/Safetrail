@@ -23,7 +23,7 @@ Use only the facts in this brief. If you need something that isn't here, add a c
 - Name: SafeTrail
 - Tagline: Warn early. Never lose an SOS. Prove every response.
 - One line: SafeTrail warns tourists before danger, keeps their SOS safe when there's no signal, and gives responders one clear picture instead of 40 confused calls. Every AI call goes through Prune, and the AI is never in the emergency path.
-- For: treks, pilgrimages and national parks. The main route is the Kedarnath trek.
+- For: treks, pilgrimages and national parks. The main route is the Kedarnath trek. The live demo runs on a short loop around the CSED block at Thapar, which stands in for a mountain route.
 - Format: one installable web app (a PWA) with a tourist mode and a responder mode, plus a projector view for the live demo.
 
 # Slide plan
@@ -60,12 +60,14 @@ Write each title as a full sentence that makes the point. These are suggestions,
    - The small model does most jobs. The large model is kept for group summaries and hard cases.
    - An SOS flood never fans out into AI calls, and group summaries have a refresh limit.
    - Three budget layers: our own check before each call, Prune's budget and step limit on each job, and a daily spend cap on each key.
-   - Show two big placeholders: [TO FILL: cost per monitored trip] and [TO FILL: cost per emergency].
+   - Show four big figures: about 3 paise per monitored trip, about 10 paise per emergency, 82% fewer tokens per trip than the naive way, and 72% of repeat-day calls served from cache.
+   - Add a chart of tokens per monitored trip: naive 1,997 (a low estimate), SafeTrail design 369, SafeTrail with Prune first day 403, repeat day 0.
+   - Small print: "100 simulated trips on the small model. Cost is Google's token counts times Google's list price. The live demo runs on a free key."
 
 8. **Built to fail safely, and tested against the real thing.**
    - Validators reject AI answers with invented numbers or places, ask once more, then fall back to standard text.
    - No names, phone numbers or ID numbers go into a prompt.
-   - A prompt-injection attempt in an SOS note becomes a flag on the incident, and the SOS is never blocked.
+   - An English prompt-injection attempt in an SOS note becomes a flag on the incident, and the SOS is never blocked. If asked: 2 of our 4 test notes were flagged, the English ones.
    - A run over its budget is stopped by Prune and the app carries on with standard text. We confirmed this live.
    - We checked a real Prune receipt against Prune's published public key: the signature was valid, and a tampered copy was rejected.
    - The strongest moment: live testing found a similar-looking emergency could get another incident's cached summary, with the wrong people and place. We now add a fingerprint of each request, so only identical requests match. We retested on real prompts by changing the count, place, time, emergency type and note, and each one got its own correct answer.
@@ -87,14 +89,23 @@ Write each title as a full sentence that makes the point. These are suggestions,
 
 **Backup 2, What's real and what's simulated:**
 - Real: the working app, the Kedarnath trail from OpenStreetMap (15.1 km), live weather from Open-Meteo, live AI through Prune using Gemini models, and signed receipts.
-- Simulated and labelled: demo zones and dispatches, the permit registry (fake numbers), and the Sikkim and Corbett routes, which are approximate and not for navigation.
+- Simulated and labelled: demo zones and dispatches, the permit registry (fake numbers), the help desk, lobby and door positions on the CSED block route, and the Sikkim and Corbett routes, which are approximate and not for navigation.
 - Not built on purpose: real 112 integration (it needs official authorisation), real permit APIs, face recognition, satellite SOS, and a chatbot.
 
-**Backup 3, Cost benchmark:** an empty table with these rows and columns, all marked [TO FILL]. Rows: R1 Naive, R2 SafeTrail without Prune's optimisations, R3 SafeTrail with Prune (cold), R4 SafeTrail with Prune (warm). Columns: cost per trip, cost per emergency, % served from cache, standard-text fallbacks. The same simulated scenario runs all four ways: 500 trips, 6 zones and 40 SOS.
+**Backup 3, Cost benchmark:** this table, from the same simulated scenario run four ways (100 trips, 9 emergencies):
+
+| Run | Tokens per trip | Paise per trip | Paise per emergency | Calls to Google | From cache | Standard text |
+|---|---|---|---|---|---|---|
+| Naive (a low estimate) | 1,997 | 15.9 | n/a | 124 | 0% | 41 of 161 |
+| SafeTrail design | 369 | 2.9 | 9.6 | 56 | 0% | 0 of 56 |
+| SafeTrail + Prune, first day | 403 | 3.1 | 10.0 | 57 | 1.7% | 0 of 56 |
+| SafeTrail + Prune, repeat day | 0 | 0 | 6.3 | 16 | 72.4% | 0 of 56 |
+
+Underneath: cost is Google's token counts times its list price ($0.25 in, $1.50 out per million tokens, ₹88 to the dollar). Every run used the small model, because the free key ran out of large model quota. Google's limits stopped 41 of the naive run's jobs, so its true use is higher and its emergency cost isn't comparable. Prune rerouted no calls. Counts were 100% correct in all four runs.
 
 # Rules you must not break
 
-- No cost figures anywhere. Our benchmark hasn't run yet and Prune's reported Gemini costs aren't verified, so use the [TO FILL] placeholders. Don't write "paise per trip" as a fact. If you use it, write "our target: paise per trip".
+- Use only the cost figures in this brief. They come from Google's token counts at Google's list price, on 100 simulated trips, so never present them as real-world use. Never use Prune's reported dollar or paise figures, because they leave out output tokens.
 - Don't claim pilots, users, downloads, field trials, government partners or real 112 integration. Don't add market sizes or statistics.
 - The only real-world event you may cite is the October 2023 North Sikkim flood described above.
 - Don't say it "works with no network". Say it "warns you offline, keeps your SOS, and sends it on the first signal".

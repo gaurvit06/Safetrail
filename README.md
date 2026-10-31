@@ -75,7 +75,7 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 Errors: Prune's fail-closed 503s are retried once after `Retry-After`; rate-limit 429s pause AI for 20 s; a 402 plan limit turns AI off until restart. Alerts and SOS never wait for any of this.
 
 ## How cost per trip and per emergency are computed
-Every cost is Prune's own `cost_with_prune_usd` from the stored response metadata (`LlmCall` table). If Prune didn't return a cost, the screen shows n/a, never a guess.
+Every cost on screen is Prune's own `cost_with_prune_usd` from the stored response metadata (`LlmCall` table). If Prune didn't return a cost, the screen shows n/a, never a guess. Prune's Gemini costs leave out output tokens, so `docs/BENCHMARK.md` also gives the cost from Google's token counts at Google's list price. Those are the figures to quote.
 - **Cost per monitored trip** = cost of all `pack`, `advisory` and `permit` calls ÷ trips started (simulated stage dots excluded).
 - **Cost per emergency** = cost of all `report`, `cluster`, `copilot` and `sms_parse` calls ÷ incidents (incidents merged into another one excluded).
 - A repair call counts toward the feature of the job it repaired. Prune's `cost_without_prune_usd` is always labelled "Prune estimate (list price)".
@@ -91,6 +91,8 @@ Every cost is Prune's own `cost_with_prune_usd` from the stored response metadat
 | R4 SafeTrail + Prune (warm) | R3 again with the same nonce: a second day on the same routes | policy balanced, cache exact |
 
 R1 → R2 is the saving from SafeTrail's design, R2 → R3 from Prune's routing and optimisations, R3 → R4 from Prune's exact cache. It also measures count accuracy (must be 100%: counts are computed), the invented-fact rate (answers the validators rejected), injection recall, standard-text fallbacks and latency. Results go to `docs/BENCHMARK.md` and the `/benchmark` page, with run ids and timestamps.
+
+The recorded run used `--trips 100` with every tier on `gemini-3.1-flash-lite`, because the free key's large model quota ran out. So R1 there is a low estimate, and Prune routed nothing. `docs/BENCHMARK.md` opens with what can be trusted.
 
 ## Phase 2: Digital Tourist ID (simulated)
 A tourist opens **Pass → Link your permit**, picks Foreign or Indian visitor and enters the document they already have. A **simulated registry** (`backend/seed/mock_registry.json`, fake numbers) stands in for the e-Visa, e-ILP and yatra systems. The number is hashed at once; only its last 4 characters are kept, and it never reaches the AI. The pass is re-signed with the permit type, dates and the restricted zones it allows, so phones and checkpoints apply it offline: the phone alerts "Not permitted for your pass" in a restricted zone the permit doesn't cover, and the responder's **Verify pass** has "Checking entry to …", an offline revocation list and **Revoke pass**. "What your permit allows" is written in the tourist's language through Prune (`permit` feature, cached per permit type and language) or shown as the official text.
