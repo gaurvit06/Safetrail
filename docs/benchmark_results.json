@@ -1,0 +1,518 @@
+{
+  "generated": "2026-10-31 21:09 UTC",
+  "no_ai": false,
+  "usd_inr": 88.0,
+  "scenario": {
+    "about": "Simulated benchmark scenario (SPEC 10.2). Trip labels only, no personal data.",
+    "trips_max": 500,
+    "zones": 6,
+    "sos": 40,
+    "groups": 9,
+    "injection_notes": 4
+  },
+  "runs": {
+    "R3": {
+      "key": "R3",
+      "label": "R3 SafeTrail + Prune (cold)",
+      "about": "Full design with Prune routing and exact cache, fresh nonce so nothing is cached yet",
+      "config": "prune_cold",
+      "run_id": 5,
+      "nonce": "32bf32025a",
+      "policy": "balanced",
+      "cache": "exact",
+      "started_at": 1793479150.2776792,
+      "completed_at": 1793479637.933874,
+      "models": {
+        "small": "gemini/gemini-3.1-flash-lite",
+        "large": "gemini/gemini-3.1-flash-lite"
+      },
+      "ai_configured": true,
+      "metrics": {
+        "trips": 100,
+        "incidents": 9,
+        "calls": 61,
+        "ok_calls": 58,
+        "errors": 3,
+        "cost_usd": 0.04264,
+        "cost_known_calls": 58,
+        "cost_per_trip_usd": 0.00027048,
+        "cost_per_emergency_usd": 0.00173244,
+        "prune_estimate_without_usd": 0.045429,
+        "by_feature": {
+          "pack": {
+            "calls": 19,
+            "cost_usd": 0.023122999999999994,
+            "cost_known": 19
+          },
+          "advisory": {
+            "calls": 12,
+            "cost_usd": 0.0039250000000000005,
+            "cost_known": 12
+          },
+          "report": {
+            "calls": 9,
+            "cost_usd": 0.004274,
+            "cost_known": 9
+          },
+          "cluster": {
+            "calls": 9,
+            "cost_usd": 0.004235,
+            "cost_known": 9
+          },
+          "copilot": {
+            "calls": 9,
+            "cost_usd": 0.007083,
+            "cost_known": 9
+          }
+        },
+        "pct_routed": 0.0,
+        "pct_cache": 1.7,
+        "escalations": 3,
+        "p50_ms": 8814,
+        "p95_ms": 26875,
+        "jobs": 56,
+        "template_fallbacks": 0,
+        "template_rate_pct": 0.0,
+        "invented_fact_rate_pct": 3.6,
+        "validator_rejections": 2,
+        "count_accuracy_pct": 100.0,
+        "count_checks": [
+          {
+            "group": "C1",
+            "ok": true,
+            "incident_id": 1
+          },
+          {
+            "group": "C2",
+            "ok": true,
+            "incident_id": 2
+          },
+          {
+            "group": "C3",
+            "ok": true,
+            "incident_id": 4
+          },
+          {
+            "group": "S1",
+            "ok": true,
+            "incident_id": 3
+          },
+          {
+            "group": "S2",
+            "ok": true,
+            "incident_id": 5
+          },
+          {
+            "group": "S3",
+            "ok": true,
+            "incident_id": 6
+          },
+          {
+            "group": "S4",
+            "ok": true,
+            "incident_id": 7
+          },
+          {
+            "group": "S5",
+            "ok": true,
+            "incident_id": 8
+          },
+          {
+            "group": "S6",
+            "ok": true,
+            "incident_id": 9
+          }
+        ],
+        "injection_notes": 4,
+        "injection_caught_scanner": 2,
+        "injection_caught_prune": 0,
+        "injection_recall_pct": 50.0,
+        "clean_notes_flagged": 0
+      }
+    },
+    "R4": {
+      "key": "R4",
+      "label": "R4 SafeTrail + Prune (warm)",
+      "about": "R3 again with the same nonce: a second day of tourists on the same routes",
+      "config": "prune_warm",
+      "run_id": 6,
+      "nonce": "32bf32025a",
+      "policy": "balanced",
+      "cache": "exact",
+      "started_at": 1793479637.944488,
+      "completed_at": 1793479887.824638,
+      "models": {
+        "small": "gemini/gemini-3.1-flash-lite",
+        "large": "gemini/gemini-3.1-flash-lite"
+      },
+      "ai_configured": true,
+      "metrics": {
+        "trips": 100,
+        "incidents": 9,
+        "calls": 58,
+        "ok_calls": 58,
+        "errors": 0,
+        "cost_usd": 0.009708,
+        "cost_known_calls": 58,
+        "cost_per_trip_usd": 0.0,
+        "cost_per_emergency_usd": 0.00107867,
+        "prune_estimate_without_usd": 0.04545,
+        "by_feature": {
+          "pack": {
+            "calls": 19,
+            "cost_usd": 0.0,
+            "cost_known": 19
+          },
+          "advisory": {
+            "calls": 12,
+            "cost_usd": 0.0,
+            "cost_known": 12
+          },
+          "report": {
+            "calls": 9,
+            "cost_usd": 0.002917,
+            "cost_known": 9
+          },
+          "cluster": {
+            "calls": 9,
+            "cost_usd": 0.0014550000000000001,
+            "cost_known": 9
+          },
+          "copilot": {
+            "calls": 9,
+            "cost_usd": 0.0053360000000000005,
+            "cost_known": 9
+          }
+        },
+        "pct_routed": 0.0,
+        "pct_cache": 72.4,
+        "escalations": 2,
+        "p50_ms": 5184,
+        "p95_ms": 9407,
+        "jobs": 56,
+        "template_fallbacks": 0,
+        "template_rate_pct": 0.0,
+        "invented_fact_rate_pct": 3.6,
+        "validator_rejections": 2,
+        "count_accuracy_pct": 100.0,
+        "count_checks": [
+          {
+            "group": "C1",
+            "ok": true,
+            "incident_id": 1
+          },
+          {
+            "group": "C2",
+            "ok": true,
+            "incident_id": 2
+          },
+          {
+            "group": "C3",
+            "ok": true,
+            "incident_id": 4
+          },
+          {
+            "group": "S1",
+            "ok": true,
+            "incident_id": 3
+          },
+          {
+            "group": "S2",
+            "ok": true,
+            "incident_id": 5
+          },
+          {
+            "group": "S3",
+            "ok": true,
+            "incident_id": 6
+          },
+          {
+            "group": "S4",
+            "ok": true,
+            "incident_id": 7
+          },
+          {
+            "group": "S5",
+            "ok": true,
+            "incident_id": 8
+          },
+          {
+            "group": "S6",
+            "ok": true,
+            "incident_id": 9
+          }
+        ],
+        "injection_notes": 4,
+        "injection_caught_scanner": 2,
+        "injection_caught_prune": 0,
+        "injection_recall_pct": 50.0,
+        "clean_notes_flagged": 0
+      }
+    },
+    "R2": {
+      "key": "R2",
+      "label": "R2 SafeTrail, no Prune optimisations",
+      "about": "Full SafeTrail design (buckets, templates, refresh limits, budgets); Prune routing and cache off",
+      "config": "lean_no_prune",
+      "run_id": 7,
+      "nonce": "fe9bdcd725",
+      "policy": "off",
+      "cache": "off",
+      "started_at": 1793479887.8345878,
+      "completed_at": 1793480305.793,
+      "models": {
+        "small": "gemini/gemini-3.1-flash-lite",
+        "large": "gemini/gemini-3.1-flash-lite"
+      },
+      "ai_configured": true,
+      "metrics": {
+        "trips": 100,
+        "incidents": 9,
+        "calls": 57,
+        "ok_calls": 56,
+        "errors": 1,
+        "cost_usd": 0.039352,
+        "cost_known_calls": 56,
+        "cost_per_trip_usd": 0.00024257,
+        "cost_per_emergency_usd": 0.00167722,
+        "prune_estimate_without_usd": 0.039352,
+        "by_feature": {
+          "pack": {
+            "calls": 17,
+            "cost_usd": 0.020550999999999993,
+            "cost_known": 17
+          },
+          "advisory": {
+            "calls": 12,
+            "cost_usd": 0.003706,
+            "cost_known": 12
+          },
+          "report": {
+            "calls": 9,
+            "cost_usd": 0.0041210000000000005,
+            "cost_known": 9
+          },
+          "cluster": {
+            "calls": 9,
+            "cost_usd": 0.004074,
+            "cost_known": 9
+          },
+          "copilot": {
+            "calls": 9,
+            "cost_usd": 0.0069,
+            "cost_known": 9
+          }
+        },
+        "pct_routed": 0.0,
+        "pct_cache": 0.0,
+        "escalations": 2,
+        "p50_ms": 8461,
+        "p95_ms": 14801,
+        "jobs": 56,
+        "template_fallbacks": 0,
+        "template_rate_pct": 0.0,
+        "invented_fact_rate_pct": 0.0,
+        "validator_rejections": 0,
+        "count_accuracy_pct": 100.0,
+        "count_checks": [
+          {
+            "group": "C1",
+            "ok": true,
+            "incident_id": 1
+          },
+          {
+            "group": "C2",
+            "ok": true,
+            "incident_id": 2
+          },
+          {
+            "group": "C3",
+            "ok": true,
+            "incident_id": 4
+          },
+          {
+            "group": "S1",
+            "ok": true,
+            "incident_id": 3
+          },
+          {
+            "group": "S2",
+            "ok": true,
+            "incident_id": 5
+          },
+          {
+            "group": "S3",
+            "ok": true,
+            "incident_id": 6
+          },
+          {
+            "group": "S4",
+            "ok": true,
+            "incident_id": 7
+          },
+          {
+            "group": "S5",
+            "ok": true,
+            "incident_id": 8
+          },
+          {
+            "group": "S6",
+            "ok": true,
+            "incident_id": 9
+          }
+        ],
+        "injection_notes": 4,
+        "injection_caught_scanner": 2,
+        "injection_caught_prune": 0,
+        "injection_recall_pct": 50.0,
+        "clean_notes_flagged": 0
+      }
+    },
+    "R1": {
+      "key": "R1",
+      "label": "R1 Naive",
+      "about": "One personalised pack per trip and a summary after every SOS, no budgets. Used the small model here because the free key ran out of large model quota, and 41 jobs hit Google limits, so this is a low estimate",
+      "config": "naive",
+      "run_id": 8,
+      "nonce": "fe12c7684c",
+      "policy": "off",
+      "cache": "off",
+      "started_at": 1793480305.844277,
+      "completed_at": 1793480985.282516,
+      "models": {
+        "small": "gemini/gemini-3.1-flash-lite",
+        "large": "gemini/gemini-3.1-flash-lite"
+      },
+      "ai_configured": true,
+      "metrics": {
+        "trips": 100,
+        "incidents": 9,
+        "calls": 165,
+        "ok_calls": 124,
+        "errors": 41,
+        "cost_usd": 0.138328,
+        "cost_known_calls": 124,
+        "cost_per_trip_usd": 0.00128559,
+        "cost_per_emergency_usd": 0.00108544,
+        "prune_estimate_without_usd": 0.139287,
+        "by_feature": {
+          "pack": {
+            "calls": 94,
+            "cost_usd": 0.125143,
+            "cost_known": 94
+          },
+          "advisory": {
+            "calls": 11,
+            "cost_usd": 0.0034159999999999998,
+            "cost_known": 11
+          },
+          "report": {
+            "calls": 5,
+            "cost_usd": 0.0021929999999999996,
+            "cost_known": 5
+          },
+          "cluster": {
+            "calls": 13,
+            "cost_usd": 0.006583,
+            "cost_known": 13
+          },
+          "copilot": {
+            "calls": 1,
+            "cost_usd": 0.000993,
+            "cost_known": 1
+          }
+        },
+        "pct_routed": 0.0,
+        "pct_cache": 0.0,
+        "escalations": 0,
+        "p50_ms": 9114,
+        "p95_ms": 12908,
+        "jobs": 161,
+        "template_fallbacks": 41,
+        "template_rate_pct": 25.5,
+        "invented_fact_rate_pct": 3.3,
+        "validator_rejections": 4,
+        "count_accuracy_pct": 100.0,
+        "count_checks": [
+          {
+            "group": "C1",
+            "ok": true,
+            "incident_id": 1
+          },
+          {
+            "group": "C2",
+            "ok": true,
+            "incident_id": 2
+          },
+          {
+            "group": "C3",
+            "ok": true,
+            "incident_id": 4
+          },
+          {
+            "group": "S1",
+            "ok": true,
+            "incident_id": 3
+          },
+          {
+            "group": "S2",
+            "ok": true,
+            "incident_id": 5
+          },
+          {
+            "group": "S3",
+            "ok": true,
+            "incident_id": 6
+          },
+          {
+            "group": "S4",
+            "ok": true,
+            "incident_id": 7
+          },
+          {
+            "group": "S5",
+            "ok": true,
+            "incident_id": 8
+          },
+          {
+            "group": "S6",
+            "ok": true,
+            "incident_id": 9
+          }
+        ],
+        "injection_notes": 4,
+        "injection_caught_scanner": 2,
+        "injection_caught_prune": 1,
+        "injection_recall_pct": 50.0,
+        "clean_notes_flagged": 0
+      }
+    }
+  },
+  "waterfall": [
+    {
+      "step": "Naive (R1)",
+      "usd": 0.138328,
+      "kind": "total"
+    },
+    {
+      "step": "Saved by SafeTrail's design (R1 → R2)",
+      "usd": 0.09897600000000001,
+      "kind": "saving"
+    },
+    {
+      "step": "Saved by Prune routing (R2 → R3)",
+      "usd": -0.0032879999999999993,
+      "kind": "saving"
+    },
+    {
+      "step": "Saved by Prune's exact cache (R3 → R4)",
+      "usd": 0.032931999999999996,
+      "kind": "saving"
+    },
+    {
+      "step": "SafeTrail + Prune, warm (R4)",
+      "usd": 0.009708,
+      "kind": "total"
+    }
+  ]
+}
