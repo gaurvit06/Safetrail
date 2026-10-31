@@ -7,7 +7,7 @@ Say once, early: **"Demo zones and dispatches are simulated."**
 ## Before judging (start 30 minutes early)
 
 - [ ] Backend running on the demo laptop (`uvicorn app.main:app --port 8000` from `backend/`).
-- [ ] Tunnel running (`cloudflared tunnel --url http://localhost:8000`). Put the https URL in `PUBLIC_URL` in `.env` and restart the backend, so the QR codes point to it. Phones need https for GPS.
+- [ ] Tunnel running, because phones need https for GPS. On macOS or Linux, `bash scripts/run_phones.sh` does this and starts the backend, with the QR codes pointing at the tunnel, so skip the step above. On Windows, run `cloudflared tunnel --url http://localhost:8000`, put the https URL in `PUBLIC_URL` in `.env` and restart the backend.
 - [ ] The `hall` route is the real venue (drawn on geojson.io), and the landslide zone covers **the whole room**: indoor GPS is only accurate to 10–30 m.
 - [ ] Checkpoint QR printed and stuck on a door (backup way to fix a phone's location).
 - [ ] Projector: `/stage` (log in as **Presenter**, default PIN 1357), showing the **Join** QR. Tap the speaker icon once so the cheer can play when help is accepted.

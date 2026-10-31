@@ -24,7 +24,7 @@ python -m venv .venv
 Open `http://localhost:8000`. (macOS/Linux: `.venv/bin/python`.)
 
 - **AI on:** copy `.env.example` to `.env` (repo root), add the Prune keys and the two model names. Without them every AI feature uses its standard text and everything else works.
-- **Phones:** run a tunnel (`cloudflared tunnel --url http://localhost:8000`), put the https URL in `PUBLIC_URL`, restart. Geolocation needs https.
+- **Phones:** on macOS or Linux, `bash scripts/run_phones.sh` starts a tunnel and the app together and prints the links (needs `cloudflared`). On Windows, run a tunnel (`cloudflared tunnel --url http://localhost:8000`), put the https URL in `PUBLIC_URL`, restart. Geolocation needs https.
 - **SOS by SMS (optional):** set `SOS_SMS_NUMBER` (the number tourists text) and `SMS_WEBHOOK_SECRET`, then point an SMS gateway (for example an Android SMS-gateway app on the demo phone, or Twilio) at `https://<tunnel>/api/sms/inbound?secret=<SMS_WEBHOOK_SECRET>`. It accepts JSON `{"from", "text"}` or a form post with `From`/`Body`. The app's coded SOS SMS is parsed without AI; free text from a registered phone becomes an SOS at once and the `sms_parse` AI job only fills in unknown details; texts from unknown numbers go to responders as call-back requests.
 - **Frontend dev mode:** `npm run dev` in `frontend/` (port 5173, proxies `/api` to port 8000).
 
