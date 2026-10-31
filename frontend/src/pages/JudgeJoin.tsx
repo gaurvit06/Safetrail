@@ -37,7 +37,7 @@ export default function JudgeJoin() {
         <LangSwitch />
       </div>
       <h1 className="mt-10 text-3xl font-bold">You're on the trail</h1>
-      <p className="mt-2 text-muted">For the next few minutes, this hall is a mountain route. Your phone will warn you, and you can call for help.</p>
+      <p className="mt-2 text-muted">For the next few minutes, the CSED block is a mountain route. Your phone will warn you, and you can call for help.</p>
       <label className="mt-8 block"><span className="label">Your name (optional)</span><input className="input mt-1" placeholder="Judge" value={name} onChange={(e) => setName(e.target.value)} /></label>
       <div className="mt-6 space-y-2 text-sm">
         {[t("consent_1"), t("consent_3"), t("consent_4")].map((c, i) => <div key={i} className="flex gap-2"><Check size={18} className="shrink-0 text-safe" />{c}</div>)}

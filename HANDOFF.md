@@ -37,7 +37,9 @@ _Last updated: the AI is live through Prune with Gemini. Every AI feature produc
 - [ ] **Run the benchmark with real keys** (after the Prune check): `backend/.venv/bin/python scripts/benchmark.py --trips 100` (raise the ops key's daily cap first; R1 is the expensive run). Commit `docs/BENCHMARK.md` and `docs/benchmark_results.json`, then put the measured numbers on the cost slide. Check Prune's reported costs against Google's own usage page before quoting them (DECISIONS 35)
 - [ ] Build the deck: paste `docs/PPT_PROMPT.md` into any LLM, attach app screenshots, then fill the cost placeholders from the benchmark
 - [x] Phone access: `bash scripts/run_phones.sh` starts the tunnel and the app together. Tested through a real tunnel with an emulated phone: https, GPS, SOS, QR and family links all worked
-- [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ real phones (`scripts/run_phones.sh`)
+- [x] Venue route: `backend/seed/routes/hall.json` is now the CSED block loop (59 × 52 m, drawn on geojson.io), and the full demo passed on it with AI off. The route id stays `hall`. OpenStreetMap labels this spot "LT Building", so confirm the name
+- [ ] Replace the placeholder help desk, lobby and door positions in `hall.json` with the real spots
+- [ ] Test GPS at the venue with 3+ real phones (`scripts/run_phones.sh`)
 - [ ] Rehearse `docs/DEMO_SCRIPT.md` twice with real phones (Android and iPhone), then record a backup video
 - [x] `docs/EXPLAINER.md` for the team (SPEC Section 16): story, diagram, three sentences per part, glossary, judge Q&A, what we did not build
 - [x] `scripts/check_no_direct_calls.sh` (logic in `check_no_direct_calls.py`, runs on Windows too): fails on direct AI-provider URLs, AI SDK imports outside `prune_client.py`, LLM use in the frontend, committed keys (files, git history and the built bundle), `.env`, `backend/keys/` or databases. Passes; tested in `tests/test_no_direct_calls.py`. 36 backend tests

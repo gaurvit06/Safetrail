@@ -1,20 +1,42 @@
 {
-  "version": 1,
-  "route_name": "Hall demo route",
+  "version": 2,
+  "route_name": "CSED block demo route",
   "simulated": true,
-  "distance_km": 0.5,
+  "distance_km": 0.21,
   "emergency_number": "112",
   "control_room_label": "Venue control desk (demo)",
   "segment_capacity": 6,
   "crowd_wait_min": 5,
-  "alternates": [{"id": "ALT-H1", "name": "Side corridor"}],
+  "alternates": [
+    {
+      "id": "ALT-H1",
+      "name": "Side corridor"
+    }
+  ],
   "altitude_relevant": false,
   "segments": [
-    {"id": "H1", "name": "Hall demo loop", "length_km": 0.5, "risky": true, "nearest_help_id": "HP-DESK",
-     "risks": ["crowding near the entrance", "temporary closures during the demo"]}
+    {
+      "id": "H1",
+      "name": "CSED block loop",
+      "length_km": 0.21,
+      "risky": true,
+      "nearest_help_id": "HP-DESK",
+      "risks": [
+        "crowding near the entrance",
+        "temporary closures during the demo"
+      ]
+    }
   ],
   "help_points": [
-    {"id": "HP-DESK", "kind": "medical", "name": "Help desk (demo medical post)"},
-    {"id": "HP-LOBBY", "kind": "shelter", "name": "Lobby (demo shelter)"}
+    {
+      "id": "HP-DESK",
+      "kind": "medical",
+      "name": "Help desk (demo medical post)"
+    },
+    {
+      "id": "HP-LOBBY",
+      "kind": "shelter",
+      "name": "Lobby (demo shelter)"
+    }
   ]
 }

@@ -64,7 +64,7 @@ class Settings:
     sms_offer_after_s = _f("SMS_OFFER_AFTER_S", 120)
     max_trek_speed_kmh = _f("MAX_TREK_SPEED_KMH", 30)
     ping_retention_days = _f("PING_RETENTION_DAYS", 7)
-    demo_zone_radius_m = _f("DEMO_ZONE_RADIUS_M", 60)
+    demo_zone_radius_m = _f("DEMO_ZONE_RADIUS_M", 75)
     frontend_origin = _s("FRONTEND_ORIGIN")
 
 

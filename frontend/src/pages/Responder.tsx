@@ -92,7 +92,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
   if (simple) {
     return (
       <div className="flex h-full flex-col bg-bg">
-        <div className="flex items-center justify-between border-b border-line bg-white p-4"><p className="text-lg font-bold">Responder · Hall demo</p><span className={`chip ${feed.connected ? "bg-safe/10 text-safe" : "bg-black/5"}`}>{feed.connected ? "Live" : "…"}</span></div>
+        <div className="flex items-center justify-between border-b border-line bg-white p-4"><p className="text-lg font-bold">Responder · CSED block demo</p><span className={`chip ${feed.connected ? "bg-safe/10 text-safe" : "bg-black/5"}`}>{feed.connected ? "Live" : "…"}</span></div>
         {sel ? <div className="flex-1 overflow-hidden bg-white"><IncidentPanel id={sel} token={token} lastEvt={feed.lastEvt} onClose={() => setSel(null)} compact /></div> : (
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
             {open.length === 0 && <p className="p-6 text-center text-muted">No SOS yet. When someone presses SOS, it appears here.</p>}

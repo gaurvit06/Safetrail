@@ -1,21 +1,89 @@
 {
   "id": "hall",
-  "name": "Hall demo route",
-  "region": "BIOS venue, Thapar Institute, Patiala",
+  "name": "CSED block demo route",
+  "region": "CSED block, Thapar Institute, Patiala",
   "local_lang": "hi",
   "simulated": true,
-  "_note": "REPLACE these placeholder coordinates with your real venue: draw the route on geojson.io. Stage scenarios place demo zones around the judges' live positions, so the demo works even before you do.",
-  "line": [[76.3692, 30.3534], [76.3708, 30.3534], [76.3708, 30.3546], [76.3692, 30.3546], [76.3692, 30.3534]],
+  "_note": "Loop drawn on geojson.io around the CSED block for the BIOS demo. The help desk, lobby and door positions are rough placeholders on the loop: replace them with the real spots.",
+  "line": [
+    [
+      76.3699375,
+      30.3554395
+    ],
+    [
+      76.3693431,
+      30.355387
+    ],
+    [
+      76.3693968,
+      30.354976
+    ],
+    [
+      76.369959,
+      30.3550069
+    ],
+    [
+      76.3699375,
+      30.3554395
+    ]
+  ],
   "segments": [
-    {"id": "H1", "name": "Hall demo loop", "coords": [[76.3692, 30.3534], [76.3708, 30.3534], [76.3708, 30.3546], [76.3692, 30.3546], [76.3692, 30.3534]]}
+    {
+      "id": "H1",
+      "name": "CSED block loop",
+      "coords": [
+        [
+          76.3699375,
+          30.3554395
+        ],
+        [
+          76.3693431,
+          30.355387
+        ],
+        [
+          76.3693968,
+          30.354976
+        ],
+        [
+          76.369959,
+          30.3550069
+        ],
+        [
+          76.3699375,
+          30.3554395
+        ]
+      ]
+    }
   ],
   "help_points": [
-    {"id": "HP-DESK", "kind": "medical", "name": "Help desk (demo medical post)", "lat": 30.3536, "lon": 76.3694},
-    {"id": "HP-LOBBY", "kind": "shelter", "name": "Lobby (demo shelter)", "lat": 30.3544, "lon": 76.3706}
+    {
+      "id": "HP-DESK",
+      "kind": "medical",
+      "name": "Help desk (demo medical post)",
+      "lat": 30.3549914,
+      "lon": 76.3696779
+    },
+    {
+      "id": "HP-LOBBY",
+      "kind": "shelter",
+      "name": "Lobby (demo shelter)",
+      "lat": 30.3551815,
+      "lon": 76.3693699
+    }
   ],
   "checkpoints": [
-    {"id": "CP-H1", "name": "Main door", "lat": 30.3534, "lon": 76.3700},
-    {"id": "CP-H2", "name": "Side door", "lat": 30.3546, "lon": 76.3700}
+    {
+      "id": "CP-H1",
+      "name": "Main door",
+      "lat": 30.3554132,
+      "lon": 76.3696403
+    },
+    {
+      "id": "CP-H2",
+      "name": "Side door",
+      "lat": 30.3552232,
+      "lon": 76.3699482
+    }
   ],
   "zones": []
 }
