@@ -36,8 +36,8 @@ Tests at the end: 56 backend, 6 frontend, checker clean.
 - Phase 2's optional OCR photo check is not built.
 
 ## Still to do (also in HANDOFF.md)
-1. Push the bundle to GitHub (CONTINUE.md Step 0).
-2. Prune keys in `.env` → `scripts/prune_check.py` → verify one receipt (Prompt 3).
+1. Done 31 Oct: bundle merged and pushed to GitHub; `~/safetrail` on Hardik's Mac tracks `origin/main`.
+2. Prune keys in `.env` → `scripts/prune_check.py` → verify one receipt (Prompt 3). The ops key is in `.env`; Prune still needs a provider key in its vault (see HANDOFF.md).
 3. Benchmark with real keys → numbers on the cost slide (Prompt 4).
 4. Real venue map in `hall.json` (Prompt 5).
 5. Real-phone test and two rehearsals, then a backup video (Prompt 6).
