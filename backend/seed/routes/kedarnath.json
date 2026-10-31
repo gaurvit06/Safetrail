@@ -1,0 +1,35 @@
+{
+  "id": "kedarnath",
+  "name": "Gaurikund to Kedarnath",
+  "region": "Rudraprayag, Uttarakhand",
+  "local_lang": "hi",
+  "simulated": true,
+  "_note": "Approximate path for demo only. Segment points, help points and zones are simulated, not official data.",
+  "line": [[79.0255, 30.6520], [79.0345, 30.6688], [79.0420, 30.6825], [79.0470, 30.6960], [79.0560, 30.7120], [79.0640, 30.7275], [79.0669, 30.7352]],
+  "segments": [
+    {"id": "S1", "name": "Gaurikund to Jungle Chatti", "coords": [[79.0255, 30.6520], [79.0345, 30.6688]]},
+    {"id": "S2", "name": "Jungle Chatti to Bhimbali", "coords": [[79.0345, 30.6688], [79.0420, 30.6825]]},
+    {"id": "S3", "name": "Bhimbali to Linchauli", "coords": [[79.0420, 30.6825], [79.0470, 30.6960], [79.0560, 30.7120]]},
+    {"id": "S4", "name": "Linchauli to Base Camp", "coords": [[79.0560, 30.7120], [79.0640, 30.7275]]},
+    {"id": "S5", "name": "Base Camp to Temple", "coords": [[79.0640, 30.7275], [79.0669, 30.7352]]}
+  ],
+  "help_points": [
+    {"id": "PO-GK", "kind": "police", "name": "Gaurikund police post", "lat": 30.6522, "lon": 79.0258},
+    {"id": "MP-JC", "kind": "medical", "name": "Jungle Chatti medical post", "lat": 30.6690, "lon": 79.0348},
+    {"id": "MP-BB", "kind": "medical", "name": "Bhimbali medical post", "lat": 30.6827, "lon": 79.0423},
+    {"id": "SH-BB", "kind": "shelter", "name": "Bhimbali rest shelter", "lat": 30.6830, "lon": 79.0418},
+    {"id": "MP-LC", "kind": "medical", "name": "Linchauli medical post", "lat": 30.7122, "lon": 79.0563},
+    {"id": "SH-LC", "kind": "shelter", "name": "Linchauli shelter", "lat": 30.7118, "lon": 79.0558},
+    {"id": "MP-KD", "kind": "medical", "name": "Kedarnath base hospital", "lat": 30.7300, "lon": 79.0650}
+  ],
+  "checkpoints": [
+    {"id": "CP-GK", "name": "Gaurikund registration", "lat": 30.6520, "lon": 79.0255},
+    {"id": "CP-LC", "name": "Linchauli checkpoint", "lat": 30.7120, "lon": 79.0560}
+  ],
+  "zones": [
+    {"id": "Z-KED-L1", "kind": "landslide", "severity": "danger", "segment_name": "Bhimbali to Linchauli",
+     "polygon": {"type": "Polygon", "coordinates": [[[79.0455, 30.6935], [79.0490, 30.6935], [79.0495, 30.6985], [79.0458, 30.6990], [79.0455, 30.6935]]]}},
+    {"id": "Z-KED-C1", "kind": "closed_trail", "severity": "warn", "segment_name": "Old Rambara path",
+     "polygon": {"type": "Polygon", "coordinates": [[[79.0380, 30.6900], [79.0420, 30.6900], [79.0420, 30.6940], [79.0380, 30.6940], [79.0380, 30.6900]]]}}
+  ]
+}

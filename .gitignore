@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Signing keys (generated locally on first run)
+backend/keys/
+
 # Data
 *.db
 *.db-wal

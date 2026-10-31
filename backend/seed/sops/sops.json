@@ -1,0 +1,43 @@
+{
+  "_note": "Demo SOP written by the team from general first-aid and disaster guidance. Not an official procedure.",
+  "version": 1,
+  "injured": [
+    {"sop_id": "INJ-1", "text": "Confirm the location and the number of injured people with the reporter."},
+    {"sop_id": "INJ-2", "text": "Send the nearest medical team with a stretcher and first-aid kit."},
+    {"sop_id": "INJ-3", "text": "Ask the group to keep the injured person warm and still."},
+    {"sop_id": "INJ-4", "text": "Arrange evacuation to the nearest medical post if walking is not possible."},
+    {"sop_id": "INJ-5", "text": "Inform the base hospital to prepare for arrival."}
+  ],
+  "medical": [
+    {"sop_id": "MED-1", "text": "Ask about breathing, consciousness and altitude symptoms."},
+    {"sop_id": "MED-2", "text": "Send the nearest medical team with oxygen."},
+    {"sop_id": "MED-3", "text": "Advise the person to stop climbing and rest."},
+    {"sop_id": "MED-4", "text": "Plan descent if altitude sickness is suspected."}
+  ],
+  "lost": [
+    {"sop_id": "LOST-1", "text": "Check the last known position and the offline path from queued pings."},
+    {"sop_id": "LOST-2", "text": "Ask the tourist to stay where they are."},
+    {"sop_id": "LOST-3", "text": "Send a search team from the nearest checkpoint along the last known path."},
+    {"sop_id": "LOST-4", "text": "Send a safety check to nearby tourists for sightings."}
+  ],
+  "stuck": [
+    {"sop_id": "STK-1", "text": "Confirm whether the path ahead and behind is blocked."},
+    {"sop_id": "STK-2", "text": "Publish a closed zone for the blocked section."},
+    {"sop_id": "STK-3", "text": "Guide the group to the nearest shelter if safe."},
+    {"sop_id": "STK-4", "text": "Arrange food, water and warm clothing if the wait is long."}
+  ],
+  "unsafe": [
+    {"sop_id": "UNS-1", "text": "Ask whether the person is in immediate danger."},
+    {"sop_id": "UNS-2", "text": "Alert the nearest police post with the location."},
+    {"sop_id": "UNS-3", "text": "Ask the tourist to move to a crowded, lit place if possible."}
+  ],
+  "crowd": [
+    {"sop_id": "CRD-1", "text": "Stop new entries into the crowded section."},
+    {"sop_id": "CRD-2", "text": "Open the alternate path and announce it."},
+    {"sop_id": "CRD-3", "text": "Station staff at narrow points to slow the flow."}
+  ],
+  "unknown": [
+    {"sop_id": "UNK-1", "text": "Call back the reporter to understand the situation."},
+    {"sop_id": "UNK-2", "text": "Send the nearest patrol to check the location."}
+  ]
+}

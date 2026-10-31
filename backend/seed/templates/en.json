@@ -1,0 +1,56 @@
+{
+  "_review": "human-checked",
+  "zone": {
+    "landslide": {"title": "Landslide: route closed", "body": "A landslide has been reported on {segment}. Do not continue on this path.", "action": "Turn back to the safe area"},
+    "closed_trail": {"title": "Trail closed", "body": "This part of the trail ({segment}) is closed for your safety.", "action": "Use the marked route"},
+    "restricted": {"title": "Restricted area", "body": "You are near a restricted area ({segment}). Entry is not allowed without a permit.", "action": "Turn back now"},
+    "wildlife_core": {"title": "Wildlife zone", "body": "You are near a core wildlife area ({segment}). Animals may be close.", "action": "Leave quietly the way you came"},
+    "flood": {"title": "Flood risk", "body": "Water levels are rising near {segment}. Stay away from the river bank.", "action": "Move to higher ground"},
+    "crowd": {"title": "Dense crowd", "body": "The crowd near {segment} is very dense. Pushing can cause injuries.", "action": "Move slowly to an open area"},
+    "custom": {"title": "Safety warning", "body": "Responders have marked {segment} as unsafe.", "action": "Follow the safe route"}
+  },
+  "approach": "{title}: {distance} m ahead",
+  "crowd_inside": "Dense crowd here. Move slowly toward the open area.",
+  "crowd_ahead": "Heavy crowd ahead. Wait about {wait} minutes or take {alt}.",
+  "check": {
+    "check_landslide": "Landslide reported near you. Are you safe?",
+    "check_generic": "An emergency was reported near you. Are you safe?"
+  },
+  "kind": {"injured": "Injured", "lost": "Lost", "stuck": "Stuck", "medical": "Medical", "unsafe": "Unsafe", "unknown": "Unknown"},
+  "report_headline": "{kind} · {people} · near {segment}",
+  "cluster_summary": "{people} people · {injured} injured reports · near {segment}",
+  "message_to_group": "Help has been informed. Stay where you are if it is safe, and keep your phone on.",
+  "pack": {
+    "briefing": [
+      "Route: {route}, about {distance} km.",
+      "Emergency number: {emergency}. Control room: {control}.",
+      "Share the family link before you start.",
+      "Stay on the marked route and turn back if a warning appears.",
+      "Carry water, a warm layer and a charged phone."
+    ],
+    "altitude_signs": {
+      "symptoms": ["Headache that does not go away", "Nausea or vomiting", "Dizziness or unusual tiredness", "Breathlessness while resting"],
+      "do_now": ["Stop climbing and rest", "Drink water", "Go down if symptoms get worse", "Get help at the nearest medical post"]
+    },
+    "if_cards": {
+      "lost": ["Stop and stay where you are", "Open the map and find the route line", "Walk back only along a path you know", "Send SOS if you cannot find the route"],
+      "injured": ["Move to a safe spot if you can", "Keep the injured person warm", "Send SOS and choose Injured", "Do not give medicines you are not sure about"],
+      "blocked": ["Do not cross landslide debris", "Turn back to the last shelter", "Wait for the all-clear", "Answer the safety check when asked"],
+      "crowd": ["Do not push", "Keep your arms in front of your chest", "Move diagonally toward open space", "Hold children by the hand"],
+      "wildlife": ["Do not run", "Back away slowly", "Keep food packed away", "Stay in a group"]
+    }
+  },
+  "phrases": {
+    "help": "Please help me.",
+    "injured": "Someone is injured.",
+    "lost": "I am lost.",
+    "water": "I need water.",
+    "doctor": "I need a doctor.",
+    "police": "Please call the police.",
+    "landslide": "The path is blocked by a landslide.",
+    "which_way": "Which way is the safe path?",
+    "call_family": "Please call my family.",
+    "thank_you": "Thank you."
+  },
+  "ui": {"standard_text": "Standard text", "ai_text": "AI"}
+}

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "route_name": "Gaurikund to Kedarnath",
+  "simulated": true,
+  "distance_km": 16,
+  "emergency_number": "112",
+  "control_room_label": "Rudraprayag control room (simulated)",
+  "segment_capacity": 40,
+  "crowd_wait_min": 20,
+  "alternates": [{"id": "ALT-K1", "name": "Rest at Linchauli shelter and wait"}],
+  "altitude_relevant": true,
+  "altitude_m": {"start": 1980, "end": 3583},
+  "segments": [
+    {"id": "S1", "name": "Gaurikund to Jungle Chatti", "length_km": 4, "risky": false, "nearest_help_id": "MP-JC",
+     "risks": ["steep climb at the start", "pony traffic on narrow path"]},
+    {"id": "S2", "name": "Jungle Chatti to Bhimbali", "length_km": 3, "risky": false, "nearest_help_id": "MP-BB",
+     "risks": ["slippery stones after rain"]},
+    {"id": "S3", "name": "Bhimbali to Linchauli", "length_km": 4, "risky": true, "nearest_help_id": "MP-LC",
+     "risks": ["landslide-prone slopes", "falling rocks after rain", "no mobile signal in places"]},
+    {"id": "S4", "name": "Linchauli to Base Camp", "length_km": 3.5, "risky": true, "nearest_help_id": "MP-KD",
+     "risks": ["altitude sickness", "cold and wind", "sudden fog"]},
+    {"id": "S5", "name": "Base Camp to Temple", "length_km": 1, "risky": false, "nearest_help_id": "MP-KD",
+     "risks": ["dense crowds near the temple", "long queues in the cold"]}
+  ],
+  "help_points": [
+    {"id": "PO-GK", "kind": "police", "name": "Gaurikund police post"},
+    {"id": "MP-JC", "kind": "medical", "name": "Jungle Chatti medical post"},
+    {"id": "MP-BB", "kind": "medical", "name": "Bhimbali medical post"},
+    {"id": "SH-BB", "kind": "shelter", "name": "Bhimbali rest shelter"},
+    {"id": "MP-LC", "kind": "medical", "name": "Linchauli medical post"},
+    {"id": "SH-LC", "kind": "shelter", "name": "Linchauli shelter"},
+    {"id": "MP-KD", "kind": "medical", "name": "Kedarnath base hospital"}
+  ]
+}

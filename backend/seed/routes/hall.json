@@ -1,0 +1,21 @@
+{
+  "id": "hall",
+  "name": "Hall demo route",
+  "region": "BIOS venue, Thapar Institute, Patiala",
+  "local_lang": "hi",
+  "simulated": true,
+  "_note": "REPLACE these placeholder coordinates with your real venue: draw the route on geojson.io. Stage scenarios place demo zones around the judges' live positions, so the demo works even before you do.",
+  "line": [[76.3692, 30.3534], [76.3708, 30.3534], [76.3708, 30.3546], [76.3692, 30.3546], [76.3692, 30.3534]],
+  "segments": [
+    {"id": "H1", "name": "Hall demo loop", "coords": [[76.3692, 30.3534], [76.3708, 30.3534], [76.3708, 30.3546], [76.3692, 30.3546], [76.3692, 30.3534]]}
+  ],
+  "help_points": [
+    {"id": "HP-DESK", "kind": "medical", "name": "Help desk (demo medical post)", "lat": 30.3536, "lon": 76.3694},
+    {"id": "HP-LOBBY", "kind": "shelter", "name": "Lobby (demo shelter)", "lat": 30.3544, "lon": 76.3706}
+  ],
+  "checkpoints": [
+    {"id": "CP-H1", "name": "Main door", "lat": 30.3534, "lon": 76.3700},
+    {"id": "CP-H2", "name": "Side door", "lat": 30.3546, "lon": 76.3700}
+  ],
+  "zones": []
+}
