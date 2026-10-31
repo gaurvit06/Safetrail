@@ -103,7 +103,7 @@ def markdown(res: dict) -> str:
     wf = benchmark.waterfall(runs)
     L += ["", "## Where the savings come from", ""]
     if wf:
-        L += ["| Step | Cost (USD) |", "|---|---|"] + [f"| {w['step']} | {'−' if w['kind'] == 'saving' else ''}{FMT_USD(abs(w['usd']))} |" for w in wf]
+        L += ["| Step | Cost (USD) |", "|---|---|"] + [f"| {w['step']} | {('+' if w['usd'] < 0 else '−') if w['kind'] == 'saving' else ''}{FMT_USD(abs(w['usd']))} |" for w in wf]
     else:
         L.append("Needs measured costs from all four runs (R1-R4).")
     L += ["", "## Notes", "",

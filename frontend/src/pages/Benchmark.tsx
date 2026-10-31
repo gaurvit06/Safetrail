@@ -82,7 +82,7 @@ export default function Benchmark() {
                         <div className="h-4 rounded-full bg-black/5">
                           <div className={`h-4 rounded-full ${w.kind === "total" ? "bg-ink" : "bg-safe"}`} style={{ width: `${Math.max(1, (100 * Math.abs(w.usd)) / wfMax)}%` }} />
                         </div>
-                        <span className="font-mono tabular-nums">{w.kind === "saving" ? "−" : ""}{usd(Math.abs(w.usd), 6)}</span>
+                        <span className="font-mono tabular-nums">{w.kind === "saving" ? (w.usd < 0 ? "+" : "−") : ""}{usd(Math.abs(w.usd), 6)}</span>
                       </div>
                     ))}
                   </div>
