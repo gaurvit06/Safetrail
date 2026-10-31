@@ -283,6 +283,38 @@ async def chat(*, job_key: str, run_id: str, feature: str, route_id: str, model:
     raise AIUnavailable("retries_exhausted")
 
 
+def _json_or_text(text: str):
+    try:
+        return json.loads(text)
+    except (TypeError, ValueError):
+        return text
+
+
+def probe(*, model: str, messages: list[dict], headers: dict, max_tokens: int = 60, key: str = "ops",
+          timeout: float = 30) -> dict:
+    """Diagnostics for scripts/prune_check.py: ONE raw call, no retry, no logging, no events.
+
+    Returns the HTTP status, response headers and JSON body exactly as Prune sent them (or the error), so the real
+    field names can be written into docs/PRUNE_FIELDS.md. Lives here because this is the only module allowed to use
+    the OpenAI SDK.
+    """
+    client = _client(key)
+    t0 = time.time()
+    try:
+        raw = client.with_options(timeout=timeout).chat.completions.with_raw_response.create(
+            model=model, messages=messages, max_tokens=max_tokens, temperature=0, stream=False, extra_headers=headers)
+        return {"ok": True, "status": raw.status_code, "headers": dict(raw.headers), "body": _json_or_text(raw.text),
+                "error_code": None, "latency_ms": int((time.time() - t0) * 1000)}
+    except openai.APIStatusError as e:
+        return {"ok": False, "status": e.status_code, "headers": dict(getattr(e.response, "headers", {}) or {}),
+                "body": e.body if e.body is not None else _json_or_text(getattr(e.response, "text", "")),
+                "error_code": _err_code(e), "latency_ms": int((time.time() - t0) * 1000)}
+    except (openai.APITimeoutError, openai.APIConnectionError) as e:
+        return {"ok": False, "status": None, "headers": {}, "body": str(e),
+                "error_code": "timeout" if isinstance(e, openai.APITimeoutError) else "connection",
+                "latency_ms": int((time.time() - t0) * 1000)}
+
+
 def reset_state() -> None:
     """Test helper."""
     global _paused_until, _plan_blocked

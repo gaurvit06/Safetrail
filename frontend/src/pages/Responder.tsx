@@ -1,12 +1,12 @@
 ﻿import { BellRing, Circle, LogOut, PenLine, ScanLine, Undo2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import MapView from "../components/MapView";
-import { CostPanel, IncidentPanel, IncidentRow, LoginCard, PassScanner, RoutingRiver, TallyCard, useOpsFeed } from "../components/ops";
+import { CostPanel, IncidentPanel, IncidentRow, LoginCard, PassScanner, RoutingRiver, TallyCard, useOpsFeed, WeatherPanel } from "../components/ops";
 import { Explain, ExplainToggle, useToast } from "../components/ui";
 import { api } from "../lib/api";
-import { KIND_ICON, KIND_LABEL } from "../lib/format";
+import { KIND_ICON, KIND_LABEL, RISK_SHORT, riskText } from "../lib/format";
 import { getRoleToken, setRoleToken } from "../lib/session";
-import type { Dot } from "../lib/types";
+import type { Dot, WeatherSection } from "../lib/types";
 
 const KINDS = ["landslide", "closed_trail", "restricted", "wildlife_core", "flood", "custom"];
 
@@ -70,6 +70,14 @@ export default function Responder({ simple }: { simple?: boolean }) {
   const locate = (label: string) => {
     const d = feed.dots.find((x) => x.trip_label === label);
     if (d) setFly({ lat: d.lat, lon: d.lon, key: Date.now() });
+  };
+  // Weather only suggests a zone: this pre-fills the drawing tool, and the officer adjusts it and decides whether to publish.
+  const zoneFromWeather = (s: WeatherSection) => {
+    setFly({ lat: s.lat, lon: s.lon, key: Date.now() });
+    setDraw({ mode: "circle", pts: [], center: [s.lat, s.lon], r: 250 });
+    setForm(false);
+    const what = s.risks.map((r) => riskText(RISK_SHORT, r.key, r.value)).join(", ");
+    setZk({ kind: "custom", severity: s.level === "danger" ? "danger" : "warn", note: `Weather warning, next 12 h: ${what}`.slice(0, 200), expires: 360 });
   };
   const logout = () => {
     setRoleToken("responder", null);
@@ -195,6 +203,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
               <div className="flex-1 space-y-2 overflow-y-auto p-3">
                 {tab === "incidents" && (
                   <>
+                    <WeatherPanel weather={feed.weather} onLocate={(s) => setFly({ lat: s.lat, lon: s.lon, key: Date.now() })} onDrawZone={zoneFromWeather} />
                     {open.length === 0 && <p className="p-6 text-center text-muted">No incidents. SOS reports appear here, grouped by place, newest first.</p>}
                     {[...open].sort((a, b) => (a.status === "resolved" ? 1 : 0) - (b.status === "resolved" ? 1 : 0) || a.priority.localeCompare(b.priority) || b.last_sos_at - a.last_sos_at).map((i) => <IncidentRow key={i.id} i={i} onClick={() => setSel(i.id)} />)}
                     <div className="pt-3">

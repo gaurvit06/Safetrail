@@ -2,7 +2,7 @@
 
 **Read this first, then SPEC.md.** SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
-_Last updated: backend + interactive app built and tested end to end (join → zone alert → SOS → responder accept → "Help acknowledged" on the phone)._
+_Last updated: responder weather panel and `scripts/prune_check.py` added; 27 backend tests and 6 frontend tests pass._
 
 ## Plan and status
 - [x] Repo, spec, `.gitignore`, `.env.example`, `requirements.txt`
@@ -14,16 +14,16 @@ _Last updated: backend + interactive app built and tested end to end (join → z
 - [x] Engines `engines.py`: crowd heat + auto crowd zones + "crowd ahead" warnings, quiet tourists, zone expiry, retention
 - [x] Stage `stage.py`: landslide here, crowd surge, safety check, budget stress test, walk simulation, reset; Break-it (8 tricks)
 - [x] API `api.py` + `main.py` (SSE at `/api/events?token=`, serves `frontend/dist`)
-- [x] Backend tests: 20 passing (`pytest -q`); live smoke test `scripts/smoke_test.py` passes
+- [x] Backend tests: 20 passing at first (27 now) (`pytest -q`); live smoke test `scripts/smoke_test.py` passes
 - [x] Frontend scaffold: Vite + React + TS + Tailwind + MapLibre (OpenStreetMap tiles) + installable PWA; `lib/api.ts` (REST + SSE), `lib/types.ts`, `lib/offline.ts` (IndexedDB SOS/ping queues), `lib/geofence.ts` (+ 6 vitest tests), `lib/i18n.tsx` (English/Hindi), `lib/signals.ts`, `lib/verify.ts`
 - [x] Tourist: Welcome, Trip setup (3 steps), Judge join `/j`, Preparing, Trip map `/t` (zone alerts with hysteresis, approach banner, safe way back, crowd sheet, hold-to-SOS flow with voice note, live SOS tracker with SMS fallback, "Are you safe?", safety pack with "Show to a local", whistle/strobe/read-to-112 signal tools, compass guide to help points, pass QR, family sharing, demo location mode, checkpoint `/c/:id`), Family view `/f/:token`
 - [x] Responder `/r`: live map, incident queue + panel (counts, AI summary with receipt tag, translated notes, accept/en route/resolved, copilot, verify timeline), tap-to-draw zones (shape or circle), safety check + tally, pass scanner, AI & cost (cost meters, Routing River, receipts); simple judge-responder mode `/jr`
 - [x] Stage `/stage` (projector), Stage control `/stage/control`, Break it `/break`
 - [x] README, DECISIONS, CONTRACT_CHANGES
 - [x] Real data: Kedarnath trail, hospital and rain shelters from OpenStreetMap (`scripts/fetch_osm.py`, 15.1 km real trek); live weather per section from Open-Meteo (`backend/app/weather.py`, no key, fixed-threshold warnings, cached 30 min, `weather.updated` event); tourist weather card + danger banner + weather sheet; 23 backend tests
-- [ ] **NEXT** Responder weather panel: add `weather` state to `useOpsFeed` in `frontend/src/components/ops.tsx` (load `/api/weather?route_id=`, handle `weather.updated`) and show per-section chips above the incident list
-- [ ] Write `scripts/prune_check.py` (SPEC 2 hour-1 checks via `ai/prune_client.chat`: one call, cache-hit repeat, run-budget 429, injection signal; write `docs/PRUNE_FIELDS.md`)
-- [ ] Add Prune keys to `.env`, do the SPEC Section 2 hour-1 tasks, write `docs/PRUNE_FIELDS.md` and fix any field names in `ai/prune_client.py::_extract`
+- [x] Responder weather panel (`WeatherPanel` in `components/ops.tsx`, above the incident list): per-section chips coloured by warning level, tap for details and to fly the map there, "Draw a zone here" pre-fills the zone tool (the officer still reviews and publishes; weather never publishes a zone by itself); `weather.updated` refreshes it live and danger warnings go to the live feed
+- [x] `scripts/prune_check.py`: the SPEC 2 hour-1 checks in one command (basic call, exact-cache repeat, run-budget 429, injection detect, policy header, MODEL_LARGE, the app's own `chat()` path, public-key allowlist). Writes `docs/PRUNE_FIELDS.md` and `docs/prune_sample_response.json` from the real responses only, and lists every Prune header and metadata field `_extract` does not read yet. `--dry-run` works without keys. Uses `prune_client.probe()` (raw call, no retry, no logging); diagnostics log into a throwaway database so they never count in cost per trip. 27 backend tests
+- [ ] **NEXT (needs your keys)** Put the Prune keys and model names in `.env`, run `backend/.venv/bin/python scripts/prune_check.py` (Windows: `backend\.venv\Scripts\python scripts\prune_check.py`), fix any **missing** field names it reports in `ai/prune_client.py::_extract`, verify one receipt on withprune.com/verify and save the screenshot in `docs/receipts/`
 - [ ] Benchmark runner R1–R4 + `/benchmark` page (needs Prune keys)
 - [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ phones over a tunnel
 - [ ] `docs/EXPLAINER.md` for the team (SPEC Section 16)

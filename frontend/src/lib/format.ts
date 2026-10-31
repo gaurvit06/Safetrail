@@ -68,4 +68,16 @@ export function riskText(templates: Record<string, string> | undefined, key: str
   return t.replace("{v}", value === undefined || value === null ? "" : String(Math.round(value * 10) / 10));
 }
 
+/** Short English labels for the responder screen (tourists get the full sentences from seed templates). */
+export const RISK_SHORT: Record<string, string> = {
+  thunderstorm: "Thunderstorm",
+  heavy_rain: "Heavy rain {v} mm",
+  rain: "Rain {v} mm",
+  snow: "Snow {v} cm",
+  wind: "Gusts {v} km/h",
+  freezing: "Freezing {v} °C",
+  cold: "Severe cold {v} °C",
+  fog: "Fog",
+};
+
 export const SOS_ICON: Record<string, string> = { injured: "🩹", lost: "🧭", stuck: "🪨", medical: "❤️", unsafe: "⚠️", unknown: "❔" };

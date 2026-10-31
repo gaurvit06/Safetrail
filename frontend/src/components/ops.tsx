@@ -2,9 +2,9 @@ import { BrowserQRCodeReader, type IScannerControls } from "@zxing/browser";
 import { Check, ChevronDown, ChevronRight, ExternalLink, KeyRound, Link2, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, connectEvents } from "../lib/api";
-import { ago, clock, duration, hm, inr, KIND_LABEL, SOS_ICON, usd } from "../lib/format";
+import { ago, clock, duration, hm, inr, KIND_LABEL, RISK_SHORT, riskText, SOS_ICON, usd, weatherIcon } from "../lib/format";
 import { setRoleToken } from "../lib/session";
-import type { AiStats, Config, Dot, Evt, HeatCell, IncidentDetail, IncidentSummary, LlmCallBrief, RouteDetail, Tally, Zone } from "../lib/types";
+import type { AiStats, Config, Dot, Evt, HeatCell, IncidentDetail, IncidentSummary, LlmCallBrief, RouteDetail, Tally, Weather, WeatherSection, Zone } from "../lib/types";
 import { verifyEntries, verifyPassOffline, type EntryCheck, type LogEntry } from "../lib/verify";
 import { Explain, SourceTag, Spinner, useToast } from "./ui";
 
@@ -33,7 +33,20 @@ export function useOpsFeed(routeId: string, token: string | null) {
   const [lastEvt, setLastEvt] = useState<Evt | null>(null);
   const [config, setConfig] = useState<Config | null>(null);
   const [aiTick, setAiTick] = useState(0);
+  const [weather, setWeather] = useState<Weather | null>(null); // null = still loading
   const tick = (text: string, tone: TickerItem["tone"] = "info") => setTicker((x) => [{ ts: Date.now() / 1000, text, tone }, ...x].slice(0, 40));
+
+  // Weather loads on its own so a slow forecast never delays the map, incidents or SOS.
+  useEffect(() => {
+    let live = true;
+    setWeather(null);
+    api<Weather>(`/weather?route_id=${routeId}`)
+      .then((w) => live && setWeather(w))
+      .catch(() => live && setWeather({ route_id: routeId, available: false, sections: [], level: "none", attribution: "" }));
+    return () => {
+      live = false;
+    };
+  }, [routeId]);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -144,6 +157,13 @@ export function useOpsFeed(routeId: string, token: string | null) {
         case "system.degraded":
           tick(`AI paused: ${d.reason}. Safety features keep working.`, "warn");
           break;
+        case "weather.updated": {
+          if (!d.weather?.available) break;
+          setWeather(d.weather);
+          const bad = (d.weather.sections as WeatherSection[]).map((s) => ({ s, r: s.risks.find((x) => x.level === "danger") })).filter((x) => x.r);
+          if (bad.length) tick(`Weather: ${bad.map(({ s, r }) => `${riskText(RISK_SHORT, r!.key, r!.value)} · ${s.name}`).join("; ")}`, "danger");
+          break;
+        }
         case "breakit.result":
           setBoard((b) => [d, ...b].slice(0, 30));
           tick(`Break it: ${d.nickname} tried ${d.trick.replace("_", " ")} → ${d.outcome.replace("_", " ")}`, d.outcome === "slipped" ? "danger" : "ok");
@@ -158,7 +178,67 @@ export function useOpsFeed(routeId: string, token: string | null) {
     return connectEvents(token, onEvt, setConnected);
   }, [token, routeId, load]);
 
-  return { route, zones, dots: Object.values(dots), incidents: Object.values(incidents).sort((a, b) => b.id - a.id), heat, tally, river, ticker, board, connected, lastEvt, config, aiTick, reload: load };
+  return { route, zones, dots: Object.values(dots), incidents: Object.values(incidents).sort((a, b) => b.id - a.id), heat, tally, river, ticker, board, connected, lastEvt, config, aiTick, weather, reload: load };
+}
+
+/* ================================================================ weather along the route (responder) */
+const WX_CHIP: Record<WeatherSection["level"], string> = {
+  danger: "border-danger bg-danger text-white",
+  warn: "border-caution/40 bg-caution/10 text-caution",
+  none: "border-line",
+};
+
+export function WeatherPanel({ weather, onLocate, onDrawZone }: { weather: Weather | null; onLocate?: (s: WeatherSection) => void; onDrawZone?: (s: WeatherSection) => void }) {
+  const [open, setOpen] = useState<string | null>(null);
+  if (!weather) return <div className="flex items-center gap-2 rounded-2xl border border-line p-3 text-sm text-muted"><Spinner /> Loading weather…</div>;
+  if (!weather.available) return <p className="rounded-2xl border border-line p-3 text-sm text-muted">Weather isn't available right now. Zone alerts and SOS don't depend on it.</p>;
+  const sel = weather.sections.find((s) => s.segment_id === open) ?? null;
+  const warned = weather.sections.filter((s) => s.level !== "none").length;
+  const top = (s: WeatherSection) => s.risks.find((r) => r.level === "danger") ?? s.risks[0];
+  const n = (v: number | null | undefined) => (v === null || v === undefined ? "–" : Math.round(v));
+  return (
+    <div className="rounded-2xl border border-line p-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="shrink-0 text-sm font-semibold">Weather · next {weather.hours_ahead ?? 12} h</p>
+        <p className={`text-right text-xs ${weather.stale ? "font-semibold text-caution" : "text-muted"}`}>{weather.stale ? "Last forecast" : "Updated"} {ago(weather.fetched_at)} · {weather.source}</p>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {weather.sections.map((s) => {
+          const r = top(s);
+          return (
+            <button
+              key={s.segment_id}
+              title={s.risks.map((x) => riskText(RISK_SHORT, x.key, x.value)).join(", ") || "No warnings"}
+              onClick={() => {
+                setOpen(open === s.segment_id ? null : s.segment_id);
+                onLocate?.(s);
+              }}
+              className={`chip border px-2.5 py-1 text-xs ${WX_CHIP[s.level]} ${open === s.segment_id ? "ring-2 ring-ink/30" : ""}`}
+            >
+              {weatherIcon(s.now.code)} {s.name} · {n(s.now.temp_c)}°{r ? ` · ${riskText(RISK_SHORT, r.key, r.value)}` : ""}
+            </button>
+          );
+        })}
+      </div>
+      {sel ? (
+        <div className="mt-2 rounded-xl bg-black/[.03] p-2.5 text-sm">
+          <p className="font-semibold">{weatherIcon(sel.now.code)} {sel.name} · {n(sel.now.temp_c)}° · {sel.now.desc}{sel.elevation_m ? ` · ${Math.round(sel.elevation_m)} m` : ""}</p>
+          <p className="text-xs text-muted">
+            Next {weather.hours_ahead ?? 12} h: {n(sel.next12h.temp_min)}° to {n(sel.next12h.temp_max)}° · rain {sel.next12h.rain_12h} mm ({sel.next12h.rain_prob_max}% max chance) · snow {sel.next12h.snow_12h} cm · gusts {sel.next12h.gust_max} km/h
+          </p>
+          {sel.risks.length === 0 && <p className="mt-1 text-xs text-safe">No warnings for this section.</p>}
+          {sel.risks.map((r) => <p key={r.key} className={`mt-1 text-xs font-semibold ${r.level === "danger" ? "text-danger" : "text-caution"}`}>⚠ {riskText(RISK_SHORT, r.key, r.value)}</p>)}
+          {sel.level !== "none" && onDrawZone && (
+            <button className="btn-ghost mt-2 min-h-[36px] text-sm" onClick={() => onDrawZone(sel)}>Draw a zone here</button>
+          )}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-muted">{warned ? `${warned} of ${weather.sections.length} sections have warnings. Tap one for details.` : "No weather warnings on this route."}</p>
+      )}
+      <Explain id="weather" />
+      <p className="mt-1 text-[10px] text-muted">{weather.attribution}</p>
+    </div>
+  );
 }
 
 /* ================================================================ login */
