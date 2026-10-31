@@ -2,7 +2,7 @@
 
 **Read this first, then SPEC.md.** SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
-_Last updated: responder weather panel and `scripts/prune_check.py` added; 27 backend tests and 6 frontend tests pass._
+_Last updated: benchmark runner + `/benchmark` page added (needs Prune keys for real numbers); 31 backend tests and 6 frontend tests pass._
 
 ## Plan and status
 - [x] Repo, spec, `.gitignore`, `.env.example`, `requirements.txt`
@@ -24,7 +24,8 @@ _Last updated: responder weather panel and `scripts/prune_check.py` added; 27 ba
 - [x] Responder weather panel (`WeatherPanel` in `components/ops.tsx`, above the incident list): per-section chips coloured by warning level, tap for details and to fly the map there, "Draw a zone here" pre-fills the zone tool (the officer still reviews and publishes; weather never publishes a zone by itself); `weather.updated` refreshes it live and danger warnings go to the live feed
 - [x] `scripts/prune_check.py`: the SPEC 2 hour-1 checks in one command (basic call, exact-cache repeat, run-budget 429, injection detect, policy header, MODEL_LARGE, the app's own `chat()` path, public-key allowlist). Writes `docs/PRUNE_FIELDS.md` and `docs/prune_sample_response.json` from the real responses only, and lists every Prune header and metadata field `_extract` does not read yet. `--dry-run` works without keys. Uses `prune_client.probe()` (raw call, no retry, no logging); diagnostics log into a throwaway database so they never count in cost per trip. 27 backend tests
 - [ ] **NEXT (needs your keys)** Put the Prune keys and model names in `.env`, run `backend/.venv/bin/python scripts/prune_check.py` (Windows: `backend\.venv\Scripts\python scripts\prune_check.py`), fix any **missing** field names it reports in `ai/prune_client.py::_extract`, verify one receipt on withprune.com/verify and save the screenshot in `docs/receipts/`
-- [ ] Benchmark runner R1–R4 + `/benchmark` page (needs Prune keys)
+- [x] Benchmark runner R1–R4 + `/benchmark` page: deterministic scenario in `backend/seed/scenario/` (500 trips, 6 zones, 40 SOS in 3 clusters + 6 singles, notes in en/hi/as, 4 injections; `scripts/make_benchmark_scenario.py`), runner `backend/app/benchmark.py`, CLI `scripts/benchmark.py` (own database `backend/benchmark.db`; `--no-ai` plumbing test needs no key), results to `docs/benchmark_results.json` + `docs/BENCHMARK.md`, page `/benchmark` (waterfall, per-run table, Prune estimate box; empty state until a real run), link from the responder's AI & cost tab. Tested with AI off (counts 100% in all four runs) and against a local fake Prune server. 31 backend tests
+- [ ] **Run the benchmark with real keys** (after the Prune check): `backend/.venv/bin/python scripts/benchmark.py --trips 100` (raise the ops key's daily cap first; R1 is the expensive run). Commit `docs/BENCHMARK.md` and `docs/benchmark_results.json`, then put the measured numbers on the cost slide
 - [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ phones over a tunnel
 - [ ] `docs/EXPLAINER.md` for the team (SPEC Section 16)
 

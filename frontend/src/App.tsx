@@ -12,6 +12,7 @@ const Responder = lazy(() => import("./pages/Responder"));
 const Stage = lazy(() => import("./pages/Stage"));
 const StageControl = lazy(() => import("./pages/StageControl"));
 const BreakIt = lazy(() => import("./pages/BreakIt"));
+const Benchmark = lazy(() => import("./pages/Benchmark"));
 
 function CheckpointRedirect() {
   const { id } = useParams();
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/stage/control" element={<StageControl />} />
         <Route path="/stage/break" element={<BreakIt />} />
         <Route path="/break" element={<BreakIt />} />
+        <Route path="/benchmark" element={<Benchmark />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

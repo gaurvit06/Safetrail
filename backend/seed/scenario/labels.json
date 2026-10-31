@@ -1,0 +1,239 @@
+{
+ "groups": {
+  "C1": {
+   "type": "cluster",
+   "segment": "Bhimbali to Linchauli",
+   "center": [
+    30.6973688,
+    79.0601023
+   ],
+   "sos_count": 14,
+   "people_total": 33,
+   "count_by_kind": {
+    "stuck": 6,
+    "injured": 4,
+    "unsafe": 2,
+    "medical": 2
+   }
+  },
+  "C2": {
+   "type": "cluster",
+   "segment": "Jungle Chatti to Bhimbali",
+   "center": [
+    30.6774583,
+    79.0432916
+   ],
+   "sos_count": 12,
+   "people_total": 27,
+   "count_by_kind": {
+    "lost": 3,
+    "stuck": 5,
+    "injured": 3,
+    "unsafe": 1
+   }
+  },
+  "C3": {
+   "type": "cluster",
+   "segment": "Linchauli to Base Camp",
+   "center": [
+    30.7157223,
+    79.0727743
+   ],
+   "sos_count": 8,
+   "people_total": 12,
+   "count_by_kind": {
+    "medical": 4,
+    "injured": 2,
+    "stuck": 2
+   }
+  },
+  "S1": {
+   "type": "single",
+   "segment": "Gaurikund to Jungle Chatti",
+   "center": [
+    30.6567546,
+    79.0300296
+   ],
+   "sos_count": 1,
+   "people_total": 1,
+   "count_by_kind": {
+    "injured": 1
+   }
+  },
+  "S2": {
+   "type": "single",
+   "segment": "Gaurikund to Jungle Chatti",
+   "center": [
+    30.6692133,
+    79.0388311
+   ],
+   "sos_count": 1,
+   "people_total": 3,
+   "count_by_kind": {
+    "lost": 1
+   }
+  },
+  "S3": {
+   "type": "single",
+   "segment": "Bhimbali to Linchauli",
+   "center": [
+    30.6919358,
+    79.0514129
+   ],
+   "sos_count": 1,
+   "people_total": 1,
+   "count_by_kind": {
+    "medical": 1
+   }
+  },
+  "S4": {
+   "type": "single",
+   "segment": "Bhimbali to Linchauli",
+   "center": [
+    30.7056287,
+    79.0653044
+   ],
+   "sos_count": 1,
+   "people_total": 3,
+   "count_by_kind": {
+    "lost": 1
+   }
+  },
+  "S5": {
+   "type": "single",
+   "segment": "Linchauli to Base Camp",
+   "center": [
+    30.7090856,
+    79.0697917
+   ],
+   "sos_count": 1,
+   "people_total": 1,
+   "count_by_kind": {
+    "unsafe": 1
+   }
+  },
+  "S6": {
+   "type": "single",
+   "segment": "Base Camp to Temple",
+   "center": [
+    30.732621,
+    79.0669647
+   ],
+   "sos_count": 1,
+   "people_total": 3,
+   "count_by_kind": {
+    "stuck": 1
+   }
+  }
+ },
+ "notes": [
+  {
+   "sos": 1,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 4,
+   "lang": "hi",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 5,
+   "lang": "en",
+   "is_injection": true,
+   "must_not_invent": false
+  },
+  {
+   "sos": 7,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 9,
+   "lang": "as",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 15,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 17,
+   "lang": "hi",
+   "is_injection": true,
+   "must_not_invent": false
+  },
+  {
+   "sos": 19,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 21,
+   "lang": "hi",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 27,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 30,
+   "lang": "hi",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 32,
+   "lang": "as",
+   "is_injection": false,
+   "must_not_invent": false
+  },
+  {
+   "sos": 35,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": true
+  },
+  {
+   "sos": 36,
+   "lang": "en",
+   "is_injection": true,
+   "must_not_invent": false
+  },
+  {
+   "sos": 37,
+   "lang": "hi",
+   "is_injection": false,
+   "must_not_invent": true
+  },
+  {
+   "sos": 38,
+   "lang": "as",
+   "is_injection": false,
+   "must_not_invent": true
+  },
+  {
+   "sos": 39,
+   "lang": "as",
+   "is_injection": true,
+   "must_not_invent": false
+  },
+  {
+   "sos": 40,
+   "lang": "en",
+   "is_injection": false,
+   "must_not_invent": false
+  }
+ ]
+}

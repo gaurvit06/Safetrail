@@ -5,6 +5,7 @@ Every job: governor check -> Prune call -> parse + validate -> 1 repair call -> 
 """
 import asyncio
 import time
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Callable
 
@@ -20,6 +21,18 @@ from .validators import parse_json
 REUSE_STOPS = STOP_CODES | {"governor", "loop_guard", "max_steps"}
 _sem: asyncio.Semaphore | None = None
 _tasks: set = set()
+
+# Benchmark settings for every job started inside one benchmark run (app/benchmark.py sets it; the live app never
+# does). Keys: run_id (BenchmarkRun.id), tag (appended to Prune run ids), nonce (added to the system prompt, like
+# prompts._msgs does), policy, cache, tier (force one tier for every call, incl. repairs), naive (no governor and
+# no run budget header: what an app without SafeTrail's budget layers would send).
+BENCH: ContextVar[dict | None] = ContextVar("safetrail_benchmark", default=None)
+
+
+def with_nonce(messages: list[dict], nonce: str) -> list[dict]:
+    if not nonce or not messages or messages[0].get("role") != "system" or messages[0]["content"].endswith(f"[run {nonce}]"):
+        return messages
+    return [{**messages[0], "content": f"{messages[0]['content']} [run {nonce}]"}] + messages[1:]
 
 
 @dataclass
@@ -77,6 +90,19 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
     budget = cfg["budget_usd"] if budget_usd is None else budget_usd
     steps_cap = cfg["max_steps"] if max_steps is None else max_steps
     max_tokens = max_tokens or cfg["max_tokens"]
+    repair_tier, send_budget = "small", True
+    b = BENCH.get()
+    if b:
+        policy, cache = policy or b.get("policy"), cache or b.get("cache")
+        benchmark_run_id = benchmark_run_id if benchmark_run_id is not None else b.get("run_id")
+        messages = with_nonce(messages, b.get("nonce", ""))
+        if b.get("tag"):
+            run_id = f"{run_id}_{b['tag']}"
+        if b.get("tier"):
+            tier = repair_tier = b["tier"]
+            escalate_upfront = allow_escalation = False
+        if b.get("naive"):
+            governor, send_budget = False, False
 
     with Session(engine) as s:
         job = s.exec(select(AiJob).where(AiJob.job_key == job_key)).first()
@@ -121,9 +147,10 @@ async def run_job(*, job_key: str, feature: str, route_id: str, run_id: str, mes
                         if steps > steps_cap:
                             raise AIUnavailable("max_steps")
                         r = await chat(job_key=job_key, run_id=run_id, feature="repair" if repair else feature,
-                                       route_id=route_id, model=model_for("small" if repair else t),
-                                       tier="small" if repair else t, messages=attempt_msgs, max_tokens=max_tokens,
-                                       budget_usd=run_budget_header if run_budget_header is not None else budget,
+                                       route_id=route_id, model=model_for(repair_tier if repair else t),
+                                       tier=repair_tier if repair else t, messages=attempt_msgs, max_tokens=max_tokens,
+                                       budget_usd=None if not send_budget else
+                                       run_budget_header if run_budget_header is not None else budget,
                                        max_steps=steps_cap, cache=cache, policy=policy, key=key, timeout=timeout,
                                        escalated=escalated, benchmark_run_id=benchmark_run_id)
                         ids.append(r.llm_call_id)

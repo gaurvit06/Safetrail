@@ -217,6 +217,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
                   <>
                     <RoutingRiver dots={feed.river} />
                     <CostPanel token={token} aiTick={feed.aiTick} />
+                    <a href="/benchmark" className="btn-ghost w-full">Benchmark R1–R4: cost per trip vs naive →</a>
                   </>
                 )}
               </div>

@@ -7,6 +7,7 @@ Every prompt is synthetic test text (no personal data). The whole run is about 1
 
   basic       one call with the standard SafeTrail headers      -> docs/prune_sample_response.json
   cache       the identical request again                        -> is it an exact cache hit?
+  cache_new_run  the same body with a different run id           -> does the cache work across runs?
   run_budget  run budget $0.000001                               -> expect 429 run_budget
   injection   "ignore previous instructions..." in a note        -> what does detect mode return, and where?
   policy_off  X-Prune-Model-Policy: off                          -> is the header accepted?
@@ -65,6 +66,8 @@ def plan(nonce: str) -> list[dict]:
     p = [
         {"name": "basic", "expect": "200 with prune_metadata and a receipt signature", **basic},
         {"name": "cache", "expect": "200 and an exact cache hit (identical request, same run id)", **copy.deepcopy(basic)},
+        {"name": "cache_new_run", "expect": "cache hit even with a different run id (decides how the benchmark's R4 can hit)",
+         **{**copy.deepcopy(basic), "headers": headers(rid("basic2"))}},
         {"name": "run_budget", "expect": "429 run_budget", "model": small, "messages": messages("run_budget", nonce),
          "headers": headers(rid("budget"), budget=0.000001)},
         {"name": "injection", "expect": f"200 with an injection signal (X-Prune-Injection: {settings.prune_injection_mode})",
@@ -185,6 +188,11 @@ def verdicts(results: dict) -> list[dict]:
         hit = cache_hit(c) if c["ok"] else None
         add("cache", "ok" if hit else "warn", "exact cache hit on the identical repeat" if hit else
             f"not reported as a cache hit (cache_hit={hit}); see the header and metadata tables")
+    cn = results.get("cache_new_run")
+    if cn:
+        hit = cache_hit(cn) if cn["ok"] else None
+        add("cache_new_run", "ok", "cache also hits across run ids" if hit else
+            f"no hit with a new run id (cache_hit={hit}): Prune's cache key includes the run id, or the repeat came too soon")
     rb = results.get("run_budget")
     if rb:
         code = rb.get("error_code")

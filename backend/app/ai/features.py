@@ -190,6 +190,7 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
         s.add(inc)
         s.commit()
     tmpl = lambda: cluster_template("en", counts["people_total"], counts["injured_reports"], seg)
+    shields: list[str] = []
     if refreshes >= 3 and not force:
         out = {**tmpl(), "budget_limit": True}
         source, ids = "template", []
@@ -200,7 +201,7 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
                             messages=prompts.cluster_messages(counts, seg, notes, span),
                             validate=lambda o: validators.validate_cluster(o, allowed), template=tmpl,
                             governor=governor, run_budget_header=run_budget_header, key=key)
-        out, source, ids = res.output, res.source, res.llm_call_ids
+        out, source, ids, shields = res.output, res.source, res.llm_call_ids, res.shield_codes
         if res.stopped_by in ("run_budget", "agent_step_budget", "governor", "spend_cap"):
             out = {**out, "budget_limit": True}
     with Session(engine) as s:
@@ -208,6 +209,8 @@ async def build_cluster_summary(incident_id: int, *, force: bool = False, govern
         inc.cluster_summary, inc.summary_source, inc.summary_llm_call_ids = out, source, ids
         inc.summary_member_count = members
         inc.summary_refreshes = refreshes + (1 if ids else 0)
+        if "prompt_injection_signal" in shields or "prompt_injection" in shields:  # same rule as the single report
+            inc.flags = sorted(set(inc.flags or []) | {"suspicious_text", "prune_injection_signal"})
         s.add(inc)
         s.commit()
     events.publish("incident.summary_ready", {"incident_id": incident_id, "source": source, "content": out,

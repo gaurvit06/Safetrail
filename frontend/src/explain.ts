@@ -9,5 +9,7 @@ export const EXPLAIN: Record<string, string> = {
   quiet: "Orange dots haven't checked in for a while. They may just have no signal.",
   receipts: "Every AI call has a receipt signed by Prune. Anyone can verify it on withprune.com/verify.",
   breakit: "Each trick is a real way people try to cheat or abuse safety systems.",
+  waterfall: "Start from the naive cost (R1), then take away what each choice saved: SafeTrail's design, Prune routing, Prune's exact cache.",
+  benchmark: "Same simulated scenario for every run. Costs come from Prune's signed responses; counts are computed by code, never by AI.",
   weather: "Live forecast for each section of the trail from Open-Meteo. Warnings come from fixed thresholds in code, not AI. They only suggest: an officer decides whether to draw a zone.",
 };

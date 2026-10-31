@@ -520,6 +520,18 @@ def ai_receipts(job_key: str | None = None, role: str = Depends(RESP), s: Sessio
              "prune_metadata": c.raw_metadata} for c in s.exec(q).all()]
 
 
+@router.get("/benchmark")
+def benchmark_results():
+    """Latest results of scripts/benchmark.py (docs/benchmark_results.json). Public: simulated scenario, costs only."""
+    import json
+
+    from .config import REPO_DIR
+    path = REPO_DIR / "docs" / "benchmark_results.json"
+    if not path.exists():
+        return {"status": "not_run", "runs": {}, "waterfall": None}
+    return {"status": "ok", **json.loads(path.read_text(encoding="utf-8"))}
+
+
 # ------------------------------------------------------------------------------------------ auth + stage
 
 class LoginIn(BaseModel):
