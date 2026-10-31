@@ -540,6 +540,8 @@ async def scenario(body: ScenarioIn, role: str = Depends(PRES)):
             return stage.safety_check(s, body.route_id)
     if body.action == "budget_stress":
         return await stage.budget_stress()
+    if body.action == "demo_data":
+        return await stage.demo_scenario("kedarnath" if body.route_id == "hall" else body.route_id)
     if body.action == "walk_sim":
         spawn(stage.walk_sim(body.lat, body.lon, body.route_id))
         return {"ok": True}

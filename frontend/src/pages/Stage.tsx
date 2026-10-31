@@ -14,7 +14,8 @@ const OUTCOME: Record<string, string> = { caught: "✓ Caught", flagged: "⚑ Fl
 /** Projector view (SPEC 9.4.1): no names, trip labels and nicknames only. */
 export default function Stage() {
   const [token, setToken] = useState<string | null>(anyStaffToken);
-  const feed = useOpsFeed("hall", token);
+  const routeId = new URLSearchParams(window.location.search).get("route") || "hall";
+  const feed = useOpsFeed(routeId, token);
   const [qr, setQr] = useState<"join" | "break" | "responder" | null>("join");
   const [stats, setStats] = useState<AiStats | null>(null);
   useEffect(() => {
@@ -24,7 +25,7 @@ export default function Stage() {
   const base = (feed.config?.public_url || window.location.origin).replace(/\/$/, "");
   const urls = { join: `${base}/j`, break: `${base}/break`, responder: `${base}/jr` };
   const pins = useMemo(() => feed.incidents.filter((i) => !["resolved", "cancelled"].includes(i.status)).map((i) => ({ id: i.id, lat: i.center_lat, lon: i.center_lon, count: i.trip_count, priority: i.priority, status: i.status })), [feed.incidents]);
-  const onTrail = feed.dots.filter((d) => d.kind === "tourist").length;
+  const onTrail = feed.dots.filter((d) => d.kind === "tourist" && d.status !== "ended").length;
   const sos = feed.incidents.filter((i) => i.status !== "cancelled").reduce((n, i) => n + i.member_count, 0);
   const lanes = feed.river.reduce((acc, d) => ({ ...acc, [d.lane]: (acc[d.lane] ?? 0) + 1 }), {} as Record<string, number>);
 
@@ -36,7 +37,7 @@ export default function Stage() {
         {feed.route && <MapView dark bbox={feed.route.bbox} route={feed.route.line} zones={feed.zones} dots={feed.dots} heat={feed.heat} helpPoints={feed.route.help_points} incidents={pins} />}
         <div className="absolute left-4 top-4 z-10 flex items-center gap-3 rounded-2xl bg-black/60 px-4 py-2 backdrop-blur">
           <img src="/icon.svg" className="h-9 w-9" alt="" />
-          <div><p className="text-xl font-bold">SafeTrail · Live</p><p className="text-xs opacity-70">Hall demo route · zones and dispatches are simulated</p></div>
+          <div><p className="text-xl font-bold">SafeTrail · Live</p><p className="text-xs opacity-70">{feed.route?.name ?? "…"} · zones, dispatches and demo travellers are simulated</p></div>
           <span className={`ml-2 h-3 w-3 rounded-full ${feed.connected ? "bg-safe" : "bg-offline"}`} />
         </div>
         <div className="absolute inset-x-4 bottom-4 z-10 rounded-2xl bg-black/65 p-3 backdrop-blur">

@@ -285,6 +285,22 @@ def test_job_budget_stop_uses_template(monkeypatch):
     assert res.source == "template" and res.stopped_by == "run_budget"
 
 
+def test_demo_scenario_fills_every_screen(s, monkeypatch):
+    from app import stage
+    from app.models import Incident, SafetyCheck
+
+    async def no_crowd(*a, **k):
+        return None
+    monkeypatch.setattr(stage, "crowd_surge", no_crowd)
+    res = asyncio.run(stage.demo_scenario("kedarnath"))
+    cluster = s.get(Incident, res["cluster_incident_id"])
+    assert cluster.type == "cluster" and cluster.trip_count == 4
+    assert cluster.people_total == 3 + 8 + 1 + 1 and cluster.injured_total == 2 and cluster.priority == "P1"
+    assert any(i.status == "accepted" for i in s.exec(select(Incident)).all())
+    t = core.tally(s, s.exec(select(SafetyCheck)).all()[-1])
+    assert t["asked"] >= 8 and t["safe"] == 3 and t["need_help"] == 1
+
+
 def test_ai_not_configured_uses_template():
     inp = {"zone_kind": "landslide", "severity": "danger", "segment_name": "Linchauli", "language": "en"}
     res = asyncio.run(jobs.run_job(job_key="adv_nokey", feature="advisory", route_id="hall", run_id="adv_nokey",
