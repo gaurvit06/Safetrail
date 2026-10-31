@@ -28,12 +28,20 @@ def sops() -> dict:
     return _read(SEED_DIR / "sops" / "sops.json")
 
 
+def _merge(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = _merge(base[k], v) if isinstance(v, dict) and isinstance(base.get(k), dict) else v
+    return out
+
+
 @lru_cache
 def templates(lang: str) -> dict:
+    """The language's standard texts; any string a language file doesn't have yet falls back to English, so a
+    partial translation (like the Nepali phrasebook) is safe to ship."""
+    en = _read(SEED_DIR / "templates" / "en.json")
     path = SEED_DIR / "templates" / f"{lang}.json"
-    if not path.exists():
-        path = SEED_DIR / "templates" / "en.json"
-    return _read(path)
+    return _merge(en, _read(path)) if lang != "en" and path.exists() else en
 
 
 def route_ids() -> list[str]:

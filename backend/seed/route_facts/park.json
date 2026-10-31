@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "route_name": "Dhangarhi gate to Dhikala (Corbett Tiger Reserve)",
+  "simulated": true,
+  "distance_km": 21.2,
+  "emergency_number": "112",
+  "control_room_label": "Corbett forest control room (simulated)",
+  "segment_capacity": 25,
+  "crowd_wait_min": 10,
+  "alternates": [
+    {
+      "id": "ALT-P1",
+      "name": "Wait at Gairal rest house for a ranger escort"
+    }
+  ],
+  "altitude_relevant": false,
+  "permit_note": "Entry only with a park entry permit booked for the zone and date, in a registered vehicle with a guide (simulated summary).",
+  "segments": [
+    {
+      "id": "P1",
+      "name": "Dhangarhi gate to Gairal",
+      "length_km": 10.3,
+      "risky": true,
+      "nearest_help_id": "HP-GRL",
+      "risks": [
+        "wild elephants on the road: stop and keep 50 m away",
+        "stay inside the vehicle"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Gairal to Sarapduli",
+      "length_km": 5.9,
+      "risky": true,
+      "nearest_help_id": "HP-SRP",
+      "risks": [
+        "tigers and leopards: never get out of the vehicle",
+        "river crossings after rain"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Sarapduli to Dhikala",
+      "length_km": 5.0,
+      "risky": true,
+      "nearest_help_id": "HP-DKL",
+      "risks": [
+        "open grassland: no walking off the road",
+        "dusk: be inside the fenced camp before dark"
+      ]
+    }
+  ],
+  "help_points": [
+    {
+      "id": "HP-DHG",
+      "kind": "ranger",
+      "name": "Dhangarhi gate forest post (simulated)"
+    },
+    {
+      "id": "HP-GRL",
+      "kind": "shelter",
+      "name": "Gairal forest rest house (simulated)"
+    },
+    {
+      "id": "HP-SRP",
+      "kind": "shelter",
+      "name": "Sarapduli forest rest house (simulated)"
+    },
+    {
+      "id": "HP-DKL",
+      "kind": "medical",
+      "name": "Dhikala camp first aid (simulated)"
+    }
+  ],
+  "data_sources": "Route line drawn by hand through approximate landmark positions; help points, checkpoints and zones simulated. Not for navigation."
+}

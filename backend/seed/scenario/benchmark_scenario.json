@@ -5,7 +5,7 @@
  "about": "Simulated benchmark scenario (SPEC 10.2). Trip labels only, no personal data.",
  "routes": [
   "kedarnath",
-  "hall"
+  "sikkim"
  ],
  "languages": [
   "en",
@@ -384,7 +384,7 @@
   {
    "i": 46,
    "label": "BT0047",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0047, standard, trip 2026-11-19 to 2026-11-21"
@@ -400,7 +400,7 @@
   {
    "i": 48,
    "label": "BT0049",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0049, senior, trip 2026-11-21 to 2026-11-23"
@@ -416,7 +416,7 @@
   {
    "i": 50,
    "label": "BT0051",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0051, standard, trip 2026-11-23 to 2026-11-25"
@@ -432,7 +432,7 @@
   {
    "i": 52,
    "label": "BT0053",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0053, standard, trip 2026-11-25 to 2026-11-27"
@@ -456,7 +456,7 @@
   {
    "i": 55,
    "label": "BT0056",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0056, standard, trip 2026-11-28 to 2026-11-30"
@@ -536,7 +536,7 @@
   {
    "i": 65,
    "label": "BT0066",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0066, standard, trip 2026-11-10 to 2026-11-12"
@@ -552,7 +552,7 @@
   {
    "i": 67,
    "label": "BT0068",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0068, senior, trip 2026-11-12 to 2026-11-14"
@@ -600,7 +600,7 @@
   {
    "i": 73,
    "label": "BT0074",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0074, senior, trip 2026-11-18 to 2026-11-20"
@@ -624,7 +624,7 @@
   {
    "i": 76,
    "label": "BT0077",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0077, with children, trip 2026-11-21 to 2026-11-23"
@@ -648,7 +648,7 @@
   {
    "i": 79,
    "label": "BT0080",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0080, standard, trip 2026-11-24 to 2026-11-26"
@@ -672,7 +672,7 @@
   {
    "i": 82,
    "label": "BT0083",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0083, senior, trip 2026-11-27 to 2026-11-29"
@@ -680,7 +680,7 @@
   {
    "i": 83,
    "label": "BT0084",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0084, standard, trip 2026-11-28 to 2026-11-30"
@@ -696,7 +696,7 @@
   {
    "i": 85,
    "label": "BT0086",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0086, standard, trip 2026-11-02 to 2026-11-04"
@@ -712,7 +712,7 @@
   {
    "i": 87,
    "label": "BT0088",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0088, standard, trip 2026-11-04 to 2026-11-06"
@@ -736,7 +736,7 @@
   {
    "i": 90,
    "label": "BT0091",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0091, senior, trip 2026-11-07 to 2026-11-09"
@@ -752,7 +752,7 @@
   {
    "i": 92,
    "label": "BT0093",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0093, standard, trip 2026-11-09 to 2026-11-11"
@@ -768,7 +768,7 @@
   {
    "i": 94,
    "label": "BT0095",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0095, senior, trip 2026-11-11 to 2026-11-13"
@@ -776,7 +776,7 @@
   {
    "i": 95,
    "label": "BT0096",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0096, with children, trip 2026-11-12 to 2026-11-14"
@@ -800,7 +800,7 @@
   {
    "i": 98,
    "label": "BT0099",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0099, standard, trip 2026-11-15 to 2026-11-17"
@@ -808,7 +808,7 @@
   {
    "i": 99,
    "label": "BT0100",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0100, with children, trip 2026-11-16 to 2026-11-18"
@@ -824,7 +824,7 @@
   {
    "i": 101,
    "label": "BT0102",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0102, senior, trip 2026-11-18 to 2026-11-20"
@@ -872,7 +872,7 @@
   {
    "i": 107,
    "label": "BT0108",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0108, standard, trip 2026-11-24 to 2026-11-26"
@@ -904,7 +904,7 @@
   {
    "i": 111,
    "label": "BT0112",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0112, senior, trip 2026-11-28 to 2026-11-30"
@@ -912,7 +912,7 @@
   {
    "i": 112,
    "label": "BT0113",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0113, standard, trip 2026-11-01 to 2026-11-03"
@@ -928,7 +928,7 @@
   {
    "i": 114,
    "label": "BT0115",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0115, with children, trip 2026-11-03 to 2026-11-05"
@@ -944,7 +944,7 @@
   {
    "i": 116,
    "label": "BT0117",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0117, with children, trip 2026-11-05 to 2026-11-07"
@@ -1000,7 +1000,7 @@
   {
    "i": 123,
    "label": "BT0124",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0124, senior, trip 2026-11-12 to 2026-11-14"
@@ -1008,7 +1008,7 @@
   {
    "i": 124,
    "label": "BT0125",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0125, standard, trip 2026-11-13 to 2026-11-15"
@@ -1024,7 +1024,7 @@
   {
    "i": 126,
    "label": "BT0127",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0127, standard, trip 2026-11-15 to 2026-11-17"
@@ -1048,7 +1048,7 @@
   {
    "i": 129,
    "label": "BT0130",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0130, senior, trip 2026-11-18 to 2026-11-20"
@@ -1064,7 +1064,7 @@
   {
    "i": 131,
    "label": "BT0132",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0132, standard, trip 2026-11-20 to 2026-11-22"
@@ -1096,7 +1096,7 @@
   {
    "i": 135,
    "label": "BT0136",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0136, senior, trip 2026-11-24 to 2026-11-26"
@@ -1112,7 +1112,7 @@
   {
    "i": 137,
    "label": "BT0138",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0138, with children, trip 2026-11-26 to 2026-11-28"
@@ -1168,7 +1168,7 @@
   {
    "i": 144,
    "label": "BT0145",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0145, standard, trip 2026-11-05 to 2026-11-07"
@@ -1184,7 +1184,7 @@
   {
    "i": 146,
    "label": "BT0147",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0147, standard, trip 2026-11-07 to 2026-11-09"
@@ -1192,7 +1192,7 @@
   {
    "i": 147,
    "label": "BT0148",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0148, standard, trip 2026-11-08 to 2026-11-10"
@@ -1216,7 +1216,7 @@
   {
    "i": 150,
    "label": "BT0151",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0151, standard, trip 2026-11-11 to 2026-11-13"
@@ -1232,7 +1232,7 @@
   {
    "i": 152,
    "label": "BT0153",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0153, standard, trip 2026-11-13 to 2026-11-15"
@@ -1248,7 +1248,7 @@
   {
    "i": 154,
    "label": "BT0155",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0155, senior, trip 2026-11-15 to 2026-11-17"
@@ -1296,7 +1296,7 @@
   {
    "i": 160,
    "label": "BT0161",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0161, standard, trip 2026-11-21 to 2026-11-23"
@@ -1328,7 +1328,7 @@
   {
    "i": 164,
    "label": "BT0165",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0165, with children, trip 2026-11-25 to 2026-11-27"
@@ -1336,7 +1336,7 @@
   {
    "i": 165,
    "label": "BT0166",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0166, standard, trip 2026-11-26 to 2026-11-28"
@@ -1352,7 +1352,7 @@
   {
    "i": 167,
    "label": "BT0168",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0168, standard, trip 2026-11-28 to 2026-11-30"
@@ -1376,7 +1376,7 @@
   {
    "i": 170,
    "label": "BT0171",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0171, standard, trip 2026-11-03 to 2026-11-05"
@@ -1440,7 +1440,7 @@
   {
    "i": 178,
    "label": "BT0179",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0179, standard, trip 2026-11-11 to 2026-11-13"
@@ -1464,7 +1464,7 @@
   {
    "i": 181,
    "label": "BT0182",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0182, senior, trip 2026-11-14 to 2026-11-16"
@@ -1496,7 +1496,7 @@
   {
    "i": 185,
    "label": "BT0186",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0186, senior, trip 2026-11-18 to 2026-11-20"
@@ -1528,7 +1528,7 @@
   {
    "i": 189,
    "label": "BT0190",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0190, senior, trip 2026-11-22 to 2026-11-24"
@@ -1560,7 +1560,7 @@
   {
    "i": 193,
    "label": "BT0194",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0194, standard, trip 2026-11-26 to 2026-11-28"
@@ -1608,7 +1608,7 @@
   {
    "i": 199,
    "label": "BT0200",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0200, standard, trip 2026-11-04 to 2026-11-06"
@@ -1616,7 +1616,7 @@
   {
    "i": 200,
    "label": "BT0201",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0201, with children, trip 2026-11-05 to 2026-11-07"
@@ -1640,7 +1640,7 @@
   {
    "i": 203,
    "label": "BT0204",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0204, senior, trip 2026-11-08 to 2026-11-10"
@@ -1648,7 +1648,7 @@
   {
    "i": 204,
    "label": "BT0205",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0205, senior, trip 2026-11-09 to 2026-11-11"
@@ -1784,7 +1784,7 @@
   {
    "i": 221,
    "label": "BT0222",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0222, standard, trip 2026-11-26 to 2026-11-28"
@@ -1792,7 +1792,7 @@
   {
    "i": 222,
    "label": "BT0223",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0223, standard, trip 2026-11-27 to 2026-11-29"
@@ -1800,7 +1800,7 @@
   {
    "i": 223,
    "label": "BT0224",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0224, standard, trip 2026-11-28 to 2026-11-30"
@@ -1840,7 +1840,7 @@
   {
    "i": 228,
    "label": "BT0229",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0229, standard, trip 2026-11-05 to 2026-11-07"
@@ -1856,7 +1856,7 @@
   {
    "i": 230,
    "label": "BT0231",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0231, standard, trip 2026-11-07 to 2026-11-09"
@@ -1872,7 +1872,7 @@
   {
    "i": 232,
    "label": "BT0233",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0233, senior, trip 2026-11-09 to 2026-11-11"
@@ -1944,7 +1944,7 @@
   {
    "i": 241,
    "label": "BT0242",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0242, standard, trip 2026-11-18 to 2026-11-20"
@@ -1960,7 +1960,7 @@
   {
    "i": 243,
    "label": "BT0244",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0244, standard, trip 2026-11-20 to 2026-11-22"
@@ -1976,7 +1976,7 @@
   {
    "i": 245,
    "label": "BT0246",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0246, standard, trip 2026-11-22 to 2026-11-24"
@@ -1992,7 +1992,7 @@
   {
    "i": 247,
    "label": "BT0248",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0248, standard, trip 2026-11-24 to 2026-11-26"
@@ -2000,7 +2000,7 @@
   {
    "i": 248,
    "label": "BT0249",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0249, standard, trip 2026-11-25 to 2026-11-27"
@@ -2104,7 +2104,7 @@
   {
    "i": 261,
    "label": "BT0262",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0262, standard, trip 2026-11-10 to 2026-11-12"
@@ -2112,7 +2112,7 @@
   {
    "i": 262,
    "label": "BT0263",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0263, senior, trip 2026-11-11 to 2026-11-13"
@@ -2120,7 +2120,7 @@
   {
    "i": 263,
    "label": "BT0264",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0264, with children, trip 2026-11-12 to 2026-11-14"
@@ -2136,7 +2136,7 @@
   {
    "i": 265,
    "label": "BT0266",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0266, senior, trip 2026-11-14 to 2026-11-16"
@@ -2152,7 +2152,7 @@
   {
    "i": 267,
    "label": "BT0268",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0268, senior, trip 2026-11-16 to 2026-11-18"
@@ -2160,7 +2160,7 @@
   {
    "i": 268,
    "label": "BT0269",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0269, standard, trip 2026-11-17 to 2026-11-19"
@@ -2168,7 +2168,7 @@
   {
    "i": 269,
    "label": "BT0270",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0270, standard, trip 2026-11-18 to 2026-11-20"
@@ -2224,7 +2224,7 @@
   {
    "i": 276,
    "label": "BT0277",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0277, standard, trip 2026-11-25 to 2026-11-27"
@@ -2264,7 +2264,7 @@
   {
    "i": 281,
    "label": "BT0282",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0282, standard, trip 2026-11-02 to 2026-11-04"
@@ -2272,7 +2272,7 @@
   {
    "i": 282,
    "label": "BT0283",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0283, standard, trip 2026-11-03 to 2026-11-05"
@@ -2312,7 +2312,7 @@
   {
    "i": 287,
    "label": "BT0288",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0288, standard, trip 2026-11-08 to 2026-11-10"
@@ -2328,7 +2328,7 @@
   {
    "i": 289,
    "label": "BT0290",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0290, standard, trip 2026-11-10 to 2026-11-12"
@@ -2344,7 +2344,7 @@
   {
    "i": 291,
    "label": "BT0292",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0292, standard, trip 2026-11-12 to 2026-11-14"
@@ -2416,7 +2416,7 @@
   {
    "i": 300,
    "label": "BT0301",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0301, senior, trip 2026-11-21 to 2026-11-23"
@@ -2448,7 +2448,7 @@
   {
    "i": 304,
    "label": "BT0305",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0305, senior, trip 2026-11-25 to 2026-11-27"
@@ -2488,7 +2488,7 @@
   {
    "i": 309,
    "label": "BT0310",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0310, standard, trip 2026-11-02 to 2026-11-04"
@@ -2496,7 +2496,7 @@
   {
    "i": 310,
    "label": "BT0311",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0311, standard, trip 2026-11-03 to 2026-11-05"
@@ -2592,7 +2592,7 @@
   {
    "i": 322,
    "label": "BT0323",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0323, standard, trip 2026-11-15 to 2026-11-17"
@@ -2648,7 +2648,7 @@
   {
    "i": 329,
    "label": "BT0330",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0330, standard, trip 2026-11-22 to 2026-11-24"
@@ -2680,7 +2680,7 @@
   {
    "i": 333,
    "label": "BT0334",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0334, standard, trip 2026-11-26 to 2026-11-28"
@@ -2704,7 +2704,7 @@
   {
    "i": 336,
    "label": "BT0337",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0337, with children, trip 2026-11-01 to 2026-11-03"
@@ -2712,7 +2712,7 @@
   {
    "i": 337,
    "label": "BT0338",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0338, with children, trip 2026-11-02 to 2026-11-04"
@@ -2728,7 +2728,7 @@
   {
    "i": 339,
    "label": "BT0340",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0340, standard, trip 2026-11-04 to 2026-11-06"
@@ -2752,7 +2752,7 @@
   {
    "i": 342,
    "label": "BT0343",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0343, standard, trip 2026-11-07 to 2026-11-09"
@@ -2776,7 +2776,7 @@
   {
    "i": 345,
    "label": "BT0346",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0346, senior, trip 2026-11-10 to 2026-11-12"
@@ -2832,7 +2832,7 @@
   {
    "i": 352,
    "label": "BT0353",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0353, standard, trip 2026-11-17 to 2026-11-19"
@@ -2840,7 +2840,7 @@
   {
    "i": 353,
    "label": "BT0354",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0354, standard, trip 2026-11-18 to 2026-11-20"
@@ -2864,7 +2864,7 @@
   {
    "i": 356,
    "label": "BT0357",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0357, standard, trip 2026-11-21 to 2026-11-23"
@@ -2880,7 +2880,7 @@
   {
    "i": 358,
    "label": "BT0359",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0359, standard, trip 2026-11-23 to 2026-11-25"
@@ -2904,7 +2904,7 @@
   {
    "i": 361,
    "label": "BT0362",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0362, standard, trip 2026-11-26 to 2026-11-28"
@@ -2936,7 +2936,7 @@
   {
    "i": 365,
    "label": "BT0366",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0366, with children, trip 2026-11-02 to 2026-11-04"
@@ -2944,7 +2944,7 @@
   {
    "i": 366,
    "label": "BT0367",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0367, standard, trip 2026-11-03 to 2026-11-05"
@@ -2960,7 +2960,7 @@
   {
    "i": 368,
    "label": "BT0369",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0369, standard, trip 2026-11-05 to 2026-11-07"
@@ -2976,7 +2976,7 @@
   {
    "i": 370,
    "label": "BT0371",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0371, standard, trip 2026-11-07 to 2026-11-09"
@@ -3008,7 +3008,7 @@
   {
    "i": 374,
    "label": "BT0375",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0375, standard, trip 2026-11-11 to 2026-11-13"
@@ -3040,7 +3040,7 @@
   {
    "i": 378,
    "label": "BT0379",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0379, senior, trip 2026-11-15 to 2026-11-17"
@@ -3112,7 +3112,7 @@
   {
    "i": 387,
    "label": "BT0388",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0388, standard, trip 2026-11-24 to 2026-11-26"
@@ -3160,7 +3160,7 @@
   {
    "i": 393,
    "label": "BT0394",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0394, standard, trip 2026-11-02 to 2026-11-04"
@@ -3168,7 +3168,7 @@
   {
    "i": 394,
    "label": "BT0395",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0395, standard, trip 2026-11-03 to 2026-11-05"
@@ -3192,7 +3192,7 @@
   {
    "i": 397,
    "label": "BT0398",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0398, standard, trip 2026-11-06 to 2026-11-08"
@@ -3200,7 +3200,7 @@
   {
    "i": 398,
    "label": "BT0399",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0399, senior, trip 2026-11-07 to 2026-11-09"
@@ -3216,7 +3216,7 @@
   {
    "i": 400,
    "label": "BT0401",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0401, with children, trip 2026-11-09 to 2026-11-11"
@@ -3224,7 +3224,7 @@
   {
    "i": 401,
    "label": "BT0402",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0402, with children, trip 2026-11-10 to 2026-11-12"
@@ -3232,7 +3232,7 @@
   {
    "i": 402,
    "label": "BT0403",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0403, standard, trip 2026-11-11 to 2026-11-13"
@@ -3240,7 +3240,7 @@
   {
    "i": 403,
    "label": "BT0404",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0404, senior, trip 2026-11-12 to 2026-11-14"
@@ -3256,7 +3256,7 @@
   {
    "i": 405,
    "label": "BT0406",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0406, standard, trip 2026-11-14 to 2026-11-16"
@@ -3272,7 +3272,7 @@
   {
    "i": 407,
    "label": "BT0408",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0408, standard, trip 2026-11-16 to 2026-11-18"
@@ -3288,7 +3288,7 @@
   {
    "i": 409,
    "label": "BT0410",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0410, with children, trip 2026-11-18 to 2026-11-20"
@@ -3312,7 +3312,7 @@
   {
    "i": 412,
    "label": "BT0413",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0413, senior, trip 2026-11-21 to 2026-11-23"
@@ -3360,7 +3360,7 @@
   {
    "i": 418,
    "label": "BT0419",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0419, with children, trip 2026-11-27 to 2026-11-29"
@@ -3368,7 +3368,7 @@
   {
    "i": 419,
    "label": "BT0420",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0420, with children, trip 2026-11-28 to 2026-11-30"
@@ -3384,7 +3384,7 @@
   {
    "i": 421,
    "label": "BT0422",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0422, standard, trip 2026-11-02 to 2026-11-04"
@@ -3392,7 +3392,7 @@
   {
    "i": 422,
    "label": "BT0423",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0423, with children, trip 2026-11-03 to 2026-11-05"
@@ -3416,7 +3416,7 @@
   {
    "i": 425,
    "label": "BT0426",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0426, senior, trip 2026-11-06 to 2026-11-08"
@@ -3432,7 +3432,7 @@
   {
    "i": 427,
    "label": "BT0428",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0428, senior, trip 2026-11-08 to 2026-11-10"
@@ -3440,7 +3440,7 @@
   {
    "i": 428,
    "label": "BT0429",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0429, standard, trip 2026-11-09 to 2026-11-11"
@@ -3488,7 +3488,7 @@
   {
    "i": 434,
    "label": "BT0435",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0435, with children, trip 2026-11-15 to 2026-11-17"
@@ -3512,7 +3512,7 @@
   {
    "i": 437,
    "label": "BT0438",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0438, standard, trip 2026-11-18 to 2026-11-20"
@@ -3544,7 +3544,7 @@
   {
    "i": 441,
    "label": "BT0442",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0442, standard, trip 2026-11-22 to 2026-11-24"
@@ -3552,7 +3552,7 @@
   {
    "i": 442,
    "label": "BT0443",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0443, with children, trip 2026-11-23 to 2026-11-25"
@@ -3600,7 +3600,7 @@
   {
    "i": 448,
    "label": "BT0449",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0449, standard, trip 2026-11-01 to 2026-11-03"
@@ -3624,7 +3624,7 @@
   {
    "i": 451,
    "label": "BT0452",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0452, senior, trip 2026-11-04 to 2026-11-06"
@@ -3656,7 +3656,7 @@
   {
    "i": 455,
    "label": "BT0456",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "as",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0456, standard, trip 2026-11-08 to 2026-11-10"
@@ -3712,7 +3712,7 @@
   {
    "i": 462,
    "label": "BT0463",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0463, standard, trip 2026-11-15 to 2026-11-17"
@@ -3728,7 +3728,7 @@
   {
    "i": 464,
    "label": "BT0465",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0465, standard, trip 2026-11-17 to 2026-11-19"
@@ -3792,7 +3792,7 @@
   {
    "i": 472,
    "label": "BT0473",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0473, standard, trip 2026-11-25 to 2026-11-27"
@@ -3800,7 +3800,7 @@
   {
    "i": 473,
    "label": "BT0474",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0474, senior, trip 2026-11-26 to 2026-11-28"
@@ -3808,7 +3808,7 @@
   {
    "i": 474,
    "label": "BT0475",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0475, standard, trip 2026-11-27 to 2026-11-29"
@@ -3832,7 +3832,7 @@
   {
    "i": 477,
    "label": "BT0478",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0478, with children, trip 2026-11-02 to 2026-11-04"
@@ -3848,7 +3848,7 @@
   {
    "i": 479,
    "label": "BT0480",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0480, standard, trip 2026-11-04 to 2026-11-06"
@@ -3880,7 +3880,7 @@
   {
    "i": 483,
    "label": "BT0484",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0484, standard, trip 2026-11-08 to 2026-11-10"
@@ -3904,7 +3904,7 @@
   {
    "i": 486,
    "label": "BT0487",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0487, standard, trip 2026-11-11 to 2026-11-13"
@@ -3912,7 +3912,7 @@
   {
    "i": 487,
    "label": "BT0488",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "with_children",
    "naive_profile": "traveller BT0488, with children, trip 2026-11-12 to 2026-11-14"
@@ -3920,7 +3920,7 @@
   {
    "i": 488,
    "label": "BT0489",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0489, standard, trip 2026-11-13 to 2026-11-15"
@@ -3944,7 +3944,7 @@
   {
    "i": 491,
    "label": "BT0492",
-   "route_id": "kedarnath",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0492, standard, trip 2026-11-16 to 2026-11-18"
@@ -3952,7 +3952,7 @@
   {
    "i": 492,
    "label": "BT0493",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0493, standard, trip 2026-11-17 to 2026-11-19"
@@ -3960,7 +3960,7 @@
   {
    "i": 493,
    "label": "BT0494",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "hi",
    "profile_bucket": "standard",
    "naive_profile": "traveller BT0494, standard, trip 2026-11-18 to 2026-11-20"
@@ -3976,7 +3976,7 @@
   {
    "i": 495,
    "label": "BT0496",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0496, senior, trip 2026-11-20 to 2026-11-22"
@@ -3984,7 +3984,7 @@
   {
    "i": 496,
    "label": "BT0497",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "language": "en",
    "profile_bucket": "senior",
    "naive_profile": "traveller BT0497, senior, trip 2026-11-21 to 2026-11-23"
@@ -4247,114 +4247,114 @@
   },
   {
    "id": "Z3",
-   "route_id": "hall",
+   "route_id": "sikkim",
    "kind": "restricted",
    "severity": "warn",
-   "segment_name": "Hall demo loop",
+   "segment_name": "Shingba to Yumthang",
    "note": null,
    "polygon": {
     "type": "Polygon",
     "coordinates": [
      [
       [
-       76.3708,
-       30.35567797340999
+       88.69828,
+       27.82443797340999
       ],
       [
-       76.37112332298382,
-       30.355641242356764
+       88.69859547146787,
+       27.824401242356764
       ],
       [
-       76.37142461204061,
-       30.355533552357656
+       88.69888944407656,
+       27.824293552357656
       ],
       [
-       76.37168333481905,
-       30.355362242308143
+       88.69914188407857,
+       27.824122242308142
       ],
       [
-       76.37188185978935,
-       30.355138986704997
+       88.69933558810497,
+       27.823898986704997
       ],
       [
-       76.37200665780287,
-       30.35487900004862
+       88.69945735554646,
+       27.82363900004862
       ],
       [
-       76.37204922408122,
-       30.3546
+       88.69949888815312,
+       27.82336
       ],
       [
-       76.37200665780287,
-       30.354320999951383
+       88.69945735554646,
+       27.823080999951383
       ],
       [
-       76.37188185978935,
-       30.354061013295006
+       88.69933558810497,
+       27.822821013295005
       ],
       [
-       76.37168333481905,
-       30.35383775769186
+       88.69914188407857,
+       27.82259775769186
       ],
       [
-       76.37142461204061,
-       30.353666447642347
+       88.69888944407656,
+       27.822426447642346
       ],
       [
-       76.37112332298382,
-       30.35355875764324
+       88.69859547146787,
+       27.822318757643238
       ],
       [
-       76.3708,
-       30.353522026590014
+       88.69828,
+       27.822282026590013
       ],
       [
-       76.37047667701619,
-       30.35355875764324
+       88.69796452853213,
+       27.822318757643238
       ],
       [
-       76.37017538795939,
-       30.353666447642347
+       88.69767055592344,
+       27.822426447642346
       ],
       [
-       76.36991666518095,
-       30.35383775769186
+       88.69741811592142,
+       27.82259775769186
       ],
       [
-       76.36971814021065,
-       30.354061013295006
+       88.69722441189502,
+       27.822821013295005
       ],
       [
-       76.36959334219713,
-       30.354320999951383
+       88.69710264445354,
+       27.823080999951383
       ],
       [
-       76.36955077591878,
-       30.3546
+       88.69706111184688,
+       27.82336
       ],
       [
-       76.36959334219713,
-       30.35487900004862
+       88.69710264445354,
+       27.82363900004862
       ],
       [
-       76.36971814021065,
-       30.355138986704997
+       88.69722441189502,
+       27.823898986704997
       ],
       [
-       76.36991666518095,
-       30.355362242308143
+       88.69741811592142,
+       27.824122242308142
       ],
       [
-       76.37017538795939,
-       30.355533552357656
+       88.69767055592344,
+       27.824293552357656
       ],
       [
-       76.37047667701619,
-       30.355641242356764
+       88.69796452853213,
+       27.824401242356764
       ],
       [
-       76.3708,
-       30.35567797340999
+       88.69828,
+       27.82443797340999
       ]
      ]
     ]

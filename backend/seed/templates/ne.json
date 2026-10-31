@@ -1,0 +1,15 @@
+{
+  "_review": "machine-translated (Nepali phrasebook for the Sikkim route): check with a native speaker before the demo. Every other text falls back to English.",
+  "phrases": {
+    "help": "कृपया मलाई मद्दत गर्नुहोस्।",
+    "injured": "कोही घाइते हुनुहुन्छ।",
+    "lost": "म बाटो हराएँ।",
+    "water": "मलाई पानी चाहियो।",
+    "doctor": "मलाई डाक्टर चाहियो।",
+    "police": "कृपया प्रहरीलाई बोलाउनुहोस्।",
+    "landslide": "पहिरोले बाटो बन्द भएको छ।",
+    "which_way": "सुरक्षित बाटो कता हो?",
+    "call_family": "कृपया मेरो परिवारलाई फोन गर्नुहोस्।",
+    "thank_you": "धन्यवाद।"
+  }
+}

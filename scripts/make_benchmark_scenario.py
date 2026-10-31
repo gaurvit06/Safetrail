@@ -3,8 +3,8 @@
     backend/.venv/bin/python scripts/make_benchmark_scenario.py
 
 Writes backend/seed/scenario/benchmark_scenario.json and labels.json. Everything is simulated:
-trip labels like BT0001, no real names or numbers. Only the routes that are seeded today are used
-(kedarnath and hall); sikkim and park from SPEC 10.1 are not seeded yet.
+trip labels like BT0001, no real names or numbers. Trips are spread across kedarnath and sikkim (SPEC 10.2);
+all SOS happen on the Kedarnath trail, where the clusters are.
 """
 import json
 import math
@@ -88,7 +88,7 @@ SINGLES = [
 ZONES = [  # id, route, segment, frac, kind, severity, responder note
     ("Z1", "kedarnath", "S3", 0.55, "landslide", "danger", None),
     ("Z2", "kedarnath", "S2", 0.5, "landslide", "danger", None),
-    ("Z3", "hall", "H1", 0.5, "restricted", "warn", None),
+    ("Z3", "sikkim", "Y3", 0.95, "restricted", "warn", None),
     ("Z4", "kedarnath", "S5", 0.9, "restricted", "warn", None),
     ("Z5", "kedarnath", "S4", 0.5, "wildlife_core", "warn", None),
     ("Z6", "kedarnath", "S1", 0.6, "custom", "danger", "Rockfall on the steep bend after the bridge. Use the lower path and do not stop."),
@@ -133,7 +133,7 @@ def main() -> None:
             route, lang = "kedarnath", s["note_lang"] or langs[i % 3]
             s["trip"] = i
         else:
-            route = "kedarnath" if rnd.random() < 0.7 else "hall"
+            route = "kedarnath" if rnd.random() < 0.65 else "sikkim"
             lang = rnd.choices(langs, weights=[40, 45, 15])[0]
         bucket = rnd.choices(["standard", "senior", "with_children"], weights=[60, 25, 15])[0]
         day = 1 + i % 28
@@ -155,7 +155,7 @@ def main() -> None:
                                  "count_by_kind": dict(Counter(x["kind"] for x in members))}
     scenario = {"version": 1, "seed": SEED, "simulated": True,
                 "about": "Simulated benchmark scenario (SPEC 10.2). Trip labels only, no personal data.",
-                "routes": ["kedarnath", "hall"], "languages": langs, "trips": trips, "zones": zones,
+                "routes": ["kedarnath", "sikkim"], "languages": langs, "trips": trips, "zones": zones,
                 "sos": sorted(sos, key=lambda x: (x["t_min"], x["n"]))}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "benchmark_scenario.json").write_text(json.dumps(scenario, ensure_ascii=False, indent=1), encoding="utf-8")

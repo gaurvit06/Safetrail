@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "route_name": "Lachung to Yumthang Valley",
+  "simulated": true,
+  "distance_km": 16.3,
+  "emergency_number": "112",
+  "control_room_label": "North Sikkim district control room (simulated)",
+  "segment_capacity": 30,
+  "crowd_wait_min": 15,
+  "alternates": [
+    {
+      "id": "ALT-Y1",
+      "name": "Wait at Lachung until the road is cleared"
+    }
+  ],
+  "altitude_relevant": true,
+  "altitude_m": {
+    "start": 2700,
+    "end": 3560
+  },
+  "permit_note": "Foreign visitors need a Restricted Area Permit (RAP) and travel with a registered operator; the road beyond Yumthang is not open to them (simulated summary).",
+  "segments": [
+    {
+      "id": "Y1",
+      "name": "Lachung to Bichu",
+      "length_km": 3.9,
+      "risky": true,
+      "nearest_help_id": "HP-LCH",
+      "risks": [
+        "landslides and falling rocks after rain",
+        "narrow road shared with vehicles"
+      ]
+    },
+    {
+      "id": "Y2",
+      "name": "Bichu to Shingba",
+      "length_km": 5.3,
+      "risky": true,
+      "nearest_help_id": "HP-SHG",
+      "risks": [
+        "ice on the road early in the morning",
+        "rhododendron sanctuary: stay on the road"
+      ]
+    },
+    {
+      "id": "Y3",
+      "name": "Shingba to Yumthang",
+      "length_km": 7.1,
+      "risky": true,
+      "nearest_help_id": "HP-YUM",
+      "risks": [
+        "altitude above 3,500 m: go slowly",
+        "cold wind, below zero at night"
+      ]
+    }
+  ],
+  "help_points": [
+    {
+      "id": "HP-LCH",
+      "kind": "medical",
+      "name": "Lachung health centre (simulated)"
+    },
+    {
+      "id": "HP-SHG",
+      "kind": "police",
+      "name": "Shingba police check post (simulated)"
+    },
+    {
+      "id": "HP-YUM",
+      "kind": "shelter",
+      "name": "Yumthang tourist shelter (simulated)"
+    },
+    {
+      "id": "HP-YFA",
+      "kind": "medical",
+      "name": "Yumthang first-aid post (simulated)"
+    }
+  ],
+  "data_sources": "Route line drawn by hand through approximate landmark positions; help points, checkpoints and zones simulated. Not for navigation."
+}

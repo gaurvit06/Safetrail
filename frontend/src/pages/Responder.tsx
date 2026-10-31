@@ -1,12 +1,12 @@
 ﻿import { BellRing, Circle, LogOut, PenLine, ScanLine, Undo2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MapView from "../components/MapView";
 import { CostPanel, IncidentPanel, IncidentRow, LoginCard, PassScanner, RoutingRiver, TallyCard, useOpsFeed, WeatherPanel } from "../components/ops";
 import { Explain, ExplainToggle, useToast } from "../components/ui";
 import { api } from "../lib/api";
 import { KIND_ICON, KIND_LABEL, RISK_SHORT, riskText } from "../lib/format";
 import { getRoleToken, setRoleToken } from "../lib/session";
-import type { Dot, WeatherSection } from "../lib/types";
+import type { Dot, RouteSummary, WeatherSection } from "../lib/types";
 
 const KINDS = ["landslide", "closed_trail", "restricted", "wildlife_core", "flood", "custom"];
 
@@ -33,6 +33,10 @@ export default function Responder({ simple }: { simple?: boolean }) {
   const [scan, setScan] = useState(false);
   const [fly, setFly] = useState<{ lat: number; lon: number; key: number } | null>(null);
   const [dotSel, setDotSel] = useState<Dot | null>(null);
+  const [routes, setRoutes] = useState<RouteSummary[]>([]);
+  useEffect(() => {
+    api<RouteSummary[]>("/routes").then((r) => setRoutes([...r].sort((a, b) => (a.id === "hall" ? -1 : b.id === "hall" ? 1 : a.name.localeCompare(b.name))))).catch(() => {});
+  }, []);
 
   const open = feed.incidents.filter((i) => i.status !== "cancelled");
   const pins = useMemo(() => open.filter((i) => i.status !== "resolved").map((i) => ({ id: i.id, lat: i.center_lat, lon: i.center_lon, count: i.trip_count, priority: i.priority, selected: i.id === sel, status: i.status })), [open, sel]);
@@ -104,8 +108,8 @@ export default function Responder({ simple }: { simple?: boolean }) {
       <header className="z-10 flex flex-wrap items-center gap-2 border-b border-line bg-white px-3 py-2">
         <img src="/icon.svg" className="h-8 w-8" alt="" />
         <select className="rounded-lg border border-line bg-white px-2 py-1.5 font-semibold" value={routeId} onChange={(e) => { setRouteId(e.target.value); localStorage.setItem("st_r_route", e.target.value); setSel(null); }}>
-          <option value="hall">Hall demo route</option>
-          <option value="kedarnath">Gaurikund → Kedarnath</option>
+          {routes.length === 0 && <option value={routeId}>{routeId}</option>}
+          {routes.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
         <div className="flex flex-wrap gap-1.5 text-sm">
           <span className="chip bg-info/10 text-info">{counts.trail} on trail</span>
