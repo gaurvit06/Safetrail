@@ -2,7 +2,7 @@
 
 **Read this first, then SPEC.md.** SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
-_Last updated: benchmark runner + `/benchmark` page added (needs Prune keys for real numbers); 31 backend tests and 6 frontend tests pass._
+_Last updated: benchmark runner + `/benchmark` page and docs/EXPLAINER.md added; 31 backend tests and 6 frontend tests pass. What is left needs your Prune keys, the real venue map or real phones._
 
 ## Plan and status
 - [x] Repo, spec, `.gitignore`, `.env.example`, `requirements.txt`
@@ -27,7 +27,7 @@ _Last updated: benchmark runner + `/benchmark` page added (needs Prune keys for 
 - [x] Benchmark runner R1–R4 + `/benchmark` page: deterministic scenario in `backend/seed/scenario/` (500 trips, 6 zones, 40 SOS in 3 clusters + 6 singles, notes in en/hi/as, 4 injections; `scripts/make_benchmark_scenario.py`), runner `backend/app/benchmark.py`, CLI `scripts/benchmark.py` (own database `backend/benchmark.db`; `--no-ai` plumbing test needs no key), results to `docs/benchmark_results.json` + `docs/BENCHMARK.md`, page `/benchmark` (waterfall, per-run table, Prune estimate box; empty state until a real run), link from the responder's AI & cost tab. Tested with AI off (counts 100% in all four runs) and against a local fake Prune server. 31 backend tests
 - [ ] **Run the benchmark with real keys** (after the Prune check): `backend/.venv/bin/python scripts/benchmark.py --trips 100` (raise the ops key's daily cap first; R1 is the expensive run). Commit `docs/BENCHMARK.md` and `docs/benchmark_results.json`, then put the measured numbers on the cost slide
 - [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ phones over a tunnel
-- [ ] `docs/EXPLAINER.md` for the team (SPEC Section 16)
+- [x] `docs/EXPLAINER.md` for the team (SPEC Section 16): story, diagram, three sentences per part, glossary, judge Q&A, what we did not build
 
 ## How to run (backend)
 Clone into a **short path** (Windows: `C:\Users\<you>\safetrail`; long paths break Python and `node_modules`).
@@ -44,6 +44,15 @@ python -m venv .venv
 - Implementation decisions: `docs/DECISIONS.md`. API differences from the spec: `docs/CONTRACT_CHANGES.md`.
 - Never commit `.env`, `backend/keys/` or `*.db`.
 - Push after every working step and update the checklist above.
+
+## Moving work between laptops without GitHub access
+If a session can't push to `gaurvit06/Safetrail`, it can hand over a git bundle (one file with every commit):
+```bash
+git bundle create safetrail-work.bundle main          # on the machine that has the new commits
+git pull /path/to/safetrail-work.bundle main          # in the Safetrail folder on the other laptop
+git push origin main
+```
+The pull is a fast-forward when the bundle was built on top of the latest `main`; if someone pushed in between, git merges as usual.
 
 ## Prompt to continue on another laptop
 ```

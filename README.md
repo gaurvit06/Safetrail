@@ -37,6 +37,7 @@ Open `http://localhost:8000`. (macOS/Linux: `.venv/bin/python`.)
 | `/stage` | Projector (PIN) | Live map, join QR, counters, Routing River, Break-it board |
 | `/stage/control` | Presenter (PIN) | Landslide here, crowd surge, safety check, budget stress test, reset |
 | `/break` | Judges | Try 8 real abuse tricks and see what catches them |
+| `/benchmark` | Everyone | R1–R4 cost per trip and per emergency, measured (after `scripts/benchmark.py`) |
 | `/c/<id>` | Tourist | Checkpoint QR: confirms your location precisely |
 
 Demo PINs: `RESPONDER_PIN` (default 2468) and `PRESENTER_PIN` (default 1357) in `.env`.
@@ -46,4 +47,6 @@ Demo PINs: `RESPONDER_PIN` (default 2468) and `PRESENTER_PIN` (default 1357) in 
 cd backend && .venv\Scripts\python -m pytest -q
 cd frontend && npm test
 python scripts/smoke_test.py      # against a running backend
+python scripts/prune_check.py     # once, after the Prune keys are in .env
+python scripts/benchmark.py --trips 100   # R1-R4, writes docs/BENCHMARK.md
 ```
