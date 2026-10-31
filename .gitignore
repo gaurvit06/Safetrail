@@ -31,3 +31,6 @@ dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# Old copies and unrelated drafts (kept locally, never committed)
+_archive/
