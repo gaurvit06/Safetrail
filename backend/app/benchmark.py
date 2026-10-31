@@ -39,7 +39,7 @@ RUNS = {
            "about": "R3 again with the same nonce: a second day of tourists on the same routes"},
 }
 ORDER = ["R3", "R4", "R2", "R1"]
-TRIP_FEATURES = ("pack", "advisory")
+TRIP_FEATURES = ("pack", "advisory", "permit")
 EMERGENCY_FEATURES = ("report", "cluster", "copilot", "sms_parse")
 
 

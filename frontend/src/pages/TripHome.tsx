@@ -14,7 +14,7 @@ import { useT } from "../lib/i18n";
 import { flush, kv, onQueueChange, pingQueue, queueSos, sosStore, type QueuedSos } from "../lib/offline";
 import { getBundle, getSession, setBundle, setSession } from "../lib/session";
 import { ackChime, cautionChime, dangerAlert, unlockAudio, vibrate } from "../lib/signals";
-import type { Evt, HelpPoint, Pack, StartBundle, Weather, Zone } from "../lib/types";
+import type { Evt, HelpPoint, Pack, PassPayload, StartBundle, Weather, Zone } from "../lib/types";
 import { LangSwitch } from "./Welcome";
 
 type Fix = { lat: number; lon: number; accuracy: number; source?: "gps" | "checkpoint" | "sim" };
@@ -57,6 +57,8 @@ export default function TripHome() {
   const [ended, setEnded] = useState<number | null>(null);
   const geofence = useRef(new Geofence());
   const zonesRef = useRef<Zone[]>([]);
+  const passRef = useRef<PassPayload | null>(null); // Phase 2: permit-aware geofencing
+  const [passRevoked, setPassRevoked] = useState(false);
   zonesRef.current = zones;
   const meRef = useRef<Fix | null>(null);
   const demoRef = useRef(false);
@@ -140,6 +142,7 @@ export default function TripHome() {
     getBundle().then((b) => {
       if (!b || b.trip.id !== tripId) return void nav("/t/prepare");
       setB(b);
+      passRef.current = (b.pass as unknown as PassPayload) ?? null;
       setZones(b.route.zones);
       setPack(b.pack);
       setSharing(b.trip.sharing !== false);
@@ -228,6 +231,9 @@ export default function TripHome() {
           toast(`${t("st_ack")} · ${d.team ?? ""}`, "ok");
         }
         if (d.message) setGroupMsg(d.message);
+      } else if (e.type === "pass.revoked") {
+        setPassRevoked(true);
+        toast(t("pass_revoked"), "danger");
       } else if (e.type === "weather.updated") {
         if (d.route_id === routeIdRef.current && d.weather?.available) saveWeather(d.weather);
       } else if (e.type === "stage.reset") {
@@ -255,7 +261,10 @@ export default function TripHome() {
         important = true;
         postEvent("zone_enter", ev.zone);
         setApproach((a) => (a?.id === ev.zone.id ? null : a));
-        if (ev.fullScreen) {
+        const p = passRef.current;
+        if (ev.zone.kind === "restricted" && p?.kyc_level === "verified" && (p.permitted_zone_ids ?? []).includes(ev.zone.id)) {
+          toast(t("permitted_here", { zone: ev.zone.segment_name || ev.zone.id }), "ok"); // your permit covers it: no alarm
+        } else if (ev.fullScreen) {
           setAlertZone(ev.zone);
           dangerAlert();
         } else cautionChime();
@@ -352,6 +361,21 @@ export default function TripHome() {
     sendAnswers();
   };
 
+
+  /* ---------------- Phase 2: the pass carries a permit (simulated registry) */
+  const upgradePass = async (qr: string, p: PassPayload) => {
+    const b = (await getBundle()) ?? bundle;
+    if (!b) return;
+    const next = { ...b, pass_qr: qr, pass: p as unknown as Record<string, unknown> };
+    await setBundle(next);
+    setB(next);
+    passRef.current = p;
+    toast(t("permit_added"), "ok");
+  };
+  const notPermitted = (z: Zone): string | undefined => {
+    const p = passRef.current;
+    return z.kind === "restricted" && p?.kyc_level === "verified" && !(p.permitted_zone_ids ?? []).includes(z.id) ? p.permit_type ?? "" : undefined;
+  };
   const showWayOut = (z: Zone) => {
     const f = meRef.current;
     setAlertZone(null);
@@ -547,7 +571,7 @@ export default function TripHome() {
       {statusSos && <SosStatus sos={statusSos} label={session.trip.label} smsNumber={bundle.config.sms_number} offerAfterS={bundle.config.sms_offer_after_s} groupMessage={groupMsg} onCancel={() => cancelSos(statusSos)} onClose={() => setStatusId(null)} />}
       {overlay === "pack" && <PackSheet pack={pack.content} source={pack.source} helpPoints={route.help_points} me={me} initialTab={packTab} onGuide={(hp) => { setOverlay(null); setGuide(hp); }} onShowLocal={setPhrase} onClose={() => setOverlay(null)} />}
       {overlay === "signal" && <SignalSheet me={me} segment={segment} nearestHelp={nh ? `${nh.item.name} (${fmtDistance(nh.d)})` : ""} emergency={route.facts.emergency_number} onStrobe={() => { setOverlay(null); setStrobe(true); }} onClose={() => setOverlay(null)} />}
-      {overlay === "pass" && <PassSheet qr={bundle.pass_qr} label={session.trip.label} validTo={(bundle.pass as any)?.valid_to} onClose={() => setOverlay(null)} />}
+      {overlay === "pass" && <PassSheet qr={bundle.pass_qr} label={session.trip.label} pass={(bundle.pass as unknown as PassPayload) ?? null} tripId={tripId} token={token} revoked={passRevoked} onUpgraded={upgradePass} onClose={() => setOverlay(null)} />}
       {overlay === "weather" && <WeatherSheet weather={weather} templates={bundle.templates.weather} current={segment} online={online} onClose={() => setOverlay(null)} />}
       {overlay === "family" && <FamilySheet url={familyUrl} token={session.family_token ?? bundle.family_token} tripId={tripId} touristToken={token} onClose={() => setOverlay(null)} />}
       {overlay === "end" && (
@@ -567,7 +591,7 @@ export default function TripHome() {
       )}
       {phrase && <PhraseShow local={phrase.local} user={phrase.user} onClose={() => setPhrase(null)} />}
       {strobe && <Strobe onClose={() => setStrobe(false)} />}
-      {alertZone && <ZoneAlert zone={alertZone} bundle={bundle} onWayBack={() => showWayOut(alertZone)} onClose={() => setAlertZone(null)} />}
+      {alertZone && <ZoneAlert zone={alertZone} bundle={bundle} notPermitted={notPermitted(alertZone)} onWayBack={() => showWayOut(alertZone)} onClose={() => setAlertZone(null)} />}
       {check && <SafetyCheckPrompt message={check.message} onAnswer={answerCheck} />}
     </div>
   );

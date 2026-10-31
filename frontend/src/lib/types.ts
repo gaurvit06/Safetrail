@@ -263,3 +263,36 @@ export type AiStats = {
   ai_configured: boolean;
   usd_inr: number;
 };
+
+/** The signed pass payload. Phase 2 fields appear once a permit is linked (SPEC 17.2). */
+export type PassPayload = {
+  pass_id: string;
+  trip_label: string;
+  route_id: string;
+  valid_from: number;
+  valid_to: number;
+  kyc_level: "demo" | "verified" | "self_declared";
+  id_type?: string;
+  id_last4?: string;
+  permit_type?: string;
+  permit_valid_to?: number;
+  permitted_zone_ids?: string[];
+};
+
+export type PermitInfo = {
+  record_id: number;
+  id_type: string;
+  id_last4: string;
+  permit_type: string;
+  issuing_state: string;
+  valid_from: number;
+  valid_to: number;
+  permitted_zone_ids: string[];
+  permitted_zones: string[];
+  covers_route: boolean;
+  expired: boolean;
+  verified_via: string;
+  simulated: boolean;
+};
+
+export type PermitCard = { content: { title: string; allows: string[]; not_allowed: string[]; carry: string[] }; source: string; simulated: boolean };

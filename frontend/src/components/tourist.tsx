@@ -7,7 +7,7 @@ import { bearing, cardinal, fmtDistance, haversine } from "../lib/geo";
 import { useT } from "../lib/i18n";
 import type { QueuedSos } from "../lib/offline";
 import { speak, vibrate, whistleBlasts } from "../lib/signals";
-import type { HelpPoint, PackContent, StartBundle, Weather, Zone } from "../lib/types";
+import type { HelpPoint, PackContent, PassPayload, PermitCard, PermitInfo, StartBundle, Weather, Zone } from "../lib/types";
 import { HoldButton, Overlay, SheetHeader, SourceTag, Step } from "./ui";
 
 export type Fix = { lat: number; lon: number; accuracy: number };
@@ -20,13 +20,14 @@ export function zoneText(z: Zone, lang: string, b: StartBundle | null) {
 }
 
 /* ---------------------------------------------------------------- zone alert (full screen) */
-export function ZoneAlert({ zone, bundle, onWayBack, onClose }: { zone: Zone; bundle: StartBundle | null; onWayBack: () => void; onClose: () => void }) {
+export function ZoneAlert({ zone, bundle, onWayBack, onClose, notPermitted }: { zone: Zone; bundle: StartBundle | null; onWayBack: () => void; onClose: () => void; notPermitted?: string }) {
   const { t, lang } = useT();
   const a = zoneText(zone, lang, bundle);
-  const warn = zone.kind === "crowd" || zone.severity === "warn";
+  const warn = !notPermitted && (zone.kind === "crowd" || zone.severity === "warn");
   return (
     <div className={`fixed inset-0 z-[60] flex flex-col px-6 pb-8 pt-14 text-white ${warn ? "bg-caution" : "bg-danger"}`} role="alertdialog">
       <div className="text-7xl">{KIND_ICON[zone.kind] ?? "⚠"}</div>
+      {notPermitted && <p className="mt-4 rounded-xl bg-white px-3 py-2 text-lg font-extrabold text-danger">{t("not_permitted")} · {notPermitted}</p>}
       <h1 className="mt-6 text-4xl font-extrabold leading-tight">{a.title}</h1>
       <p className="mt-4 text-xl leading-snug">{a.body}</p>
       {a.action && <p className="mt-4 rounded-2xl bg-white/15 p-4 text-xl font-bold">→ {a.action}</p>}
@@ -282,18 +283,137 @@ export function Strobe({ onClose }: { onClose: () => void }) {
 }
 
 /* ---------------------------------------------------------------- pass + family */
-export function PassSheet({ qr, label, validTo, onClose }: { qr: string; label: string; validTo?: number; onClose: () => void }) {
+export function PassSheet({ qr, label, pass, tripId, token, revoked, onUpgraded, onClose }: {
+  qr: string; label: string; pass: PassPayload | null; tripId: string; token: string; revoked?: boolean;
+  onUpgraded: (qr: string, pass: PassPayload) => void; onClose: () => void;
+}) {
   const { t } = useT();
+  const linked = pass && pass.kyc_level !== "demo";
   return (
     <Overlay onClose={onClose}>
       <SheetHeader title={t("pass")} onClose={onClose} sub="Show this at checkpoints. It works offline." />
       <div className="flex flex-col items-center px-5 py-6">
-        <div className="rounded-2xl bg-white p-3 shadow-float"><QRCodeSVG value={qr} size={240} level="M" /></div>
+        {revoked && <p className="mb-3 w-full rounded-xl bg-danger p-3 text-center font-semibold text-white">{t("pass_revoked")}</p>}
+        <div className={`rounded-2xl bg-white p-3 shadow-float ${revoked ? "opacity-30" : ""}`}><QRCodeSVG value={qr} size={240} level="M" /></div>
         <p className="mt-4 font-mono text-2xl font-bold">{label}</p>
-        {validTo && <p className="text-sm text-muted">Valid until {new Date(validTo * 1000).toLocaleString()}</p>}
-        <p className="mt-2 text-xs text-muted">Signed trip pass (demo). Linking to visa / e-ILP is Phase 2.</p>
+        {pass?.valid_to && <p className="text-sm text-muted">Valid until {new Date(pass.valid_to * 1000).toLocaleString()}</p>}
+        {linked ? (
+          <p className="mt-2 text-center text-sm font-semibold text-safe">✓ {pass!.permit_type} · …{pass!.id_last4}{pass!.kyc_level === "self_declared" ? " (self-declared)" : ""}</p>
+        ) : (
+          <p className="mt-2 text-xs text-muted">Signed trip pass (demo).</p>
+        )}
+      </div>
+      <div className="px-5 pb-6">
+        {!linked && !revoked && pass && <PermitLink tripId={tripId} token={token} passId={pass.pass_id} onUpgraded={onUpgraded} />}
+        {linked && <PermitCardView tripId={tripId} token={token} />}
       </div>
     </Overlay>
+  );
+}
+
+const ID_TYPES: Record<"foreign" | "indian", [string, string][]> = {
+  foreign: [["evisa", "e-Visa"], ["visa", "Visa"], ["passport", "Passport"]],
+  indian: [["yatra", "Yatra registration"], ["eilp", "e-ILP"], ["digilocker", "DigiLocker permit"], ["passport", "Passport"], ["voter", "Voter ID"], ["aadhaar_masked", "Aadhaar (last 4 only)"]],
+};
+
+/** Phase 2 (SPEC 17.2), simulated registry: look up a permit, show what it covers, add it to the signed pass. */
+function PermitLink({ tripId, token, passId, onUpgraded }: { tripId: string; token: string; passId: string; onUpgraded: (qr: string, pass: PassPayload) => void }) {
+  const { t } = useT();
+  const [visitor, setVisitor] = useState<"foreign" | "indian">("foreign");
+  const [idType, setIdType] = useState("evisa");
+  const [num, setNum] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [found, setFound] = useState<PermitInfo | null>(null);
+  const [msg, setMsg] = useState("");
+  const day = (ts: number) => new Date(ts * 1000).toLocaleDateString();
+  const check = async () => {
+    setBusy(true);
+    setMsg("");
+    setFound(null);
+    try {
+      const r = await api<{ found: boolean; reason?: string; permit?: PermitInfo }>("/permits/lookup", { token, body: { trip_id: tripId, id_type: idType, id_number: num } });
+      if (r.found && r.permit) setFound(r.permit);
+      else setMsg(r.reason === "too_many_lookups" ? t("too_many_lookups") : t("permit_not_found"));
+    } catch (e: any) {
+      setMsg(e.message);
+    } finally {
+      setNum(""); // the number leaves the form as soon as it has been checked
+      setBusy(false);
+    }
+  };
+  const add = async () => {
+    if (!found) return;
+    setBusy(true);
+    try {
+      const r = await api<{ pass_qr: string; pass: PassPayload }>(`/passes/${passId}/upgrade`, { token, body: { trip_id: tripId, record_id: found.record_id } });
+      onUpgraded(r.pass_qr, r.pass);
+    } catch (e: any) {
+      setMsg(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="card space-y-3 p-4">
+      <div>
+        <p className="font-bold">{t("permit_title")}</p>
+        <p className="text-xs font-semibold text-caution">{t("permit_sub")}</p>
+        <p className="mt-1 text-sm text-muted">{t("permit_explain")}</p>
+      </div>
+      <div className="flex gap-2">
+        {(["foreign", "indian"] as const).map((v) => (
+          <button key={v} onClick={() => { setVisitor(v); setIdType(ID_TYPES[v][0][0]); setFound(null); setMsg(""); }} className={`chip border px-3 py-1.5 text-sm ${visitor === v ? "border-brand bg-brand text-white" : "border-line"}`}>{t(v === "foreign" ? "visitor_foreign" : "visitor_indian")}</button>
+        ))}
+      </div>
+      <label className="block"><span className="label">{t("id_type")}</span>
+        <select className="input mt-1" value={idType} onChange={(e) => { setIdType(e.target.value); setFound(null); }}>
+          {ID_TYPES[visitor].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+      </label>
+      <label className="block"><span className="label">{t("id_number")}</span>
+        <input className="input mt-1 font-mono uppercase" autoComplete="off" spellCheck={false} maxLength={40} value={num} onChange={(e) => setNum(e.target.value)} />
+      </label>
+      {idType === "aadhaar_masked" && <p className="text-xs text-muted">{t("aadhaar_note")}</p>}
+      <button className="btn-primary w-full" disabled={busy || num.trim().length < 4} onClick={check}>{t("permit_check")}</button>
+      <p className="text-xs text-muted">{t("permit_privacy")}</p>
+      {msg && <p className="text-sm font-semibold text-danger">{msg}</p>}
+      {found && (
+        <div className={`rounded-xl p-3 text-sm ${found.expired || !found.covers_route ? "bg-danger/10" : "bg-safe/10"}`}>
+          <p className="font-bold">{found.permit_type} · …{found.id_last4}</p>
+          <p>{t("permit_valid", { from: day(found.valid_from), to: day(found.valid_to) })}</p>
+          <p>{t("permit_zones")}: {found.permitted_zones.length ? found.permitted_zones.join(", ") : t("permit_none")}</p>
+          <p className="text-xs text-muted">{found.verified_via === "manual" ? "Self-declared" : "Simulated registry"}</p>
+          {found.expired && <p className="mt-1 font-semibold text-danger">{t("permit_expired")}</p>}
+          {!found.expired && !found.covers_route && <p className="mt-1 font-semibold text-danger">{t("permit_other_route")}</p>}
+          {!found.expired && <button className="btn-primary mt-3 w-full" disabled={busy} onClick={add}>{t("permit_add")}</button>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** "What your permit allows", written by the AI through Prune (or the official text as standard text). */
+function PermitCardView({ tripId, token }: { tripId: string; token: string }) {
+  const { t } = useT();
+  const [card, setCard] = useState<PermitCard | null>(null);
+  const [err, setErr] = useState(false);
+  useEffect(() => {
+    api<PermitCard>(`/trips/${tripId}/permit-card`, { token }).then(setCard).catch(() => setErr(true));
+  }, [tripId, token]);
+  if (err) return null;
+  if (!card) return <p className="text-center text-sm text-muted">…</p>;
+  const c = card.content;
+  const list = (title: string, xs: string[], cls: string) => xs.length > 0 && (
+    <div><p className={`text-xs font-bold uppercase ${cls}`}>{title}</p><ul className="ml-4 list-disc text-sm">{xs.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
+  );
+  return (
+    <div className="card space-y-2 p-4">
+      <p className="font-bold">{t("permit_card")}: {c.title}</p>
+      {list(t("permit_allows"), c.allows, "text-safe")}
+      {list(t("permit_not_allowed"), c.not_allowed, "text-danger")}
+      {list(t("permit_carry"), c.carry, "text-muted")}
+      <p className="text-xs text-muted">{card.source === "ai" ? t("ai_translated") : t("standard_text")} · Simulated permit text</p>
+    </div>
   );
 }
 

@@ -515,11 +515,77 @@ def revoke(trip_id: str, request: Request, s: Session = Depends(get_session)):
 
 class QrIn(BaseModel):
     qr: str
+    zone_id: str | None = None  # Phase 2: "checking entry to this zone"
 
 
 @router.post("/passes/verify")
-def pass_verify(body: QrIn):
-    return verify_pass(body.qr)
+def pass_verify(body: QrIn, s: Session = Depends(get_session)):
+    from . import permits
+    return permits.check(s, verify_pass(body.qr), body.zone_id)
+
+
+# ------------------------------------------------------------------------------------------ Phase 2: permits (simulated)
+
+class PermitLookupIn(BaseModel):
+    trip_id: str
+    id_type: str
+    id_number: str = Field(min_length=1, max_length=40)
+
+
+@router.post("/permits/lookup")
+def permit_lookup(body: PermitLookupIn, request: Request, s: Session = Depends(get_session)):
+    """Mock registry (SPEC 17.2). The number is hashed at once; only its last 4 characters are kept."""
+    from . import permits
+    trip = tourist_trip(request, s, body.trip_id)
+    return permits.lookup(s, trip, body.id_type, body.id_number)
+
+
+class UpgradeIn(BaseModel):
+    trip_id: str
+    record_id: int
+
+
+@router.post("/passes/{pass_id}/upgrade")
+def pass_upgrade(pass_id: str, body: UpgradeIn, request: Request, s: Session = Depends(get_session)):
+    from . import permits
+    from .models import Pass
+    trip = tourist_trip(request, s, body.trip_id)
+    ps = s.get(Pass, pass_id)
+    if not ps or ps.trip_id != trip.id:
+        raise HTTPException(404, "Unknown pass")
+    r = permits.upgrade(s, trip, ps, body.record_id)
+    if not r["ok"]:
+        raise HTTPException(400, r["reason"])
+    return r
+
+
+class RevokeIn(BaseModel):
+    reason: str = ""
+
+
+@router.post("/passes/{pass_id}/revoke")
+def pass_revoke(pass_id: str, body: RevokeIn, role: str = Depends(RESP), s: Session = Depends(get_session)):
+    from . import permits
+    r = permits.revoke(s, pass_id, body.reason, role)
+    if not r["ok"]:
+        raise HTTPException(404, r["reason"])
+    return r
+
+
+@router.get("/passes/revocations")
+def pass_revocations(since: float = 0, role: str = Depends(RESP), s: Session = Depends(get_session)):
+    """For checkpoint devices to sync while online, so they can refuse revoked passes offline."""
+    from . import permits
+    return permits.revocations(s, since)
+
+
+@router.get("/trips/{trip_id}/permit-card")
+async def permit_card(trip_id: str, request: Request, s: Session = Depends(get_session)):
+    trip = tourist_trip(request, s, trip_id)
+    card = await features.build_permit_card(trip.id)
+    if card is None:
+        raise HTTPException(404, "No permit linked to this trip")
+    return card
 
 
 # ------------------------------------------------------------------------------------------ AI & cost

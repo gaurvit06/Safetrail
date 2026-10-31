@@ -229,7 +229,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
           )}
         </aside>
       </div>
-      {scan && feed.config && <PassScanner pubkey={feed.config.pass_pubkey} onClose={() => setScan(false)} />}
+      {scan && feed.config && <PassScanner pubkey={feed.config.pass_pubkey} token={token} zones={feed.zones} onClose={() => setScan(false)} />}
     </div>
   );
 }

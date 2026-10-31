@@ -118,6 +118,31 @@ class Pass(SQLModel, table=True):
     kyc_level: str = "demo"
 
 
+class PermitRecord(SQLModel, table=True):
+    """Phase 2 (SPEC 17.5). The full ID number is never stored: only a salted hash and the last 4 characters."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    trip_id: str = Field(index=True)
+    id_type: str  # visa|evisa|eilp|yatra|passport|digilocker|voter|aadhaar_masked
+    id_last4: str
+    id_hash: str
+    permit_type: str
+    issuing_state: str = ""
+    valid_from: float
+    valid_to: float
+    permitted_zone_ids: Any = J([])
+    routes: Any = J([])
+    verified_via: str = "mock_registry"  # mock_registry|manual
+    created_at: float = Field(default_factory=now)
+
+
+class PassRevocation(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    pass_id: str = Field(index=True)
+    reason: str = ""
+    revoked_by: str = "responder"
+    revoked_at: float = Field(default_factory=now)
+
+
 class Ping(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     trip_id: str = Field(index=True)

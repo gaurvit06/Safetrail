@@ -1,0 +1,32 @@
+{
+  "_note": "SIMULATED REGISTRY for the hackathon. It stands in for the official e-Visa, e-ILP, yatra and permit systems, which have no open API. Every number here is fake and made up for the demo.",
+  "records": [
+    {"id_type": "evisa", "number": "EV2026IN0042137", "visitor": "foreign", "permit_type": "e-Visa (tourist) + Sikkim Restricted Area Permit", "issuing_state": "Sikkim",
+     "valid_from": "2026-09-01", "valid_to": "2027-06-30", "routes": ["sikkim", "kedarnath", "park", "hall"], "permitted_zone_ids": []},
+    {"id_type": "visa", "number": "V9876543", "visitor": "foreign", "permit_type": "Tourist visa", "issuing_state": "India",
+     "valid_from": "2026-09-01", "valid_to": "2027-03-31", "routes": ["kedarnath", "park", "hall"], "permitted_zone_ids": []},
+    {"id_type": "evisa", "number": "EV2025IN0007788", "visitor": "foreign", "permit_type": "e-Visa (tourist)", "issuing_state": "India",
+     "valid_from": "2025-10-01", "valid_to": "2026-04-30", "routes": ["kedarnath", "park", "hall"], "permitted_zone_ids": []},
+    {"id_type": "yatra", "number": "UK-YATRA-2026-551023", "visitor": "indian", "permit_type": "Char Dham yatra registration (Kedarnath)", "issuing_state": "Uttarakhand",
+     "valid_from": "2026-09-01", "valid_to": "2027-06-30", "routes": ["kedarnath", "hall"], "permitted_zone_ids": []},
+    {"id_type": "eilp", "number": "AP-EILP-2026-883410", "visitor": "indian", "permit_type": "Arunachal Pradesh e-ILP", "issuing_state": "Arunachal Pradesh",
+     "valid_from": "2026-09-01", "valid_to": "2027-03-31", "routes": ["hall"], "permitted_zone_ids": []},
+    {"id_type": "digilocker", "number": "DL-SK-NS-2026-1129", "visitor": "indian", "permit_type": "North Sikkim permit (Indian visitors)", "issuing_state": "Sikkim",
+     "valid_from": "2026-09-01", "valid_to": "2027-06-30", "routes": ["sikkim", "hall"], "permitted_zone_ids": ["Z-SKM-R1"]},
+    {"id_type": "passport", "number": "Z1234567", "visitor": "indian", "permit_type": "Corbett park entry permit (Dhikala)", "issuing_state": "Uttarakhand",
+     "valid_from": "2026-09-01", "valid_to": "2027-06-30", "routes": ["park", "hall"], "permitted_zone_ids": []},
+    {"id_type": "voter", "number": "ABC1234567", "visitor": "indian", "permit_type": "Voter ID (identity only)", "issuing_state": "India",
+     "valid_from": "2026-01-01", "valid_to": "2030-12-31", "routes": ["kedarnath", "park", "hall"], "permitted_zone_ids": []}
+  ],
+  "permit_text": {
+    "e-Visa (tourist) + Sikkim Restricted Area Permit": "A foreign tourist with this e-Visa and Sikkim Restricted Area Permit may visit Lachung and Yumthang in North Sikkim in a group travelling with a registered tour operator. The road beyond Yumthang towards Yume Samdong and Zero Point is not open to foreign nationals. Carry the passport and the permit and show them at every check post.",
+    "Tourist visa": "A foreign tourist with this visa may travel to open areas of India for tourism until the visa ends. Protected and restricted areas need a separate permit. Carry the passport with the visa page.",
+    "e-Visa (tourist)": "A foreign tourist with this e-Visa may travel to open areas of India for tourism until it ends. Protected and restricted areas need a separate permit. Carry the passport and the e-Visa printout.",
+    "Char Dham yatra registration (Kedarnath)": "This registration allows the pilgrim to walk the Gaurikund to Kedarnath route on the registered dates. It must be shown at the registration and check points on the route. Do not start the trek after the time set by the administration on the day.",
+    "Arunachal Pradesh e-ILP": "This Inner Line Permit allows an Indian visitor to enter Arunachal Pradesh for the dates and districts listed on it. Carry it with a photo ID and show it at every check gate.",
+    "North Sikkim permit (Indian visitors)": "This permit allows an Indian visitor to travel to Lachung, Yumthang and, on open days, the road to Yume Samdong and Zero Point, with a registered tour operator. Carry it with a photo ID and show it at every check post.",
+    "Corbett park entry permit (Dhikala)": "This permit allows entry to the Dhikala zone of Corbett Tiger Reserve on the booked date, in a registered vehicle with a park guide. Walking off the road is not allowed. Carry the permit and the photo ID used for booking.",
+    "Voter ID (identity only)": "A voter ID proves identity only. It is not a permit for protected or restricted areas.",
+    "Self-declared (Aadhaar last 4 digits only)": "Only the last 4 digits were given, by choice. This is not a permit for protected or restricted areas."
+  }
+}

@@ -34,6 +34,8 @@ Say once, early: **"Demo zones and dispatches are simulated."**
 
 Optional if there's time: Stage control → **Budget stress test**. Prune stops the AI with a 429, the card switches to standard text, and zone alerts and SOS keep working.
 
+Optional Phase 2 teaser (30 s, if a judge asks about IDs): on a phone on the Sikkim route, **Pass → Link your permit → Foreign visitor → e-Visa** `EV2026IN0042137` → **Add to my pass**. Then on the responder, **Verify pass**, set "Checking entry to" to the road beyond Yumthang, and paste or scan the pass: "Not permitted for this area". Say: "Simulated registry. The full number is never stored and never reaches the AI."
+
 Then **Break it**: switch the projector QR to **Break it** (`/break`). Judges try replaying an SOS, forging a pass, teleporting, injecting the AI, flooding SOS and more. Each attempt shows on the stage board as caught, flagged or slipped through.
 
 ## If something goes wrong

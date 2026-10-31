@@ -12,7 +12,7 @@ from ..models import HelpPoint, Incident, SafetyPack, SosEvent, Trip, Zone, Zone
 from ..seeddata import route_facts, route_seed, sops
 from . import prompts, validators
 from .jobs import run_job
-from .templates import cluster_template, copilot_template, pack_template, report_template, sms_template, zone_text
+from .templates import cluster_template, copilot_template, pack_template, permit_template, report_template, sms_template, zone_text
 
 PEOPLE_MID = {"1": 1, "2-5": 3, "6+": 8}
 
@@ -268,3 +268,27 @@ async def build_sms_parse(sms_id: int) -> None:
                         template=sms_template)
     with Session(engine) as s:
         sms.apply_parse(s, sms_id, res.output, res.source)
+
+
+# ---------------------------------------------------------------- 17.3 permit explainer (Phase 2)
+
+async def build_permit_card(trip_id: str) -> dict | None:
+    """'What your permit allows' in the tourist's language. One job per (permit type, state, language), so every
+    traveller with the same permit and language reuses the first answer: it's paid for once."""
+    import re as _re
+
+    from .. import permits
+    from ..models import PermitRecord
+
+    with Session(engine) as s:
+        trip = s.get(Trip, trip_id)
+        rec = s.exec(select(PermitRecord).where(PermitRecord.trip_id == trip_id).order_by(PermitRecord.id.desc())).first()
+        if not trip or not rec:
+            return None
+        inp = permits.explainer_input(trip, rec)
+    slug = _re.sub(r"[^a-z0-9]+", "-", f"{inp['state']}-{inp['permit_type']}".lower()).strip("-")[:60]
+    key = f"permit_{slug}_{inp['language']}_v1"
+    res = await run_job(job_key=key, feature="permit", route_id=trip.route_id, run_id=key,
+                        messages=prompts.permit_messages(inp), validate=lambda o: validators.validate_permit(o, inp),
+                        template=lambda: permit_template(inp))
+    return {"content": res.output, "source": res.source, "llm_call_ids": res.llm_call_ids, "simulated": True}

@@ -59,6 +59,12 @@ SMS_PARSE = BASE + (
     "Never guess: use unknown or an empty string when the SMS doesn't say."
 )
 
+PERMIT = BASE + (
+    " Task: explain a travel permit to a tourist in simple words, in the requested language, using only official_text. "
+    "JSON keys: title (at most 8 words); allows (list of at most 4 short strings); not_allowed (list of at most 4 short "
+    "strings); carry (list of at most 3 short strings: what to carry or show). Never add rules that aren't in official_text."
+)
+
 
 def _msgs(system: str, user: dict, nonce: str = "") -> list[dict]:
     if nonce:
@@ -108,3 +114,9 @@ def copilot_messages(summary: dict, kinds: list[str], sop_snippets: list[dict], 
 
 def sms_messages(text: str, nonce: str = "") -> list[dict]:
     return _msgs(SMS_PARSE, {"sms": untrusted(scrub(text), 320)}, nonce)  # phone numbers and IDs never reach the AI
+
+
+def permit_messages(inp: dict, nonce: str = "") -> list[dict]:
+    """Only the permit type, the state and the official text: never an ID number, a name or a photo (SPEC 17.3)."""
+    return _msgs(PERMIT, {"language": LANG_NAMES.get(inp["language"], inp["language"]), "official_text": inp["official_text"],
+                          "permit_type": inp["permit_type"], "state": inp["state"]}, nonce)

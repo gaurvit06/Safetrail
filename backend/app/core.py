@@ -538,7 +538,7 @@ def family_status(s: Session, trip: Trip) -> dict:
 
 def _feature_of(job_key: str) -> str:
     for p, f in (("pack_", "pack"), ("adv_", "advisory"), ("inc_", "report"), ("clu_", "cluster"), ("cop_", "copilot"),
-                 ("sms_", "sms_parse")):
+                 ("sms_", "sms_parse"), ("permit_", "permit")):
         if job_key.startswith(p):
             return f
     return "other"
@@ -566,7 +566,7 @@ def ai_stats(s: Session, route_id: str | None = None) -> dict:
     incidents = len([i for i in s.exec(select(Incident)).all() if not any(str(f).startswith("merged") for f in (i.flags or []))])
     total = sum(c.cost_with_prune_usd for c in known) if known else None
     without = [c.cost_without_prune_usd for c in ok if c.cost_without_prune_usd is not None]
-    trip_cost = sum(by.get(f, {}).get("cost_usd", 0) for f in ("pack", "advisory"))
+    trip_cost = sum(by.get(f, {}).get("cost_usd", 0) for f in ("pack", "advisory", "permit"))
     emerg_cost = sum(by.get(f, {}).get("cost_usd", 0) for f in ("report", "cluster", "copilot", "sms_parse"))
     return {
         "calls": len(calls), "ok_calls": len(ok), "errors": len(calls) - len(ok),

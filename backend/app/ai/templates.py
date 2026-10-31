@@ -70,3 +70,9 @@ def copilot_template(kinds: list[str]) -> dict:
 def sms_template() -> dict:
     """5.8.6 fallback: nothing extracted, so the SOS stays kind=unknown and the card says to call back."""
     return {"kind": "unknown", "people_bucket": "unknown", "place_hint": ""}
+
+
+def permit_template(inp: dict) -> dict:
+    """Permit card fallback: the official (simulated) text itself, labelled Standard text in the app."""
+    return {"title": inp["permit_type"], "allows": [inp["official_text"]] if inp["official_text"] else [], "not_allowed": [],
+            "carry": []}

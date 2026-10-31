@@ -631,44 +631,108 @@ export function TallyCard({ t, onLocate, dark }: { t: Tally; onLocate?: (label: 
 }
 
 /* ================================================================ pass scanner (checkpoints) */
-export function PassScanner({ pubkey, onClose }: { pubkey: string; onClose: () => void }) {
+type ScanResult = { valid: boolean; reason: string; payload?: any };
+const REVOKED_KEY = "st_revoked_passes";
+const loadRevoked = (): Record<string, number> => {
+  try {
+    return JSON.parse(localStorage.getItem(REVOKED_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
+/** Checks the signature with the bundled public key, then (Phase 2) the synced revocation list and the permit's
+ *  allowed zones. All of it works offline; only syncing revocations and revoking need a connection. */
+export function PassScanner({ pubkey, onClose, token, zones = [] }: { pubkey: string; onClose: () => void; token?: string | null; zones?: Zone[] }) {
   const video = useRef<HTMLVideoElement>(null);
-  const [res, setRes] = useState<{ valid: boolean; reason: string; payload?: any } | null>(null);
+  const [res, setRes] = useState<ScanResult | null>(null);
   const [manual, setManual] = useState("");
   const [camErr, setCamErr] = useState(false);
+  const [revoked, setRevoked] = useState<Record<string, number>>(loadRevoked);
+  const [zoneId, setZoneId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const restricted = zones.filter((z) => z.kind === "restricted");
+  useEffect(() => {
+    if (!token) return;
+    api<{ pass_id: string; revoked_at: number }[]>("/passes/revocations", { token })
+      .then((rows) => {
+        const m = Object.fromEntries(rows.map((r) => [r.pass_id, r.revoked_at]));
+        localStorage.setItem(REVOKED_KEY, JSON.stringify(m));
+        setRevoked(m);
+      })
+      .catch(() => {}); // offline: use the last synced list
+  }, [token]);
+  const check = async (qr: string) => setRes(await verifyPassOffline(qr, pubkey));
   useEffect(() => {
     let controls: IScannerControls | null = null;
     const reader = new BrowserQRCodeReader();
     reader
       .decodeFromVideoDevice(undefined, video.current!, async (r) => {
         if (r) {
-          setRes(await verifyPassOffline(r.getText(), pubkey));
+          await check(r.getText());
           controls?.stop();
         }
       })
       .then((c) => (controls = c))
       .catch(() => setCamErr(true));
     return () => controls?.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pubkey]);
+  const p = res?.payload;
+  const isRevoked = !!(p?.pass_id && revoked[p.pass_id]);
+  const valid = !!res?.valid && !isRevoked;
+  const zone = restricted.find((z) => z.id === zoneId);
+  const zoneBlocked = valid && !!zone && !(p?.permitted_zone_ids ?? []).includes(zone.id);
+  const title = isRevoked ? "Revoked pass" : !res?.valid ? (res?.reason === "forged" ? "Forged pass" : res?.reason === "expired" ? "Expired pass" : "Unreadable") : zoneBlocked ? "Not permitted for this area" : "Valid pass";
+  const revoke = async () => {
+    if (!token || !p?.pass_id) return;
+    setBusy(true);
+    try {
+      const r = await api<{ revoked_at: number }>(`/passes/${p.pass_id}/revoke`, { token, body: { reason: "Revoked at checkpoint" } });
+      const m = { ...revoked, [p.pass_id]: r.revoked_at };
+      localStorage.setItem(REVOKED_KEY, JSON.stringify(m));
+      setRevoked(m);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
       <div className="w-full max-w-md rounded-t-sheet bg-white p-5 sm:rounded-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between"><p className="text-lg font-bold">Verify a trip pass</p><button onClick={onClose}><X /></button></div>
-        <p className="text-sm text-muted">Checked on this device with the server's public key. Works offline.</p>
+        <p className="text-sm text-muted">Checked on this device with the server's public key and the last synced revocation list ({Object.keys(revoked).length}). Works offline.</p>
+        {restricted.length > 0 && (
+          <label className="mt-2 block text-sm"><span className="font-semibold">Checking entry to </span>
+            <select className="ml-1 rounded-lg border border-line px-2 py-1" value={zoneId} onChange={(e) => setZoneId(e.target.value)}>
+              <option value="">any area</option>
+              {restricted.map((z) => <option key={z.id} value={z.id}>{z.segment_name || z.id} (restricted)</option>)}
+            </select>
+          </label>
+        )}
         {!res && !camErr && <video ref={video} className="mt-3 aspect-square w-full rounded-2xl bg-black object-cover" muted playsInline />}
         {camErr && <p className="mt-3 text-sm text-caution">Camera unavailable. Paste the pass text instead.</p>}
         {!res && (
           <div className="mt-3 flex gap-2">
             <input className="input" placeholder="…or paste the pass text" value={manual} onChange={(e) => setManual(e.target.value)} />
-            <button className="btn-primary" onClick={async () => setRes(await verifyPassOffline(manual, pubkey))}>Check</button>
+            <button className="btn-primary" onClick={() => check(manual)}>Check</button>
           </div>
         )}
         {res && (
-          <div className={`mt-4 rounded-2xl p-5 text-center ${res.valid ? "bg-safe/10 text-safe" : "bg-danger/10 text-danger"}`}>
-            {res.valid ? <ShieldCheck className="mx-auto" size={48} /> : <ShieldAlert className="mx-auto" size={48} />}
-            <p className="mt-2 text-2xl font-extrabold">{res.valid ? "Valid pass" : res.reason === "forged" ? "Forged pass" : res.reason === "expired" ? "Expired pass" : "Unreadable"}</p>
-            {res.payload && <p className="mt-1 text-sm text-ink">{res.payload.trip_label} · route {res.payload.route_id} · valid until {new Date(res.payload.valid_to * 1000).toLocaleString()}</p>}
-            <button className="btn-ghost mt-4" onClick={() => setRes(null)}>Scan another</button>
+          <div className={`mt-4 rounded-2xl p-5 text-center ${valid && !zoneBlocked ? "bg-safe/10 text-safe" : zoneBlocked ? "bg-caution/10 text-caution" : "bg-danger/10 text-danger"}`}>
+            {valid && !zoneBlocked ? <ShieldCheck className="mx-auto" size={48} /> : <ShieldAlert className="mx-auto" size={48} />}
+            <p className="mt-2 text-2xl font-extrabold">{title}</p>
+            {p && <p className="mt-1 text-sm text-ink">{p.trip_label} · route {p.route_id} · valid until {new Date(p.valid_to * 1000).toLocaleString()}</p>}
+            {p?.permit_type && (
+              <p className="mt-1 text-sm text-ink">
+                {p.kyc_level === "verified" ? "✓ Permit" : "Self-declared"}: {p.permit_type} · {p.id_type} …{p.id_last4}
+                <span className="block text-xs text-muted">Simulated registry · restricted areas allowed: {(p.permitted_zone_ids ?? []).length || "none"}</span>
+              </p>
+            )}
+            {p && !p.permit_type && <p className="mt-1 text-xs text-muted">Trip pass without a linked permit (demo level)</p>}
+            <div className="mt-4 flex justify-center gap-2">
+              <button className="btn-ghost" onClick={() => setRes(null)}>Scan another</button>
+              {res.valid && !isRevoked && token && <button className="btn-ghost text-danger" disabled={busy} onClick={revoke}>Revoke pass</button>}
+            </div>
           </div>
         )}
       </div>

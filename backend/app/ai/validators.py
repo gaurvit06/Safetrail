@@ -196,3 +196,21 @@ def validate_sms(out: dict, text: str):
 
 def _fold(t: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", t or "").casefold().split())
+
+
+def validate_permit(out: dict, inp: dict):
+    """Permit card (SPEC 17.3): short lists, and no number that isn't in the official text."""
+    errs = []
+    clean = {"title": str(out.get("title") or "").strip()}
+    if not _str(clean["title"], 80):
+        errs.append("title missing or too long")
+    for key, n in (("allows", 4), ("not_allowed", 4), ("carry", 3)):
+        v = out.get(key) or []
+        if not isinstance(v, list) or len(v) > n or not all(_str(x, 160) for x in v):
+            errs.append(f"{key} must be a list of at most {n} short strings")
+            v = []
+        clean[key] = [x.strip() for x in v]
+    if not clean.get("allows"):
+        errs.append("allows is empty")
+    errs += _check_numbers(clean, allowed_numbers(inp), "permit card")
+    return clean, errs

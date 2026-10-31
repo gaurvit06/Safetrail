@@ -57,7 +57,7 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 |---|---|
 | `X-Prune-Run-Id` | one run per AI job, e.g. `pack_kedarnath_hi_senior_v1`, `adv_<zone>`, `inc_<incident>_<n>`, `clu_<incident>_<n>`, `cop_<incident>_<n>` |
 | `X-Prune-Run-Budget-Usd` / `X-Prune-Max-Steps` | the job's budget and step limit (below) |
-| `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot`, `sms_parse` or `repair` |
+| `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot`, `sms_parse`, `permit` or `repair` |
 | `X-Prune-Customer-Id` | `route_<route_id>`, so Prune's dashboard shows cost per route |
 | `X-Prune-Cache` | `exact` (`PRUNE_CACHE_MODE`): never semantic, so a similar note can't return another incident's report |
 | `X-Prune-Model-Policy` | `balanced` (`PRUNE_MODEL_POLICY`) |
@@ -66,7 +66,7 @@ All LLM calls are made on the server, by one module (`backend/app/ai/prune_clien
 **Keys:** provider keys live only in Prune's vault. `.env` (never committed) holds two Prune keys: `PRUNE_API_KEY` (ops, with a daily spend cap set in the Prune dashboard) and `PRUNE_PUBLIC_API_KEY` (the Break-it round: small cap, allowlisted to `MODEL_SMALL`, plus a local cap `PUBLIC_BUDGET_USD`). Nothing secret is in the frontend bundle.
 
 **Three budget layers:**
-1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.01, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01, SMS parse $0.003.
+1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.01, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01, SMS parse $0.003, permit card $0.004.
 2. **Prune's run guard** enforces those budgets and step limits per job (`X-Prune-Run-Budget-Usd`, `X-Prune-Max-Steps`). A 429 `run_budget` is never retried: the job uses standard text.
 3. **Prune's key caps** are the outer wall: a daily spend cap on each key.
 
@@ -74,7 +74,7 @@ Errors: Prune's fail-closed 503s are retried once after `Retry-After`; rate-limi
 
 ## How cost per trip and per emergency are computed
 Every cost is Prune's own `cost_with_prune_usd` from the stored response metadata (`LlmCall` table). If Prune didn't return a cost, the screen shows n/a, never a guess.
-- **Cost per monitored trip** = cost of all `pack` and `advisory` calls ÷ trips started (simulated stage dots excluded).
+- **Cost per monitored trip** = cost of all `pack`, `advisory` and `permit` calls ÷ trips started (simulated stage dots excluded).
 - **Cost per emergency** = cost of all `report`, `cluster`, `copilot` and `sms_parse` calls ÷ incidents (incidents merged into another one excluded).
 - A repair call counts toward the feature of the job it repaired. Prune's `cost_without_prune_usd` is always labelled "Prune estimate (list price)".
 
@@ -89,6 +89,11 @@ Every cost is Prune's own `cost_with_prune_usd` from the stored response metadat
 | R4 SafeTrail + Prune (warm) | R3 again with the same nonce: a second day on the same routes | policy balanced, cache exact |
 
 R1 → R2 is the saving from SafeTrail's design, R2 → R3 from Prune's routing and optimisations, R3 → R4 from Prune's exact cache. It also measures count accuracy (must be 100%: counts are computed), the invented-fact rate (answers the validators rejected), injection recall, standard-text fallbacks and latency. Results go to `docs/BENCHMARK.md` and the `/benchmark` page, with run ids and timestamps.
+
+## Phase 2: Digital Tourist ID (simulated)
+A tourist opens **Pass → Link your permit**, picks Foreign or Indian visitor and enters the document they already have. A **simulated registry** (`backend/seed/mock_registry.json`, fake numbers) stands in for the e-Visa, e-ILP and yatra systems. The number is hashed at once; only its last 4 characters are kept, and it never reaches the AI. The pass is re-signed with the permit type, dates and the restricted zones it allows, so phones and checkpoints apply it offline: the phone alerts "Not permitted for your pass" in a restricted zone the permit doesn't cover, and the responder's **Verify pass** has "Checking entry to …", an offline revocation list and **Revoke pass**. "What your permit allows" is written in the tourist's language through Prune (`permit` feature, cached per permit type and language) or shown as the official text.
+
+Demo numbers (all fake): e-Visa `EV2026IN0042137` (Sikkim RAP: not beyond Yumthang) · DigiLocker `DL-SK-NS-2026-1129` (Indian North Sikkim permit: Zero Point road allowed) · Yatra `UK-YATRA-2026-551023` (Kedarnath) · Passport `Z1234567` (Corbett Dhikala) · expired e-Visa `EV2025IN0007788` · Aadhaar: last 4 digits only, self-declared, never a permit.
 
 ## Tests
 ```bash

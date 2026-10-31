@@ -94,7 +94,7 @@ The dotted lines are the AI. Everything on the solid lines works without it.
 ## What we deliberately did NOT build, and why
 
 - **Real 112 integration:** it needs official authorisation. We show where it would plug in.
-- **Real permit APIs (e-ILP, PAP/RAP, yatra registration, DigiLocker):** there's no open API for a hackathon, so the permit check is simulated and labelled.
+- **Real permit APIs (e-ILP, PAP/RAP, yatra registration, DigiLocker):** there's no open API for a hackathon, so Phase 2 uses a simulated registry with fake numbers, clearly labelled. The flow (hash the number, sign the permit into the pass, check it offline at checkpoints) is real.
 - **Face recognition:** not needed for safety, and a privacy risk.
 - **Satellite SOS and phone-to-phone Bluetooth relay:** they need hardware and platform access we don't have. They're future work.
 - **A chatbot:** there is no chat box anywhere. Tourists in trouble need buttons, not a conversation.
