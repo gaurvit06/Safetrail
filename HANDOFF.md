@@ -2,7 +2,7 @@
 
 **Read this first, then SPEC.md.** SPEC.md is the source of truth for what to build. This file says what's already built, how to run it, and what to do next. Whoever builds updates this file and pushes after every working step, so another laptop can continue at any moment.
 
-_Last updated: benchmark runner + `/benchmark` page and docs/EXPLAINER.md added; 31 backend tests and 6 frontend tests pass. What is left needs your Prune keys, the real venue map or real phones._
+_Last updated: direct-call checker, demo script and README sections added; 36 backend tests and 6 frontend tests pass. What is left needs your Prune keys, the real venue map, real phones, a backup video and a push to GitHub._
 
 ## Plan and status
 - [x] Repo, spec, `.gitignore`, `.env.example`, `requirements.txt`
@@ -27,7 +27,11 @@ _Last updated: benchmark runner + `/benchmark` page and docs/EXPLAINER.md added;
 - [x] Benchmark runner R1–R4 + `/benchmark` page: deterministic scenario in `backend/seed/scenario/` (500 trips, 6 zones, 40 SOS in 3 clusters + 6 singles, notes in en/hi/as, 4 injections; `scripts/make_benchmark_scenario.py`), runner `backend/app/benchmark.py`, CLI `scripts/benchmark.py` (own database `backend/benchmark.db`; `--no-ai` plumbing test needs no key), results to `docs/benchmark_results.json` + `docs/BENCHMARK.md`, page `/benchmark` (waterfall, per-run table, Prune estimate box; empty state until a real run), link from the responder's AI & cost tab. Tested with AI off (counts 100% in all four runs) and against a local fake Prune server. 31 backend tests
 - [ ] **Run the benchmark with real keys** (after the Prune check): `backend/.venv/bin/python scripts/benchmark.py --trips 100` (raise the ops key's daily cap first; R1 is the expensive run). Commit `docs/BENCHMARK.md` and `docs/benchmark_results.json`, then put the measured numbers on the cost slide
 - [ ] Replace `backend/seed/routes/hall.json` with the real venue (geojson.io) and test GPS in the hall with 3+ phones over a tunnel
+- [ ] Rehearse `docs/DEMO_SCRIPT.md` twice with real phones (Android and iPhone), then record a backup video
 - [x] `docs/EXPLAINER.md` for the team (SPEC Section 16): story, diagram, three sentences per part, glossary, judge Q&A, what we did not build
+- [x] `scripts/check_no_direct_calls.sh` (logic in `check_no_direct_calls.py`, runs on Windows too): fails on direct AI-provider URLs, AI SDK imports outside `prune_client.py`, LLM use in the frontend, committed keys (files, git history and the built bundle), `.env`, `backend/keys/` or databases. Passes; tested in `tests/test_no_direct_calls.py`. 36 backend tests
+- [x] `docs/DEMO_SCRIPT.md` (SPEC 10.4): setup checklist, the 3-minute run of show with the app's real button labels, fallbacks, Break-it round
+- [x] README: the safety rule, Prune headers, keys and the three budget layers, how cost per trip and per emergency are computed, the benchmark method
 
 ## How to run (backend)
 Clone into a **short path** (Windows: `C:\Users\<you>\safetrail`; long paths break Python and `node_modules`).

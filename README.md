@@ -40,12 +40,60 @@ Open `http://localhost:8000`. (macOS/Linux: `.venv/bin/python`.)
 | `/benchmark` | Everyone | R1–R4 cost per trip and per emergency, measured (after `scripts/benchmark.py`) |
 | `/c/<id>` | Tourist | Checkpoint QR: confirms your location precisely |
 
-Demo PINs: `RESPONDER_PIN` (default 2468) and `PRESENTER_PIN` (default 1357) in `.env`.
+Demo PINs: `RESPONDER_PIN` (default 2468) and `PRESENTER_PIN` (default 1357) in `.env`. Live demo steps: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md). Team guide: [docs/EXPLAINER.md](docs/EXPLAINER.md).
+
+## The safety rule: the AI is never in the emergency path
+These work with Prune switched off, over budget or unreachable: zone alerts, crowd detection, SOS saving, sending and receiving, SOS grouping and counts, check-ins, quiet-tourist detection, pass checks, the signed event log and the family link. They are plain code; the alerts and the SOS queue run on the phone.
+
+The AI only writes and translates: safety packs, zone warnings, incident reports, cluster summaries and copilot steps. Every AI feature has a fixed standard text that's used when the AI can't be, and the UI labels it "Standard text". Priority is set by rules, never by the AI. A suspicious note becomes a flag on the incident; an SOS is never blocked.
+
+## How every AI call goes through Prune
+All LLM calls are made on the server, by one module (`backend/app/ai/prune_client.py`), to one base URL (`PRUNE_BASE_URL`, default `https://api.withprune.com/v1`), non-streaming `chat.completions` only. `scripts/check_no_direct_calls.sh` fails if any other code calls a provider directly, imports an AI SDK, or if a key is committed.
+
+**Headers on every call:**
+
+| Header | Value |
+|---|---|
+| `X-Prune-Run-Id` | one run per AI job, e.g. `pack_kedarnath_hi_senior_v1`, `adv_<zone>`, `inc_<incident>_<n>`, `clu_<incident>_<n>`, `cop_<incident>_<n>` |
+| `X-Prune-Run-Budget-Usd` / `X-Prune-Max-Steps` | the job's budget and step limit (below) |
+| `X-Prune-Feature-Id` | `pack`, `advisory`, `report`, `cluster`, `copilot` or `repair` |
+| `X-Prune-Customer-Id` | `route_<route_id>`, so Prune's dashboard shows cost per route |
+| `X-Prune-Cache` | `exact` (`PRUNE_CACHE_MODE`): never semantic, so a similar note can't return another incident's report |
+| `X-Prune-Model-Policy` | `balanced` (`PRUNE_MODEL_POLICY`) |
+| `X-Prune-Injection` | `detect` (`PRUNE_INJECTION_MODE`): a signal becomes a flag, never a block |
+
+**Keys:** provider keys live only in Prune's vault. `.env` (never committed) holds two Prune keys: `PRUNE_API_KEY` (ops, with a daily spend cap set in the Prune dashboard) and `PRUNE_PUBLIC_API_KEY` (the Break-it round: small cap, allowlisted to `MODEL_SMALL`, plus a local cap `PUBLIC_BUDGET_USD`). Nothing secret is in the frontend bundle.
+
+**Three budget layers:**
+1. **Our governor** estimates each call before sending it. If it won't fit the job's budget, LARGE drops to SMALL, or the job uses standard text. Budgets per job (`backend/app/config.py`): pack $0.01, advisory $0.005 per language, report $0.02, cluster summary $0.03, copilot $0.01.
+2. **Prune's run guard** enforces those budgets and step limits per job (`X-Prune-Run-Budget-Usd`, `X-Prune-Max-Steps`). A 429 `run_budget` is never retried: the job uses standard text.
+3. **Prune's key caps** are the outer wall: a daily spend cap on each key.
+
+Errors: Prune's fail-closed 503s are retried once after `Retry-After`; rate-limit 429s pause AI for 20 s; a 402 plan limit turns AI off until restart. Alerts and SOS never wait for any of this.
+
+## How cost per trip and per emergency are computed
+Every cost is Prune's own `cost_with_prune_usd` from the stored response metadata (`LlmCall` table). If Prune didn't return a cost, the screen shows n/a, never a guess.
+- **Cost per monitored trip** = cost of all `pack` and `advisory` calls ÷ trips started (simulated stage dots excluded).
+- **Cost per emergency** = cost of all `report`, `cluster` and `copilot` calls ÷ incidents (incidents merged into another one excluded).
+- A repair call counts toward the feature of the job it repaired. Prune's `cost_without_prune_usd` is always labelled "Prune estimate (list price)".
+
+## Benchmark method
+`scripts/benchmark.py` runs one simulated scenario (`backend/seed/scenario/`: 500 trips on the seeded routes, 6 zones, 40 SOS in 3 clusters and 6 singles, notes in English, Hindi and Assamese, 4 of them injection attempts) through four configurations, in its own database:
+
+| Run | What it does | Prune headers |
+|---|---|---|
+| R1 Naive | MODEL_LARGE for everything, one personalised pack per trip, a cluster summary after every SOS, no budgets | policy off, cache off |
+| R2 SafeTrail, no Prune optimisations | full design: packs per route, language and profile; templates; refresh limits; budgets | policy off, cache off |
+| R3 SafeTrail + Prune (cold) | full design with a fresh nonce in the prompt | policy balanced, cache exact |
+| R4 SafeTrail + Prune (warm) | R3 again with the same nonce: a second day on the same routes | policy balanced, cache exact |
+
+R1 → R2 is the saving from SafeTrail's design, R2 → R3 from Prune's routing and optimisations, R3 → R4 from Prune's exact cache. It also measures count accuracy (must be 100%: counts are computed), the invented-fact rate (answers the validators rejected), injection recall, standard-text fallbacks and latency. Results go to `docs/BENCHMARK.md` and the `/benchmark` page, with run ids and timestamps.
 
 ## Tests
 ```bash
 cd backend && .venv\Scripts\python -m pytest -q
 cd frontend && npm test
+bash scripts/check_no_direct_calls.sh   # no direct AI calls, no keys (also: python scripts/check_no_direct_calls.py)
 python scripts/smoke_test.py      # against a running backend
 python scripts/prune_check.py     # once, after the Prune keys are in .env
 python scripts/benchmark.py --trips 100   # R1-R4, writes docs/BENCHMARK.md
