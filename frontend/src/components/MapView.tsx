@@ -182,7 +182,8 @@ export default function MapView(p: Props) {
       return;
     }
     map.current = m;
-    m.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), "top-right");
+    // Phones pinch to zoom, so the tourist map keeps only the compass; it fits beside the top bar instead of under it.
+    m.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: !p.followMe, visualizePitch: false }), "top-right");
     // Draw our layers as soon as the style is ready, not on "load": "load" waits for every tile, and
     // when tiles fail on a weak or missing connection it can wait forever, leaving no route or zones.
     m.once("style.load", () => {
