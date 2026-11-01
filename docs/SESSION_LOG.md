@@ -27,6 +27,8 @@ Tests at the end: 56 backend, 6 frontend, checker clean.
 - Terrain relief (hillshade) on every map, from open elevation tiles, cached for offline use.
 - Bug: with map tiles failing, the map sometimes drew nothing (MapLibre's `load` never fired). Our layers now go in on `style.load`.
 - Bug: the Kedarnath zone outlines crossed themselves on switchbacks, so parts of the trail tested as outside the landslide zone. Rebuilt as true buffers (`scripts/rebuild_zone_outlines.py`), with a test.
+- Tourist map: only the compass now, because the "Online" chip covered the zoom buttons.
+- New 6-slide deck (`docs/SafeTrail-Pitch-6-slides.pptx`): real photos (CC BY 2.0, credits in `docs/DECK_CREDITS.md`), real screens, verified facts with sources, measured costs from `docs/BENCHMARK.md`.
 
 ## Facts to remember
 - PINs: responder 2468, presenter 1357. Prune base URL https://api.withprune.com/v1 (default). Keys only in `.env`.
