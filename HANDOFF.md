@@ -48,6 +48,7 @@ _Last updated: the cloud session's work is merged and on GitHub, through commit 
 - [x] Venue route: `backend/seed/routes/hall.json` is now the CSED block loop (59 × 52 m, drawn on geojson.io), and the full demo passed on it with AI off. The route id stays `hall`. OpenStreetMap labels this spot "LT Building", but Hardik confirmed the name to show is "CSED block"
 - [ ] Replace the placeholder help desk, lobby and door positions in `hall.json` with the real spots
 - [x] Real iPhone at CSED: real GPS arrives at ±8 to 25 m, the dot moves and an SOS reached the server (1 Nov). The red alert's new sound and notification still need checking there
+- [ ] Open problem: on 1 Nov Hardik reported the red alert didn't fire on a real iPhone at CSED. The same alert passed in Chrome with emulated GPS through the tunnel, and the cause wasn't found before the session ended. Test this first, on the latest build, with `POST /api/trips/{id}/events` in the server log as the sign the phone saw the zone
 - [ ] Test GPS at the venue with 3+ real phones (`scripts/run_phones.sh`)
 - [ ] Rehearse `docs/DEMO_SCRIPT.md` twice with real phones (Android and iPhone), then record a backup video
 - [x] Backup walkthrough: `docs/SafeTrail-Backup-Walkthrough.mp4`, 75 seconds, built from screenshots of the real app on emulated phones and labelled that way on every frame. A recording on real phones would still be better
