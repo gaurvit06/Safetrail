@@ -20,7 +20,7 @@ Before you rehearse, write your names in place of **A** and **B**, and add the t
 
 1. Start everything: `bash scripts/run_phones.sh`. It prints four links, which change every time. Keep that Terminal window open: closing it stops the app.
 2. If an earlier round left things behind, tap **Next round** on Stage control (`/stage/control`, PIN 1357) **before** step 3, because it clears everything.
-3. A's phone: open the `/j` link, allow location, join, tap **Alert sound tested** and **Location permission**, then **Open map**, and open **Safety pack** once. Volume up.
+3. A's phone: open the `/j` link, allow location, join, tap **Alert sound tested** and **Location permission**, then **Open map**, and open **Safety pack** once. Volume up. The top card should say **GPS ±N m**. If it says **Simulated location**, tap the purple bar at the top to use real GPS. If it never shows GPS, see the table at the end of `docs/HOW_TO_START.md`.
 4. Laptop: the deck on slide 1, and `/r` logged in, in a browser window you can switch to in one move. It should show **1 on trail** and no red zone (if CSED is already red, click **Clear CSED red zone**). Tip: open the deck's PDF in a browser tab next to `/r`, so one Ctrl+Tab switches between them.
 5. Optional: `/stage` on a second screen with the **Join** QR, for any judge who wants to try. Don't wait for them.
 6. Practise switching A's phone to airplane mode and back. It's the riskiest 20 seconds of the demo.
@@ -65,7 +65,7 @@ B switches the laptop to `/r`.
 | 8 | A | Hold up the phone: **Help acknowledged**. | "And now I know help is coming." |
 | 9 | B | **Timeline** tab, then **Verify timeline**. | "Every step is hash-chained and signed. Change anything, and this check fails." |
 
-- **No alert at step 2** (GPS is weak indoors): A pulls up the bottom sheet and taps **Simulate walking into CSED**. The dot walks in over about 17 seconds: an amber "m ahead" warning, then the full-screen alert. Say: "GPS is weak indoors, so I'm simulating the walk. The warning and the alert are the real ones."
+- **No alert at step 2** (GPS is weak indoors): A pulls up the bottom sheet and taps **Simulate walking into CSED**. The dot walks in over about 17 seconds: an amber "m ahead" warning, then the full-screen alert. Say: "GPS is weak indoors, so I'm simulating the walk. The warning and the alert are the real ones." The phone stays on the simulated position afterwards, so tap the purple bar at the top for real GPS before the next round.
 - **A judge wants to try:** hand them A's phone for steps 3 and 4.
 - **On a big stage** the projector can't show the phone, so A says what it shows and holds it up.
 - **Running behind:** skip step 9.
