@@ -12,3 +12,10 @@ Differences from SPEC.md Sections 6–8 that the app must follow. Newest last.
 8. **Timeline verification:** each log entry has `hash`, `prev_hash`, `payload_hash`, `signature` (hex). The app checks each entry's hash, `sha256(prev_hash|type|entity_id|payload_hash|ts_server)` with `ts_server.toFixed(6)`, and its Ed25519 signature with the log key. `GET /api/incidents/{id}/timeline` also returns the server's full-chain check.
 9. **Extra endpoints:** `POST /api/join` (stage quick-join on the hall route), `GET /api/checkpoints/{id}` (checkpoint QR landing), `POST /api/trips/{id}/sharing {on}` (stop/resume sharing), `GET /api/config`, `GET /api/health`.
 10. **Extra events:** `zone.approach` (a tourist is near a zone), `incident.brief_ready` (copilot result), `stage.reset` (demo reset; tourist apps return to the start screen). `ai.call` also carries `tier` (small|large).
+
+## CSED block demo (1 Nov)
+- New `POST /stage/csed` with `{action}`: `flag`, `clear`, `crowd`, `crowd_stop`. Responder or presenter token.
+- `Zone.kind` gains `red_zone`.
+- `crowd.heat` and `GET /crowd/heat` gain `points` (`lat`, `lon`, `n`), `people` and `simulated`.
+- New event `crowd.heat_public` for tourists: `points`, `people`, `simulated`, `route_id`, only for spots with 3 or more people.
+- `GET /trips/{id}/sync` gains `heat`, in the same shape.

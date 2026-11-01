@@ -1,4 +1,4 @@
-import { AlertTriangle, BookOpen, CheckCircle2, Languages, LogOut, MapPin, Megaphone, MessageSquareText, Navigation, QrCode, Users, Wifi, WifiOff, X } from "lucide-react";
+import { AlertTriangle, BookOpen, CheckCircle2, Footprints, Languages, LogOut, MapPin, Megaphone, MessageSquareText, Navigation, QrCode, Users, Wifi, WifiOff, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MapView from "../components/MapView";
@@ -15,11 +15,15 @@ import { useT } from "../lib/i18n";
 import { flush, kv, onQueueChange, pingQueue, queueSos, sosStore, type QueuedSos } from "../lib/offline";
 import { getBundle, getSession, setBundle, setSession } from "../lib/session";
 import { ackChime, cautionChime, dangerAlert, unlockAudio, vibrate } from "../lib/signals";
-import type { Evt, HelpPoint, Pack, PassPayload, StartBundle, Weather, Zone } from "../lib/types";
+import type { CrowdHeat, Evt, HelpPoint, Pack, PassPayload, StartBundle, Weather, Zone } from "../lib/types";
 import { LangSwitch } from "./Welcome";
 
 type Fix = { lat: number; lon: number; accuracy: number; source?: "gps" | "checkpoint" | "sim" };
 const SHEET_PEEK = 150;
+// The simulated walk starts on the path south of the block and ends inside it, about 190 m in 17 seconds.
+const WALK_START_M = { north: -190, east: 30 };
+const WALK_STEPS = 19;
+const WALK_STEP_MS = 900;
 
 export default function TripHome() {
   const { t, lang } = useT();
@@ -44,6 +48,10 @@ export default function TripHome() {
   const [check, setCheck] = useState<{ check_id: number; message: string } | null>(null);
   const [overlay, setOverlay] = useState<null | "sos" | "pack" | "signal" | "pass" | "family" | "end" | "weather">(null);
   const [weather, setWeather] = useState<Weather | null>(null);
+  const [heat, setHeat] = useState<CrowdHeat | null>(null);
+  const [walking, setWalking] = useState(false);
+  const walkTimer = useRef<number | null>(null);
+  const lastCrowdAlert = useRef(0);
   const routeIdRef = useRef("");
   const [packTab, setPackTab] = useState(0);
   const [sosPreset, setSosPreset] = useState<string | undefined>();
@@ -100,6 +108,7 @@ export default function TripHome() {
       setZones(r.zones);
       persistZones(r.zones);
       if (r.weather?.available) saveWeather(r.weather);
+      if (r.heat) setHeat(r.heat);
       if (r.checks_pending?.length) setCheck(r.checks_pending[0]);
       for (const s of r.sos) {
         const q = await sosStore.get(s.client_id);
@@ -215,6 +224,8 @@ export default function TripHome() {
         });
         setAlertZone((a) => (a?.id === d.zone_id ? null : a));
         setApproach((a) => (a?.id === d.zone_id ? null : a));
+      } else if (e.type === "crowd.heat_public") {
+        if (d.route_id === routeIdRef.current) setHeat(d);
       } else if (e.type === "crowd.warn") {
         setCrowd({ message: d.message?.[lang] ?? Object.values(d.message ?? {})[0] ?? "", alt: d.alt_name, wait: d.wait_min });
         cautionChime();
@@ -265,8 +276,10 @@ export default function TripHome() {
         const p = passRef.current;
         if (ev.zone.kind === "restricted" && p?.kyc_level === "verified" && (p.permitted_zone_ids ?? []).includes(ev.zone.id)) {
           toast(t("permitted_here", { zone: ev.zone.segment_name || ev.zone.id }), "ok"); // your permit covers it: no alarm
-        } else if (ev.fullScreen) {
-          setAlertZone(ev.zone);
+        } else if (ev.fullScreen && !(ev.zone.kind === "crowd" && Date.now() - lastCrowdAlert.current < 5 * 60 * 1000)) {
+          // A crowd can shift into several zones, so it alerts once; and it never covers a danger alert.
+          if (ev.zone.kind === "crowd") lastCrowdAlert.current = Date.now();
+          setAlertZone((a) => (ev.zone.kind === "crowd" && a && a.kind !== "crowd" ? a : ev.zone));
           dangerAlert();
         } else cautionChime();
       } else if (ev.type === "approach") {
@@ -416,6 +429,35 @@ export default function TripHome() {
     }
   };
 
+  /** A labelled stand-in for a real walk, for when GPS near the building won't play along. It feeds the same
+   *  geofence as real GPS, so the alert is the real one; only the position is simulated. */
+  const walkIn = () => {
+    const r = bundle!.route;
+    const [lon0, lat0] = r.center;
+    const startLat = lat0 + WALK_START_M.north / 111320;
+    const startLon = lon0 + WALK_START_M.east / (111320 * Math.cos((lat0 * Math.PI) / 180));
+    if (!zones.some((z) => z.kind === "red_zone")) toast(t("walk_no_zone"), "warn");
+    if (walkTimer.current) clearInterval(walkTimer.current);
+    geofence.current = new Geofence(); // so a second take alerts again
+    setAlertZone(null);
+    setWayOut(null);
+    setInside([]);
+    setDemo(true);
+    demoRef.current = true;
+    setWalking(true);
+    let i = 0;
+    walkTimer.current = window.setInterval(() => {
+      const k = i / WALK_STEPS;
+      onFix({ lat: startLat + (lat0 - startLat) * k, lon: startLon + (lon0 - startLon) * k, accuracy: 6, source: "sim" });
+      if (++i > WALK_STEPS) {
+        if (walkTimer.current) clearInterval(walkTimer.current);
+        walkTimer.current = null;
+        setWalking(false);
+      }
+    }, WALK_STEP_MS);
+  };
+  useEffect(() => () => { if (walkTimer.current) clearInterval(walkTimer.current); }, []);
+
   /* ---------------- derived */
   const route = bundle?.route;
   const segment = me && route ? nearestSegmentName(me.lat, me.lon, route.segments) : "";
@@ -445,6 +487,9 @@ export default function TripHome() {
         checkpoints={route.checkpoints}
         path={path}
         followMe
+        trackMe={walking}
+        crowd={heat}
+        legendClass="bottom-[166px] left-3"
         onClick={demo ? (lat, lon) => onFix({ lat, lon, accuracy: 5, source: "sim" }) : undefined}
         onZoneClick={(z) => setZoneCard(z)}
         onHelpClick={(hp) => setGuide(hp)}
@@ -473,7 +518,7 @@ export default function TripHome() {
         {gps === "denied" && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-danger shadow-float">{t("no_gps")}</div>}
         {!sharing && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("sharing_off")}</div>}
         {queued > 0 && !online && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("queued_sos", { n: sosList.filter((s) => s.status === "queued").length })}</div>}
-        {demo && <div className="rounded-xl bg-[#6B3E8E] px-4 py-2 text-sm font-semibold text-white shadow-float">{t("demo_location")}</div>}
+        {demo && <div className="rounded-xl bg-[#6B3E8E] px-4 py-2 text-sm font-semibold text-white shadow-float">{walking ? t("walking") : t("demo_location")}</div>}
       </div>
 
       {guide && <GuideCard hp={guide} me={me} heading={heading} onClose={() => setGuide(null)} />}
@@ -512,7 +557,7 @@ export default function TripHome() {
         </HoldButton>
       </div>
 
-      <BottomSheet peek={SHEET_PEEK}>
+      <BottomSheet peek={SHEET_PEEK} collapse={walking ? 1 : 0}>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="eyebrow">{t("nearest_help")}</p>
@@ -533,6 +578,7 @@ export default function TripHome() {
             </div>
           </button>
         )}
+        {route.id === "hall" && <button className="btn mt-3 w-full bg-[#6B3E8E] text-white" disabled={walking} onClick={walkIn}><Footprints size={18} /> {walking ? t("walking") : t("walk_in")}</button>}
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
             { icon: <BookOpen />, label: t("safety_pack"), on: () => { setPackTab(0); setOverlay("pack"); } },

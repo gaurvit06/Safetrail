@@ -169,7 +169,7 @@ export function PackSheet({ pack, source, helpPoints, segments, currentSegment, 
   const IF_TITLE: Record<string, string> = { lost: "If you are lost", injured: "If someone is injured", blocked: "If the path is blocked", crowd: "If the crowd is too dense", wildlife: "If you see wild animals" };
   return (
     <Overlay onClose={onClose}>
-      <SheetHeader title={t("safety_pack")} onClose={onClose} />
+      <SheetHeader title={t("safety_pack")} sub={`${t("pack_saved")} ${source === "ai" ? t("pack_ai") : t("pack_std")}.`} onClose={onClose} />
       <div className="flex gap-1 overflow-x-auto border-b border-line px-3 py-2">
         {tabs.map((x, i) => <button key={x} onClick={() => setTab(i)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${tab === i ? "bg-ink text-white" : "text-muted"}`}>{x}</button>)}
       </div>

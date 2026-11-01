@@ -1,4 +1,4 @@
-﻿import { BellRing, Circle, LogOut, Megaphone, PenLine, ScanLine, Undo2, X } from "lucide-react";
+﻿import { BellRing, Circle, LogOut, Megaphone, PenLine, ScanLine, Siren, Undo2, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import MapView from "../components/MapView";
 import { CostPanel, IncidentPanel, IncidentRow, LoginCard, PassScanner, RoutingRiver, TallyCard, useOpsFeed, WeatherPanel } from "../components/ops";
@@ -9,7 +9,7 @@ import { ZoneIcon } from "../components/icons";
 import { getRoleToken, setRoleToken } from "../lib/session";
 import type { Dot, RouteSummary, WeatherSection } from "../lib/types";
 
-const KINDS = ["landslide", "closed_trail", "restricted", "wildlife_core", "flood", "custom"];
+const KINDS = ["red_zone", "landslide", "closed_trail", "restricted", "wildlife_core", "flood", "custom"];
 
 function circle(lat: number, lon: number, r: number): number[][] {
   const pts = [];
@@ -72,6 +72,17 @@ export default function Responder({ simple }: { simple?: boolean }) {
       toast(e.message, "danger");
     }
   };
+  const csedZone = feed.zones.find((z) => z.kind === "red_zone");
+  const crowdOn = !!feed.crowd?.simulated && feed.crowd.people > 0;
+  const csed = async (action: "flag" | "clear" | "crowd" | "crowd_stop") => {
+    try {
+      const r = await api<{ ok?: boolean; message: string }>("/stage/csed", { token, body: { action } });
+      toast(r.message, r.ok === false ? "warn" : "ok");
+    } catch (e: any) {
+      if (e.status === 401) setToken(null);
+      toast(e.message, "danger");
+    }
+  };
   const locate = (label: string) => {
     const d = feed.dots.find((x) => x.trip_label === label);
     if (d) setFly({ lat: d.lat, lon: d.lon, key: Date.now() });
@@ -93,7 +104,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
   if (simple) {
     return (
       <div className="flex h-full flex-col bg-bg">
-        <div className="flex items-center justify-between border-b border-line bg-white p-4"><p className="text-lg font-bold">Responder · CSED block demo</p><span className={`chip ${feed.connected ? "bg-safe/10 text-safe" : "bg-black/5"}`}>{feed.connected ? "Live" : "…"}</span></div>
+        <div className="flex items-center justify-between bg-night-bg p-4 text-night-text"><p className="font-display text-2xl font-bold text-white">Responder · CSED block demo</p><span className={`chip ${feed.connected ? "bg-safe text-white" : "bg-white/10"}`}>{feed.connected ? "Live" : "…"}</span></div>
         {sel ? <div className="flex-1 overflow-hidden bg-white"><IncidentPanel id={sel} token={token} lastEvt={feed.lastEvt} onClose={() => setSel(null)} compact /></div> : (
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
             {open.length === 0 && <p className="p-6 text-center text-muted">No SOS yet. When someone presses SOS, it appears here.</p>}
@@ -106,25 +117,28 @@ export default function Responder({ simple }: { simple?: boolean }) {
 
   return (
     <div className="flex h-full flex-col bg-bg">
-      <header className="z-10 flex flex-wrap items-center gap-2 border-b border-line bg-white px-3 py-2">
+      <header className="z-10 flex flex-wrap items-center gap-2 bg-night-bg px-3 py-2 text-night-text">
         <img src="/icon.svg" className="h-8 w-8" alt="" />
-        <select className="rounded-lg border border-line bg-white px-2 py-1.5 font-semibold" value={routeId} onChange={(e) => { setRouteId(e.target.value); localStorage.setItem("st_r_route", e.target.value); setSel(null); }}>
+        <p className="font-display text-2xl font-bold leading-none text-white">SafeTrail <span className="text-gold">Responder</span></p>
+        <select className="rounded-lg border border-night-line bg-night-surface px-2 py-1.5 font-semibold text-night-text" value={routeId} onChange={(e) => { setRouteId(e.target.value); localStorage.setItem("st_r_route", e.target.value); setSel(null); }}>
           {routes.length === 0 && <option value={routeId}>{routeId}</option>}
           {routes.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
         <div className="flex flex-wrap gap-1.5 text-sm">
-          <span className="chip bg-info/10 text-info">{counts.trail} on trail</span>
-          <span className={`chip ${counts.open ? "bg-danger text-white" : "bg-black/5"}`}>{counts.open} open incidents</span>
-          {counts.crowd > 0 && <span className="chip bg-caution/10 text-caution">{counts.crowd} crowd alert</span>}
-          {counts.quiet > 0 && <span className="chip bg-caution/10 text-caution">{counts.quiet} quiet</span>}
-          <span className={`chip ${feed.connected ? "bg-safe/10 text-safe" : "bg-black/5 text-muted"}`}>{feed.connected ? "● Live" : "Reconnecting…"}</span>
+          <span className="chip bg-white/10 text-night-text">{counts.trail} on trail</span>
+          <span className={`chip ${counts.open ? "bg-danger text-white" : "bg-white/10 text-night-text"}`}>{counts.open} open incidents</span>
+          {counts.crowd > 0 && <span className="chip bg-gold text-ink">{counts.crowd} crowd alert</span>}
+          {counts.quiet > 0 && <span className="chip bg-gold text-ink">{counts.quiet} quiet</span>}
+          <span className={`chip ${feed.connected ? "bg-safe text-white" : "bg-white/10 text-night-text"}`}>{feed.connected ? "● Live" : "Reconnecting…"}</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <button className="btn-ghost min-h-[40px]" onClick={() => { setDraw({ mode: "shape", pts: [], r: 100 }); setForm(false); }}><PenLine size={16} /> Draw zone</button>
-          <button className="btn-ghost min-h-[40px]" onClick={() => setCheckOpen(true)}><BellRing size={16} /> Safety check</button>
-          <button className="btn-ghost min-h-[40px]" onClick={() => setScan(true)}><ScanLine size={16} /> Verify pass</button>
-          <ExplainToggle />
-          <button className="grid h-9 w-9 place-items-center rounded-full border border-line" title="Log out" onClick={logout}><LogOut size={16} /></button>
+          {routeId === "hall" && <button className={`${csedZone ? "btn-dark" : "btn-danger"} min-h-[40px]`} onClick={() => csed(csedZone ? "clear" : "flag")}><Siren size={16} /> {csedZone ? "Clear CSED red zone" : "Flag CSED red zone"}</button>}
+          {routeId === "hall" && <button className="btn-dark min-h-[40px]" onClick={() => csed(crowdOn ? "crowd_stop" : "crowd")}><Users size={16} /> {crowdOn ? "Stop crowd" : "Simulate crowd"}</button>}
+          <button className="btn-dark min-h-[40px]" onClick={() => { setDraw({ mode: "shape", pts: [], r: 100 }); setForm(false); }}><PenLine size={16} /> Draw zone</button>
+          <button className="btn-dark min-h-[40px]" onClick={() => setCheckOpen(true)}><BellRing size={16} /> Safety check</button>
+          <button className="btn-dark min-h-[40px]" onClick={() => setScan(true)}><ScanLine size={16} /> Verify pass</button>
+          <ExplainToggle dark />
+          <button className="grid h-9 w-9 place-items-center rounded-full border border-night-line" title="Log out" onClick={logout}><LogOut size={16} /></button>
         </div>
       </header>
 
@@ -136,7 +150,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
               route={feed.route.line}
               zones={feed.zones}
               dots={feed.dots}
-              heat={feed.heat}
+              crowd={feed.crowd}
               helpPoints={feed.route.help_points}
               incidents={pins}
               draft={draftPts}
@@ -197,7 +211,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
           )}
         </div>
 
-        <aside className="flex w-[420px] max-w-[48vw] flex-col border-l border-line bg-white">
+        <aside className="flex w-[420px] max-w-[48vw] flex-col border-l border-line bg-bg">
           {sel ? (
             <IncidentPanel id={sel} token={token} lastEvt={feed.lastEvt} onClose={() => setSel(null)} />
           ) : (

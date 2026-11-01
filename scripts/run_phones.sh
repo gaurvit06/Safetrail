@@ -15,6 +15,11 @@ PORT=8000
 
 command -v cloudflared >/dev/null 2>&1 || { echo "cloudflared is needed. On macOS: brew install cloudflared" >&2; exit 1; }
 [ -x backend/.venv/bin/python ] && [ -f frontend/dist/index.html ] || { echo "Run this first: bash scripts/run_local.sh --no-run" >&2; exit 1; }
+# New code pulled from GitHub only shows up after a build.
+if [ -n "$(find frontend/src frontend/index.html -newer frontend/dist/index.html -print -quit)" ]; then
+  echo "Building the latest screens..."
+  npm --prefix frontend run build >/dev/null
+fi
 if lsof -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   echo "Port $PORT is already in use, probably by another copy of the app. Stop that first, or add --port 8001." >&2
   exit 1
@@ -34,4 +39,9 @@ done
 [ -n "$URL" ] || { echo "The tunnel didn't start:" >&2; tail -5 "$LOG" >&2; exit 1; }
 
 printf '\n  Judges join:  %s/j\n  Projector:    %s/stage\n  Presenter:    %s/stage/control\n  Responder:    %s/r\n\n' "$URL" "$URL" "$URL" "$URL"
+echo "$URL" > "${TMPDIR:-/tmp}/safetrail-url.txt"
+if command -v caffeinate >/dev/null 2>&1; then caffeinate -dims -w $$ & fi  # keep the Mac awake during the demo
+if [ "${NO_OPEN:-}" != "1" ] && command -v open >/dev/null 2>&1; then
+  (sleep 4; open "http://localhost:$PORT/r"; open "http://localhost:$PORT/stage") &
+fi
 PUBLIC_URL="$URL" backend/.venv/bin/python -m uvicorn app.main:app --app-dir backend --port "$PORT"

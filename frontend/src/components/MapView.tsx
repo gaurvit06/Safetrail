@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { centroid } from "../lib/geo";
 import { useT } from "../lib/i18n";
 import { zoneIconSvg } from "./icons";
-import type { Checkpoint, Dot, HeatCell, HelpPoint, Zone } from "../lib/types";
+import type { Checkpoint, CrowdHeat, Dot, HelpPoint, Zone } from "../lib/types";
 
 export type IncidentPin = { id: number; lat: number; lon: number; count: number; priority: string; selected?: boolean; status: string };
 export type Me = { lat: number; lon: number; accuracy: number; heading?: number | null; demo?: boolean };
@@ -17,13 +17,15 @@ type Props = {
   highlightZoneId?: string | null;
   me?: Me | null;
   dots?: Dot[];
-  heat?: HeatCell[];
+  crowd?: CrowdHeat | null;
+  legendClass?: string;
   helpPoints?: HelpPoint[];
   checkpoints?: Checkpoint[];
   incidents?: IncidentPin[];
   path?: number[][] | null;
   draft?: number[][] | null;
   followMe?: boolean;
+  trackMe?: boolean;
   flyTo?: { lat: number; lon: number; zoom?: number; key: number } | null;
   onClick?: (lat: number, lon: number) => void;
   onZoneClick?: (z: Zone) => void;
@@ -105,8 +107,10 @@ export default function MapView(p: Props) {
     const q = props.current;
     set("route", fc(q.route ? [{ type: "Feature", geometry: q.route, properties: {} }] : []));
     set("zones", fc((q.zones ?? []).map((z) => ({ type: "Feature", geometry: z.polygon, properties: { id: z.id, kind: z.kind, severity: z.severity, hl: z.id === q.highlightZoneId ? 1 : 0 } }))));
-    set("heat", fc((q.heat ?? []).map((c) => ({ type: "Feature", geometry: c.polygon, properties: { level: c.level } }))));
-    set("dots", fc((q.dots ?? []).filter((d) => d.lat != null).map((d) => ({ type: "Feature", geometry: { type: "Point", coordinates: [d.lon, d.lat] }, properties: { label: d.trip_label, color: STATUS_COLOR[d.status] ?? "#1A73E8", sim: d.kind === "sim" ? 1 : 0, flagged: d.flags?.length ? 1 : 0, kind: d.kind } }))));
+    const crowdPts = q.crowd?.points ?? [];
+    set("heat", fc(crowdPts.map((c) => ({ type: "Feature", geometry: { type: "Point", coordinates: [c.lon, c.lat] }, properties: { n: c.n } }))));
+    // The heatmap already shows simulated people, so their dots would only add noise on top of it.
+    set("dots", fc((q.dots ?? []).filter((d) => d.lat != null && !(crowdPts.length && d.kind === "sim")).map((d) => ({ type: "Feature", geometry: { type: "Point", coordinates: [d.lon, d.lat] }, properties: { label: d.trip_label, color: STATUS_COLOR[d.status] ?? "#1A73E8", sim: d.kind === "sim" ? 1 : 0, flagged: d.flags?.length ? 1 : 0, kind: d.kind } }))));
     set("path", fc(q.path ? [{ type: "Feature", geometry: { type: "LineString", coordinates: q.path }, properties: {} }] : []));
     const dr = q.draft ?? [];
     set("draft", fc([
@@ -153,6 +157,7 @@ export default function MapView(p: Props) {
       keep.add(marker(`hp:${hp.id}`, [hp.lon, hp.lat], `<div class="st-pin st-pin-${hp.kind} ${hp.source === "osm" ? "st-pin-real" : ""}" title="${hp.name.replace(/"/g, "")} (${hp.source === "osm" ? "OpenStreetMap" : "simulated"})">${HP_ICON[hp.kind] ?? "•"}</div>`, () => props.current.onHelpClick?.(hp)));
     for (const cp of q.checkpoints ?? []) keep.add(marker(`cp:${cp.id}`, [cp.lon, cp.lat], `<div class="st-pin st-pin-checkpoint" title="${cp.name}">◆</div>`));
     for (const z of q.zones ?? []) {
+      if (z.kind === "crowd") continue;
       const [lat, lon] = centroid(z.polygon);
       keep.add(marker(`z:${z.id}`, [lon, lat], `<div class="st-zone-badge st-zone-${z.kind === "crowd" || z.severity === "warn" ? "warn" : "danger"}">${zoneIconSvg(z.kind)}</div>`, () => props.current.onZoneClick?.(z)));
     }
@@ -189,13 +194,26 @@ export default function MapView(p: Props) {
     m.once("style.load", () => {
       const add = (id: string) => m.addSource(id, { type: "geojson", data: fc([]) });
       ["route", "zones", "heat", "dots", "path", "draft", "acc"].forEach(add);
-      m.addLayer({ id: "heat", type: "fill", source: "heat", paint: { "fill-color": ["match", ["get", "level"], "red", "#D93025", "amber", "#E8A317", "#22C55E"], "fill-opacity": 0.38 } });
+      // Crowd density as a soft glow, green to red, like the busy-area view in Google Maps.
+      m.addLayer({
+        id: "heat",
+        type: "heatmap",
+        source: "heat",
+        paint: {
+          "heatmap-weight": ["interpolate", ["linear"], ["get", "n"], 0, 0, 1, 0.45, 5, 1],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 14, 0.8, 18, 1.5],
+          "heatmap-radius": ["interpolate", ["exponential", 2], ["zoom"], 13, 7, 17, 44, 20, 350],
+          "heatmap-opacity": 0.78,
+          "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"], 0, "rgba(34,197,94,0)", 0.14, "rgba(34,197,94,.55)", 0.36, "#FACC15", 0.58, "#F59E0B", 0.78, "#EA580C", 1, "#D93025"],
+        },
+      });
       m.addLayer({ id: "route-casing", type: "line", source: "route", paint: { "line-color": "#ffffff", "line-width": 9, "line-opacity": 0.9 }, layout: { "line-cap": "round", "line-join": "round" } });
       m.addLayer({ id: "route", type: "line", source: "route", paint: { "line-color": "#1A73E8", "line-width": 5 }, layout: { "line-cap": "round", "line-join": "round" } });
       const zColor = ["case", ["any", ["==", ["get", "kind"], "crowd"], ["==", ["get", "severity"], "warn"]], "#D97706", "#D93025"] as any;
-      m.addLayer({ id: "zones-fill", type: "fill", source: "zones", paint: { "fill-color": zColor, "fill-opacity": ["case", ["==", ["get", "hl"], 1], 0.34, 0.2] } });
+      m.addLayer({ id: "zones-fill", type: "fill", source: "zones", paint: { "fill-color": zColor, "fill-opacity": ["case", ["==", ["get", "kind"], "crowd"], 0.02, ["==", ["get", "hl"], 1], 0.36, 0.24] } });
       m.addLayer({ id: "zones-line-danger", type: "line", source: "zones", filter: ["all", ["!=", ["get", "kind"], "crowd"], ["==", ["get", "severity"], "danger"]], paint: { "line-color": "#D93025", "line-width": 2.5 } });
-      m.addLayer({ id: "zones-line-warn", type: "line", source: "zones", filter: ["any", ["==", ["get", "kind"], "crowd"], ["==", ["get", "severity"], "warn"]], paint: { "line-color": "#D97706", "line-width": 2.5, "line-dasharray": [2, 1.5] } });
+      // A crowd shows as heat, so it gets no outline; its faint fill stays so a tap still opens its card.
+      m.addLayer({ id: "zones-line-warn", type: "line", source: "zones", filter: ["all", ["!=", ["get", "kind"], "crowd"], ["==", ["get", "severity"], "warn"]], paint: { "line-color": "#D97706", "line-width": 2.5, "line-dasharray": [2, 1.5] } });
       m.addLayer({ id: "acc", type: "fill", source: "acc", paint: { "fill-color": "#1A73E8", "fill-opacity": 0.1 } });
       m.addLayer({ id: "path", type: "line", source: "path", paint: { "line-color": "#1E8E3E", "line-width": 5, "line-dasharray": [1.5, 1.2] }, layout: { "line-cap": "round" } });
       m.addLayer({ id: "draft-fill", type: "fill", source: "draft", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": "#D93025", "fill-opacity": 0.18 } });
@@ -233,7 +251,7 @@ export default function MapView(p: Props) {
   useEffect(() => {
     syncAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [p.route, p.zones, p.heat, p.dots, p.path, p.draft, p.me, p.helpPoints, p.checkpoints, p.incidents, p.highlightZoneId]);
+  }, [p.route, p.zones, p.crowd, p.dots, p.path, p.draft, p.me, p.helpPoints, p.checkpoints, p.incidents, p.highlightZoneId]);
 
   useEffect(() => {
     if (p.followMe && p.me && map.current && !followed.current) {
@@ -241,6 +259,10 @@ export default function MapView(p: Props) {
       map.current.flyTo({ center: [p.me.lon, p.me.lat], zoom: Math.max(map.current.getZoom(), 16), duration: 800 });
     }
   }, [p.me, p.followMe]);
+
+  useEffect(() => {
+    if (p.trackMe && p.me && map.current) map.current.easeTo({ center: [p.me.lon, p.me.lat], zoom: Math.max(map.current.getZoom(), 17), duration: 800 });
+  }, [p.me, p.trackMe]);
 
   useEffect(() => {
     if (p.flyTo && map.current) map.current.flyTo({ center: [p.flyTo.lon, p.flyTo.lat], zoom: p.flyTo.zoom ?? 17, duration: 700 });
@@ -254,6 +276,14 @@ export default function MapView(p: Props) {
   return (
     <div ref={el} className={p.className ?? "absolute inset-0"}>
       {failed && <p className="grid h-full place-items-center bg-bg px-8 pb-40 text-center font-semibold text-muted">{t("map_unavailable")}</p>}
+      {!!p.crowd?.points.length && (
+        <div className={`card pointer-events-none absolute z-10 w-44 px-3 py-2 shadow-float ${p.legendClass ?? "bottom-8 left-3"}`}>
+          <p className="font-display text-xl font-bold leading-none text-ink">{t("crowd_map")}{p.crowd.simulated ? ` · ${t("crowd_sim")}` : ""}</p>
+          <p className="text-xs text-muted">{t("crowd_people", { n: p.crowd.people })}</p>
+          <div className="mt-1.5 h-2 rounded-full" style={{ background: "linear-gradient(90deg,#22C55E,#FACC15,#F59E0B,#EA580C,#D93025)" }} />
+          <div className="mt-0.5 flex justify-between text-[10px] font-semibold text-muted"><span>{t("crowd_low")}</span><span>{t("crowd_mid")}</span><span>{t("crowd_high")}</span></div>
+        </div>
+      )}
     </div>
   );
 }

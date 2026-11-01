@@ -1,4 +1,4 @@
-﻿import { Activity, BellRing, Database, Footprints, LocateFixed, Mountain, RotateCcw, SkipForward, Users, Zap } from "lucide-react";
+﻿import { Activity, BellRing, Database, Footprints, LocateFixed, Mountain, RotateCcw, Siren, SkipForward, Users, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { LoginCard } from "../components/ops";
 import { HoldButton, Spinner, useToast } from "../components/ui";
@@ -49,6 +49,29 @@ export default function StageControl() {
     }, 1000);
   };
 
+  const [flagged, setFlagged] = useState(false);
+  const [crowdOn, setCrowdOn] = useState(false);
+  useEffect(() => {
+    api<{ kind: string }[]>("/zones?route_id=hall").then((zs) => setFlagged(zs.some((z) => z.kind === "red_zone"))).catch(() => {});
+  }, [token]);
+  const csed = async (action: "flag" | "clear" | "crowd" | "crowd_stop") => {
+    setBusy(action);
+    try {
+      const r = await api<{ ok?: boolean; message: string }>("/stage/csed", { token, body: { action } });
+      setLast(r.message);
+      toast(r.message, r.ok === false ? "warn" : "ok");
+      if (action === "flag") setFlagged(true);
+      if (action === "clear") setFlagged(false);
+      if (action === "crowd") setCrowdOn(true);
+      if (action === "crowd_stop") setCrowdOn(false);
+    } catch (e: any) {
+      if (e.status === 401 || e.status === 403) setToken(null);
+      toast(e.message, "danger");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const run = async (action: string) => {
     setBusy(action);
     let pos: { lat?: number; lon?: number } = {};
@@ -79,7 +102,18 @@ export default function StageControl() {
 
   return (
     <div className="mx-auto max-w-lg space-y-3 px-4 py-5">
-      <div className="flex items-center gap-2 text-lg font-bold"><img src="/icon.svg" className="h-8 w-8" alt="" /> Stage control</div>
+      <div className="flex items-center gap-2 font-display text-3xl font-bold"><img src="/icon.svg" className="h-8 w-8" alt="" /> Stage control</div>
+      <div className="space-y-2 rounded-2xl bg-night-bg p-4 text-night-text">
+        <p className="font-display text-2xl font-bold leading-none text-gold">CSED block demo</p>
+        <button className={`${flagged ? "btn-dark" : "btn-danger"} h-auto w-full justify-start gap-4 p-4 text-left`} disabled={!!busy} onClick={() => csed(flagged ? "clear" : "flag")}>
+          {busy === "flag" || busy === "clear" ? <Spinner size={28} /> : <Siren size={28} className="shrink-0" />}
+          <span><span className="block text-lg">{flagged ? "Clear CSED red zone" : "Flag CSED as a red zone"}</span><span className="block text-sm font-normal opacity-80">{flagged ? "CSED is red on every phone now." : "The whole block turns red on every phone. Anyone who walks in gets the alert."}</span></span>
+        </button>
+        <button className="btn-dark h-auto w-full justify-start gap-4 p-4 text-left" disabled={!!busy} onClick={() => csed(crowdOn ? "crowd_stop" : "crowd")}>
+          {busy === "crowd" || busy === "crowd_stop" ? <Spinner size={28} /> : <Users size={28} className="shrink-0 text-gold" />}
+          <span><span className="block text-lg">{crowdOn ? "Stop the simulated crowd" : "Simulate a crowd around CSED"}</span><span className="block text-sm font-normal opacity-80">80 simulated people, around the block only. The heatmap fills in over 20 s.</span></span>
+        </button>
+      </div>
       <button className={`btn h-auto w-full justify-start gap-4 p-4 text-left ${countdown !== null ? "bg-caution text-white" : "btn-primary"}`} disabled={!!busy} onClick={nextRound}>
         <SkipForward size={28} className="shrink-0" />
         <span>
@@ -96,7 +130,7 @@ export default function StageControl() {
         <input type="checkbox" className="h-5 w-5 accent-brand" checked={useMine} onChange={(e) => setUseMine(e.target.checked)} />
         <span className="text-sm"><LocateFixed size={14} className="inline" /> Place zones at <b>my</b> location (otherwise: around the judges)</span>
       </label>
-      <B a="landslide" icon={<Mountain size={28} className="text-danger" />} title="Landslide here" sub="Publishes a danger zone over the judges. Their phones buzz." tone="btn-danger" />
+      <B a="landslide" icon={<Mountain size={28} />} title="Landslide here" sub="Publishes a danger zone over the judges. Their phones buzz." tone="btn-danger" />
       <B a="crowd_surge" icon={<Users size={28} className="text-caution" />} title="Crowd surge" sub="Adds 40 simulated people over 20 s. The area turns red." />
       <B a="safety_check" icon={<BellRing size={28} className="text-info" />} title='Send "Are you safe?"' sub="To everyone in (or recently in) the landslide zone." />
       <B a="budget_stress" icon={<Zap size={28} className="text-[#6B3E8E]" />} title="Budget stress test" sub="Tiny Prune run budget on the cluster summary: 429 stop, standard text, safety unaffected." />

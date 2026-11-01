@@ -77,8 +77,9 @@ export function SheetHeader({ title, onClose, sub }: { title: string; onClose?: 
 }
 
 /* ---------------------------------------------------------------- bottom sheet with drag */
-export function BottomSheet({ children, peek = 132 }: { children: ReactNode; peek?: number }) {
+export function BottomSheet({ children, peek = 132, collapse }: { children: ReactNode; peek?: number; collapse?: number }) {
   const [state, setState] = useState<0 | 1 | 2>(0);
+  useEffect(() => setState(0), [collapse]);
   const drag = useRef<{ y: number; start: number } | null>(null);
   const [dy, setDy] = useState(0);
   const heights = [peek, Math.round(window.innerHeight * 0.48), Math.round(window.innerHeight * 0.86)];

@@ -33,6 +33,7 @@ export function inr(v: number | null | undefined, rate: number): string {
 
 export const KIND_LABEL: Record<string, string> = {
   landslide: "Landslide",
+  red_zone: "Red zone",
   closed_trail: "Closed trail",
   restricted: "Restricted area",
   wildlife_core: "Wildlife core",

@@ -1,12 +1,12 @@
 import { BrowserQRCodeReader, type IScannerControls } from "@zxing/browser";
-import { Check, ChevronDown, ChevronRight, ExternalLink, KeyRound, Link2, ShieldAlert, ShieldCheck, X } from "lucide-react";
+import { Check, CheckCircle2, ChevronDown, ChevronRight, ExternalLink, FileText, KeyRound, Link2, ShieldAlert, ShieldCheck, Smartphone, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, connectEvents } from "../lib/api";
 import { ago, clock, duration, hm, inr, KIND_LABEL, RISK_SHORT, riskText, usd } from "../lib/format";
 import { Bandage, Users } from "lucide-react";
 import { SosKindIcon, WarnIcon, WeatherIcon } from "./icons";
 import { setRoleToken } from "../lib/session";
-import type { AiStats, Config, Dot, Evt, HeatCell, IncidentDetail, IncidentSummary, LlmCallBrief, RouteDetail, Tally, Weather, WeatherSection, Zone } from "../lib/types";
+import type { AiStats, Config, CrowdHeat, Dot, Evt, HeatCell, IncidentDetail, IncidentSummary, LlmCallBrief, RouteDetail, Tally, Weather, WeatherSection, Zone } from "../lib/types";
 import { verifyEntries, verifyPassOffline, type EntryCheck, type LogEntry } from "../lib/verify";
 import { Explain, SourceTag, Spinner, useToast } from "./ui";
 
@@ -27,6 +27,7 @@ export function useOpsFeed(routeId: string, token: string | null) {
   const [dots, setDots] = useState<Record<string, Dot>>({});
   const [incidents, setIncidents] = useState<Record<number, IncidentSummary>>({});
   const [heat, setHeat] = useState<HeatCell[]>([]);
+  const [crowd, setCrowd] = useState<CrowdHeat | null>(null);
   const [tally, setTally] = useState<Tally | null>(null);
   const [river, setRiver] = useState<RiverDot[]>([]);
   const [ticker, setTicker] = useState<TickerItem[]>([]);
@@ -66,6 +67,7 @@ export function useOpsFeed(routeId: string, token: string | null) {
     setBoard(st.board);
     setTally(st.check);
     setHeat(h.cells ?? []);
+    setCrowd({ points: h.points ?? [], people: h.people ?? 0, simulated: !!h.simulated });
     setConfig(cfg);
   }, [routeId, token]);
 
@@ -117,6 +119,7 @@ export function useOpsFeed(routeId: string, token: string | null) {
           break;
         case "crowd.heat":
           setHeat(d.cells);
+          setCrowd({ points: d.points ?? [], people: d.people ?? 0, simulated: !!d.simulated });
           break;
         case "crowd.red":
           tick(`Crowd building: ${d.people} people in one spot`, "warn");
@@ -186,7 +189,7 @@ export function useOpsFeed(routeId: string, token: string | null) {
     return connectEvents(token, onEvt, setConnected);
   }, [token, routeId, load]);
 
-  return { route, zones, dots: Object.values(dots), incidents: Object.values(incidents).sort((a, b) => b.id - a.id), heat, tally, river, ticker, board, connected, lastEvt, config, aiTick, weather, reload: load };
+  return { route, zones, dots: Object.values(dots), incidents: Object.values(incidents).sort((a, b) => b.id - a.id), heat, crowd, tally, river, ticker, board, connected, lastEvt, config, aiTick, weather, reload: load };
 }
 
 /* ================================================================ weather along the route (responder) */
@@ -436,6 +439,32 @@ export function IncidentRow({ i, selected, onClick }: { i: IncidentSummary; sele
   );
 }
 
+/** The deck's responder flow, live for this incident: colour dots on a dashed gold line. */
+function IncidentFlow({ d, src, onTimeline }: { d: IncidentDetail; src?: string | null; onTimeline: () => void }) {
+  const accepted = ["accepted", "en_route", "resolved"].includes(d.status);
+  const steps: { icon: React.ReactNode; tone: string; label: string; sub: string; on: boolean; click?: () => void }[] = [
+    { icon: <Smartphone size={15} />, tone: "bg-brand", label: "SOS arrives", sub: `${d.member_count} SOS`, on: true },
+    { icon: <Users size={15} />, tone: "bg-brand", label: "Grouped", sub: `${d.trip_count} ${d.trip_count === 1 ? "group" : "groups"}`, on: true },
+    { icon: <FileText size={15} />, tone: "bg-info", label: "AI report", sub: src === "template" ? "Standard text" : src ? "via Prune" : "Writing…", on: !!src },
+    { icon: <CheckCircle2 size={15} />, tone: "bg-safe", label: "Accept", sub: accepted ? d.status.replace("_", " ") : "Waiting", on: accepted },
+    { icon: <Link2 size={15} />, tone: "bg-ink", label: "Timeline", sub: "Signed", on: true, click: onTimeline },
+  ];
+  return (
+    <ol className="flex items-start border-b border-line bg-white px-1 py-3">
+      {steps.map((x, i) => (
+        <li key={x.label} className="relative flex-1 text-center">
+          {i < steps.length - 1 && <span className="flow-line absolute left-1/2 top-4 w-full border-t-2" />}
+          <button onClick={x.click} disabled={!x.click} className="relative w-full disabled:cursor-default">
+            <span className={`flow-dot mx-auto h-8 w-8 ${x.on ? x.tone : "border-2 border-line bg-white text-muted"}`}>{x.icon}</span>
+            <span className="mt-1 block font-display text-sm font-bold leading-tight">{x.label}</span>
+            <span className="block text-[10px] leading-tight text-muted">{x.sub}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: number; token: string; lastEvt: Evt | null; onClose: () => void; compact?: boolean }) {
   const toast = useToast();
   const [d, setD] = useState<IncidentDetail | null>(null);
@@ -490,11 +519,12 @@ export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: nu
       <div className="flex items-start gap-2 border-b border-line p-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2"><span className={`chip ${PRI[d.priority]}`}>{d.priority}</span><span className="text-sm text-muted">#{d.id} · first SOS {ago(d.first_sos_at)}</span></div>
-          <p className="mt-1 text-lg font-bold leading-snug">{d.headline}</p>
+          <p className="mt-1 font-display text-2xl font-bold leading-tight">{d.headline}</p>
           <p className="text-sm text-muted">{d.segment_name || "Unknown section"} · radius {Math.round(d.radius_m)} m</p>
         </div>
         <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-black/5"><X size={16} /></button>
       </div>
+      <IncidentFlow d={d} src={src} onTimeline={() => setTab("timeline")} />
       <div className="flex gap-1 border-b border-line px-3 py-2">
         {(["details", "timeline"] as const).map((x) => <button key={x} onClick={() => setTab(x)} className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize ${tab === x ? "bg-ink text-white" : "text-muted"}`}>{x}</button>)}
       </div>
@@ -502,9 +532,9 @@ export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: nu
         {tab === "details" ? (
           <>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-xl bg-black/[.03] p-2"><p className="font-mono text-2xl font-bold">{d.people_total}</p><p className="text-xs text-muted">people</p></div>
-              <div className="rounded-xl bg-danger/5 p-2"><p className="font-mono text-2xl font-bold text-danger">{d.injured_total}</p><p className="text-xs text-muted">injury reports</p></div>
-              <div className="rounded-xl bg-black/[.03] p-2"><p className="font-mono text-2xl font-bold">{d.member_count}</p><p className="text-xs text-muted">SOS ({d.trip_count} groups)</p></div>
+              <div className="rounded-xl bg-white p-2"><p className="font-display text-4xl font-bold leading-none">{d.people_total}</p><p className="text-xs text-muted">people</p></div>
+              <div className="rounded-xl bg-danger/10 p-2"><p className="font-display text-4xl font-bold leading-none text-danger">{d.injured_total}</p><p className="text-xs text-muted">injury reports</p></div>
+              <div className="rounded-xl bg-white p-2"><p className="font-display text-4xl font-bold leading-none">{d.member_count}</p><p className="text-xs text-muted">SOS ({d.trip_count} groups)</p></div>
             </div>
             <Explain id="counts" />
             {d.flags.filter((f) => FLAG_LABEL[f]).length > 0 && <div className="flex flex-wrap gap-1.5">{d.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#6B3E8E]/10 text-[#6B3E8E]"><ShieldAlert size={12} />{FLAG_LABEL[f]}</span>)}</div>}

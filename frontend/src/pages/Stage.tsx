@@ -70,12 +70,12 @@ export default function Stage() {
   const sos = feed.incidents.filter((i) => i.status !== "cancelled").reduce((n, i) => n + i.member_count, 0);
   const lanes = feed.river.reduce((acc, d) => ({ ...acc, [d.lane]: (acc[d.lane] ?? 0) + 1 }), {} as Record<string, number>);
 
-  if (!token) return <div className="min-h-full bg-night-bg px-4"><LoginCard dark onDone={(t) => setToken(t)} /></div>;
+  if (!token) return <div className="flow-root min-h-full bg-night-bg px-4"><LoginCard dark onDone={(t) => setToken(t)} /></div>;
 
   return (
     <div className="flex h-full bg-night-bg text-night-text">
       <div className="relative flex-1">
-        {feed.route && <MapView dark bbox={feed.route.bbox} route={feed.route.line} zones={feed.zones} dots={feed.dots} heat={feed.heat} helpPoints={feed.route.help_points} incidents={pins} />}
+        {feed.route && <MapView dark bbox={feed.route.bbox} route={feed.route.line} zones={feed.zones} dots={feed.dots} crowd={feed.crowd} helpPoints={feed.route.help_points} incidents={pins} />}
         {round && <HeadlineBar h={{ round: round.round, onTrail, simulated, sos, incidents: liveIncidents.length, aiCostUsd: stats?.cost_usd ?? null, aiConfigured: stats?.ai_configured ?? false, usdInr: stats?.usd_inr ?? 88 }} />}
         {round?.last && onTrail === 0 && liveIncidents.length === 0 && <RoundRecap r={round.last} next={round.round} usdInr={stats?.usd_inr ?? 88} />}
         <Confetti burst={burst} />

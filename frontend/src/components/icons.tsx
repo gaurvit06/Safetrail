@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Ban, Bandage, CircleHelp, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Compass,
-  HeartPulse, Mountain, MountainSnow, PawPrint, ShieldAlert, ShieldBan, Sun, TriangleAlert, Users, Waves,
+  HeartPulse, Mountain, MountainSnow, PawPrint, ShieldAlert, ShieldBan, Siren, Sun, TriangleAlert, Users, Waves,
 } from "lucide-react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -12,7 +12,7 @@ export const SOS_KIND_ICON: Record<string, LucideIcon> = {
 };
 
 export const ZONE_KIND_ICON: Record<string, LucideIcon> = {
-  landslide: Mountain, closed_trail: Ban, restricted: ShieldBan, wildlife_core: PawPrint, flood: Waves, crowd: Users, custom: TriangleAlert,
+  landslide: Mountain, closed_trail: Ban, restricted: ShieldBan, wildlife_core: PawPrint, flood: Waves, crowd: Users, red_zone: Siren, custom: TriangleAlert,
 };
 
 /** WMO weather code (Open-Meteo) to an icon. */

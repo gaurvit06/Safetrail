@@ -18,6 +18,18 @@ Say once, early: **"Demo zones and dispatches are simulated."**
 - [ ] Phone hotspot ready for the laptop.
 - [ ] On Stage control, tap **Next round** (3-second countdown, tap again to cancel). It recaps the last round on the projector, resets the demo and shows the Join QR again.
 
+## The CSED workflow (the short version, for the video and for judges)
+
+Full steps are in `docs/HOW_TO_START.md`.
+
+1. Everyone joins at `/j`. Open the **Safety pack** once.
+2. Responder or Stage control: **Flag CSED red zone**.
+3. Someone walks into the block, or taps **Simulate walking into CSED**. The phone warns "m ahead", then goes full-screen red.
+4. Hold **SOS**, pick what happened and how many, **Send SOS**. It appears on the responder. Tap **Accept**. The phone shows **Help acknowledged**.
+5. Turn on airplane mode: the pack still opens, and a new SOS waits and sends itself when signal returns.
+6. Tap **Simulate crowd**. The heatmap fills in around CSED over 20 seconds.
+7. **Clear CSED red zone**, **Stop crowd**, or **Next round** between takes.
+
 ## Run of show
 
 | Time | Say | Do | Judges see |
