@@ -85,6 +85,18 @@ def test_heat_clears_when_everyone_has_left(s):
     assert engines.latest_heat["hall"]["people"] == 0 and engines.latest_heat["hall"]["points"] == []
 
 
+def test_clients_can_catch_up_on_events_by_number():
+    from app import events
+    start = events.since(-1, {"tourists"})
+    assert start["events"] == []
+    events.publish("for.tourists", {}, {"tourists"})
+    events.publish("for.staff", {}, events.OPS)
+    tourist = events.since(start["seq"], {"tourists"})
+    assert [e["type"] for e in tourist["events"]] == ["for.tourists"]
+    assert [e["type"] for e in events.since(start["seq"], {"responder"})["events"]] == ["for.staff"]
+    assert events.since(tourist["seq"], {"tourists"})["events"] == []
+
+
 def test_simulated_crowd_stays_around_csed_and_stops(s, monkeypatch):
     engines.latest_heat.clear()
     monkeypatch.setattr(stage.time, "monotonic", time.monotonic)

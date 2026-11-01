@@ -77,6 +77,12 @@ async def sse(request: Request, token: str = ""):
     return EventSourceResponse(gen())
 
 
+@app.get("/api/events/poll")
+def poll_events(after: int = -1, token: str = ""):
+    audiences, _ = _audiences(token)
+    return events.since(after, audiences)
+
+
 @app.get("/{path:path}", include_in_schema=False)
 def spa(path: str):
     """Serve the built app (frontend/dist) with SPA fallback, so everything is one origin behind one tunnel."""

@@ -19,3 +19,4 @@ Differences from SPEC.md Sections 6–8 that the app must follow. Newest last.
 - `crowd.heat` and `GET /crowd/heat` gain `points` (`lat`, `lon`, `n`), `people` and `simulated`.
 - New event `crowd.heat_public` for tourists: `points`, `people`, `simulated`, `route_id`, only for spots with 3 or more people.
 - `GET /trips/{id}/sync` gains `heat`, in the same shape.
+- Every event gains `seq`. New `GET /api/events/poll?after=&token=` returns `{seq, events}` for that token's audiences.

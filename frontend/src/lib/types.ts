@@ -241,7 +241,7 @@ export type Dot = {
 export type CrowdHeat = { points: { lat: number; lon: number; n: number }[]; people: number; simulated: boolean };
 export type HeatCell = { id: string; count: number; density: number; level: "green" | "amber" | "red"; trend: string; polygon: Polygon };
 
-export type Evt = { type: string; ts: number; route_id?: string | null; trip_id?: string | null; data: any };
+export type Evt = { seq?: number; type: string; ts: number; route_id?: string | null; trip_id?: string | null; data: any };
 
 export type AiStats = {
   calls: number;
