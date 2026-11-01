@@ -23,7 +23,7 @@ Say once, early: **"Demo zones and dispatches are simulated."**
 Full steps are in `docs/HOW_TO_START.md`.
 
 1. Everyone joins at `/j`. Open the **Safety pack** once.
-2. Responder or Stage control: **Flag CSED red zone**.
+2. CSED is already red. To show the flagging, tap **Clear CSED red zone**, then **Flag CSED red zone**.
 3. Someone walks into the block, or taps **Simulate walking into CSED**. The phone warns "m ahead", then goes full-screen red.
 4. Hold **SOS**, pick what happened and how many, **Send SOS**. It appears on the responder. Tap **Accept**. The phone shows **Help acknowledged**.
 5. Turn on airplane mode: the pack still opens, and a new SOS waits and sends itself when signal returns.

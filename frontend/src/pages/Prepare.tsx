@@ -1,10 +1,10 @@
-import { Check, Compass, MapPin, Volume2 } from "lucide-react";
+import { Bell, Check, Compass, MapPin, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Spinner, useToast } from "../components/ui";
 import { api } from "../lib/api";
 import { useT } from "../lib/i18n";
-import { cautionChime, unlockAudio } from "../lib/signals";
+import { askNotify, canNotify, cautionChime, unlockAudio } from "../lib/signals";
 import { getSession, setBundle, setSession } from "../lib/session";
 import type { StartBundle } from "../lib/types";
 
@@ -17,6 +17,7 @@ export default function Prepare() {
   const [sound, setSound] = useState(false);
   const [loc, setLoc] = useState<"idle" | "asking" | "ok" | "denied">("idle");
   const [motion, setMotion] = useState(false);
+  const [alerts, setAlerts] = useState(canNotify() && Notification.permission === "granted");
 
   useEffect(() => {
     if (!session) return void nav("/");
@@ -78,6 +79,11 @@ export default function Prepare() {
         <button className={`btn ${loc === "ok" ? "bg-safe/10 text-safe" : loc === "denied" ? "bg-danger/10 text-danger" : "btn-ghost"}`} onClick={askLocation}>
           {loc === "ok" ? <Check size={18} /> : loc === "asking" ? <Spinner /> : <MapPin size={18} />} {loc === "denied" ? t("no_gps") : t("prep_location")}
         </button>
+        {canNotify() && (
+          <button className={`btn ${alerts ? "bg-safe/10 text-safe" : "btn-ghost"}`} onClick={() => askNotify().then(() => setAlerts(Notification.permission === "granted"))}>
+            {alerts ? <Check size={18} /> : <Bell size={18} />} {t("prep_notify")}
+          </button>
+        )}
         <button className={`btn ${motion ? "bg-safe/10 text-safe" : "btn-ghost"}`} onClick={askMotion}>
           {motion ? <Check size={18} /> : <Compass size={18} />} Compass (for "Guide me")
         </button>

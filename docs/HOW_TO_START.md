@@ -33,19 +33,26 @@ Do this over the phone's mobile data if the campus Wi-Fi is slow.
 
 ## The video: entering CSED
 
-1. Stand outside CSED, at least 100 m from the block, for example near the library roundabout. Wait until your dot shows on the map.
-2. On the laptop, click **Flag CSED red zone** on the responder page. Film it. The block turns red on the phone straight away.
-3. Walk towards the block. Within about 80 m of the red area the phone shows an amber "Red zone: … m ahead" banner.
-4. Cross into the red area. The phone goes full-screen red, with sound and vibration: **Red zone: do not enter**. It happens about 20 m before the walls, because GPS near a building drifts.
-5. Tap **Show safe way back**. A green dashed line points the way out.
+**CSED is red from the moment the app starts**, and again after **Next round**, so nobody can forget to flag it. To film the flagging itself, click **Clear CSED red zone** first, then **Flag CSED red zone** on camera.
 
-**To film it again:** click **Clear CSED red zone**, walk back out, and flag it again. A new zone alerts again.
+1. Stand outside CSED, at least 100 m from the block, for example near the library roundabout. Check the top card shows **GPS ±** and a number.
+2. Tap the screen once, so the phone allows sound. Turn the volume up and turn off the iPhone's silent switch.
+3. Walk towards the block. Within about 80 m of the red area the phone shows an amber "Red zone: … m ahead" banner.
+4. Cross into the red area. On the first GPS reading inside, the phone goes full-screen red with a "You have entered: CSED block" notification card. An alarm repeats and a voice says the warning until you tap a button. It happens about 20 m before the walls, because GPS near a building drifts.
+5. Tap **I understand**. A flashing red frame and a red banner stay on for as long as you're inside.
+6. Tap **Show safe way back**. A green dashed line points the way out.
+
+**To film it again:** walk back out, wait 20 seconds and walk in again. It alerts on every new entry.
+
+If you're already inside CSED when the app opens, the alert fires as soon as the phone gets its first GPS reading.
+
+**Keep the app open on the screen.** Phones stop web pages when they're locked or in the background, so no alert can fire then. The app keeps the screen on during a trip.
+
+**Notifications:** on Android Chrome, allow notifications and you also get a real system notification. Safari on iPhone doesn't allow them for a web page, so there you get the full-screen alert, the notification card, the alarm and the voice. iPhone vibration isn't available to web pages either.
 
 **If GPS is bad:** pull up the sheet and tap **Simulate walking into CSED**. The dot walks in by itself in about 17 seconds. The warning and alert are the real ones, and only the position is simulated. The screen says so, and you should too.
 
 The simulated walk leaves the phone on a simulated position, and real GPS is ignored until you tap the purple bar at the top or reload the page. The top card tells you which one is on: **GPS ±N m** or **Simulated location**.
-
-iPhones don't vibrate from a web page, so they use sound and the full-screen red. Turn the volume up.
 
 ## In front of the judges
 

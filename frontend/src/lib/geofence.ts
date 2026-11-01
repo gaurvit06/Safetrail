@@ -30,14 +30,15 @@ export class Geofence {
     for (const z of zones) {
       const s = this.st.get(z.id) ?? { inside: false, inN: 0, outN: 0, approaching: false, apN: 0, lastAlert: 0 };
       const inside = pointInPolygon(fix.lat, fix.lon, z.polygon);
-      const needIn = fix.source === "checkpoint" ? 1 : this.opts.enterN;
+      const red = z.kind === "red_zone"; // alerts on the first fix inside, and again on any new entry
+      const needIn = fix.source === "checkpoint" || red ? 1 : this.opts.enterN;
       if (inside) {
         s.inN += 1;
         s.outN = 0;
         if (!s.inside && s.inN >= needIn) {
           s.inside = true;
           s.approaching = false;
-          const fullScreen = s.lastAlert === 0 || now - s.lastAlert > this.opts.cooldownMs;
+          const fullScreen = s.lastAlert === 0 || now - s.lastAlert > (red ? 20000 : this.opts.cooldownMs);
           if (fullScreen) s.lastAlert = now;
           out.push({ type: "enter", zone: z, fullScreen });
         }

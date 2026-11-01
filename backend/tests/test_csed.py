@@ -37,6 +37,12 @@ def test_flag_csed_twice_keeps_one_zone(s):
     assert sum(1 for z in active_zones(s, "hall") if z.kind == "red_zone") == 1
 
 
+def test_csed_is_red_again_after_a_reset(s):
+    _clear_zones(s)
+    stage.reset_demo(s)
+    assert stage.csed_red_zone(s) is not None
+
+
 def test_clear_csed_removes_the_zone(s):
     _clear_zones(s)
     stage.flag_csed(s)

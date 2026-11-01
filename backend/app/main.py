@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from sqlmodel import Session, select
 from sse_starlette.sse import EventSourceResponse
 
-from . import events
+from . import events, stage
 from .api import router
 from .config import REPO_DIR, settings
 from .db import engine, init_db
@@ -30,6 +30,8 @@ async def lifespan(app: FastAPI):
     with Session(engine) as s:
         seed_db(s)
     pass_signer(), log_signer()  # create keys on first run
+    with Session(engine) as s:
+        stage.flag_csed(s, "auto")  # the demo starts with CSED already red, so nobody can forget to flag it
     tasks = start_engines()
     yield
     for t in tasks:

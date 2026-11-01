@@ -6,10 +6,13 @@ export function unlockAudio() {
     ctx ??= new (window.AudioContext || (window as any).webkitAudioContext)();
     if (ctx.state === "suspended") ctx.resume();
     tone(660, 0.12, 0.05);
+    speechSynthesis.speak(new SpeechSynthesisUtterance("")); // iPhones only allow speech after one inside a tap
   } catch {
     /* no audio */
   }
 }
+
+export const soundReady = () => ctx?.state === "running";
 
 function tone(freq: number, dur: number, vol = 0.4, at = 0, type: OscillatorType = "sine") {
   if (!ctx) return;
@@ -41,6 +44,37 @@ export function dangerAlert() {
     tone(660, 0.22, 0.5, i * 0.5 + 0.25, "square");
   }
   vibrate([400, 200, 400, 200, 800]);
+}
+
+let siren: number | undefined;
+
+/** The alarm for a red zone: it repeats until the person taps a button on the alert. */
+export function startSiren() {
+  stopSiren();
+  dangerAlert();
+  siren = window.setInterval(dangerAlert, 4000);
+}
+
+export function stopSiren() {
+  clearInterval(siren);
+  siren = undefined;
+}
+
+export const canNotify = () => "Notification" in window && "serviceWorker" in navigator;
+
+export async function askNotify() {
+  if (canNotify() && Notification.permission === "default") await Notification.requestPermission().catch(() => {});
+}
+
+/** A system notification where the phone allows one. Safari on iPhone doesn't, unless the app is on the Home Screen. */
+export async function notify(title: string, body: string) {
+  if (!canNotify() || Notification.permission !== "granted") return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(title, { body, icon: "/icon.svg", tag: "safetrail-zone", renotify: true, requireInteraction: true } as NotificationOptions);
+  } catch {
+    /* the full-screen alert still shows */
+  }
 }
 
 export function cautionChime() {

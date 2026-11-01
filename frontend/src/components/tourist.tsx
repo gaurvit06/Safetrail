@@ -26,7 +26,14 @@ export function ZoneAlert({ zone, bundle, onWayBack, onClose, notPermitted }: { 
   const a = zoneText(zone, lang, bundle);
   const warn = !notPermitted && (zone.kind === "crowd" || zone.severity === "warn");
   return (
-    <div className={`fixed inset-0 z-[60] flex flex-col px-6 pb-8 pt-14 text-white ${warn ? "bg-caution" : "bg-danger"}`} role="alertdialog">
+    <div className={`fixed inset-0 z-[60] flex flex-col overflow-y-auto px-6 pb-8 pt-12 text-white ${warn ? "bg-caution" : "bg-danger"}`} role="alertdialog">
+      <div className="mb-6 flex animate-slideup items-center gap-3 rounded-2xl bg-white p-3 text-ink shadow-float">
+        <img src="/icon.svg" alt="" className="h-10 w-10 shrink-0" />
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-muted">SafeTrail · now</p>
+          <p className="font-semibold leading-tight">{t("zone_entered", { zone: zone.segment_name || a.title })}</p>
+        </div>
+      </div>
       <ZoneIcon kind={zone.kind} size={72} strokeWidth={1.75} />
       {notPermitted && <p className="mt-4 rounded-xl bg-white px-3 py-2 text-lg font-extrabold text-danger">{t("not_permitted")} · {notPermitted}</p>}
       <h1 className="mt-6 text-6xl leading-none">{a.title}</h1>

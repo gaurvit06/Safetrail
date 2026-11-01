@@ -330,6 +330,7 @@ def reset_demo(s: Session) -> dict:
     s.commit()
     _device_attempts.clear()
     _ip_attempts.clear()
+    flag_csed(s, "auto")  # CSED stays red between rounds
     events.publish("stage.reset", {}, events.ALL)
     return {"ok": True}
 

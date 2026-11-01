@@ -21,6 +21,16 @@ describe("Geofence", () => {
     expect(g.update(outside, [zone])[0].type).toBe("exit");
   });
 
+  it("alerts for a red zone on the first fix inside, and again on a new entry", () => {
+    const red = { ...zone, id: "R1", kind: "red_zone" };
+    const g = new Geofence();
+    const first = g.update(inside, [red], 1000)[0];
+    expect(first.type === "enter" && first.fullScreen).toBe(true);
+    for (let i = 0; i < 3; i++) g.update(outside, [red], 2000);
+    const again = g.update(inside, [red], 30000)[0];
+    expect(again.type === "enter" && again.fullScreen).toBe(true);
+  });
+
   it("does not flicker on one noisy fix", () => {
     const g = new Geofence();
     g.update(inside, [zone]);

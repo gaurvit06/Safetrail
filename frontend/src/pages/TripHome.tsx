@@ -14,7 +14,7 @@ import { Geofence } from "../lib/geofence";
 import { useT } from "../lib/i18n";
 import { flush, kv, onQueueChange, pingQueue, queueSos, sosStore, type QueuedSos } from "../lib/offline";
 import { getBundle, getSession, setBundle, setSession } from "../lib/session";
-import { ackChime, cautionChime, dangerAlert, unlockAudio, vibrate } from "../lib/signals";
+import { ackChime, askNotify, cautionChime, dangerAlert, notify, soundReady, speak, startSiren, stopSiren, unlockAudio, vibrate } from "../lib/signals";
 import type { CrowdHeat, Evt, HelpPoint, Pack, PassPayload, StartBundle, Weather, Zone } from "../lib/types";
 import { LangSwitch } from "./Welcome";
 
@@ -52,6 +52,9 @@ export default function TripHome() {
   const [walking, setWalking] = useState(false);
   const walkTimer = useRef<number | null>(null);
   const lastCrowdAlert = useRef(0);
+  const langRef = useRef(lang);
+  langRef.current = lang;
+  const [sound, setSound] = useState(soundReady());
   const routeIdRef = useRef("");
   const [packTab, setPackTab] = useState(0);
   const [sosPreset, setSosPreset] = useState<string | undefined>();
@@ -280,7 +283,12 @@ export default function TripHome() {
           // A crowd can shift into several zones, so it alerts once; and it never covers a danger alert.
           if (ev.zone.kind === "crowd") lastCrowdAlert.current = Date.now();
           setAlertZone((a) => (ev.zone.kind === "crowd" && a && a.kind !== "crowd" ? a : ev.zone));
-          dangerAlert();
+          if (ev.zone.kind === "red_zone") {
+            const words = zoneText(ev.zone, langRef.current, null);
+            startSiren();
+            notify(words.title, words.body);
+            setTimeout(() => speak(words.title, langRef.current), 1700);
+          } else dangerAlert();
         } else cautionChime();
       } else if (ev.type === "approach") {
         setApproach(ev.zone);
@@ -480,6 +488,35 @@ export default function TripHome() {
     );
   };
 
+  // The alarm stops when the alert is dismissed, and the first tap anywhere after a reload turns sound back on.
+  useEffect(() => {
+    if (!alertZone) stopSiren();
+  }, [alertZone]);
+  useEffect(() => {
+    const first = () => {
+      unlockAudio();
+      askNotify();
+      setSound(true);
+    };
+    window.addEventListener("pointerdown", first, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", first);
+      stopSiren();
+    };
+  }, []);
+  // Phones stop running web pages when the screen sleeps, so it stays on during a trip.
+  useEffect(() => {
+    let lock: { release?: () => Promise<void> } | null = null;
+    const ask = () => (navigator as any).wakeLock?.request("screen").then((l: any) => (lock = l)).catch(() => {});
+    const back = () => document.visibilityState === "visible" && ask();
+    ask();
+    document.addEventListener("visibilitychange", back);
+    return () => {
+      document.removeEventListener("visibilitychange", back);
+      lock?.release?.().catch(() => {});
+    };
+  }, []);
+
   /* ---------------- derived */
   const route = bundle?.route;
   const segment = me && route ? nearestSegmentName(me.lat, me.lon, route.segments) : "";
@@ -517,6 +554,8 @@ export default function TripHome() {
         onHelpClick={(hp) => setGuide(hp)}
       />
 
+      {insideZone?.severity === "danger" && <div className="pointer-events-none absolute inset-0 z-10 animate-flash border-[10px] border-danger" />}
+
       {/* top bar */}
       <div className="absolute inset-x-0 top-0 z-20 flex items-center gap-2 p-3 pr-12">
         <div className="card flex min-w-0 flex-1 items-center gap-2 px-3 py-2 shadow-float">
@@ -540,6 +579,7 @@ export default function TripHome() {
         {gps === "denied" && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-danger shadow-float">{t("no_gps")}</div>}
         {!sharing && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("sharing_off")}</div>}
         {queued > 0 && !online && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("queued_sos", { n: sosList.filter((s) => s.status === "queued").length })}</div>}
+        {!sound && <button onClick={() => { unlockAudio(); askNotify(); setSound(true); }} className="rounded-xl bg-ink px-4 py-2 text-left text-sm font-semibold text-white shadow-float">{t("sound_tap")}</button>}
         {gps === "waiting" && !demo && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("gps_waiting")}</div>}
         {demo && <button onClick={backToGps} className="rounded-xl bg-[#6B3E8E] px-4 py-2 text-left text-sm font-semibold text-white shadow-float">{walking ? t("walking") : t("sim_on")}</button>}
       </div>
