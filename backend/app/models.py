@@ -55,7 +55,7 @@ class Checkpoint(SQLModel, table=True):
 class Zone(SQLModel, table=True):
     id: str = Field(primary_key=True)
     route_id: str = Field(index=True)
-    kind: str  # landslide|closed_trail|restricted|wildlife_core|flood|crowd|custom
+    kind: str  # landslide|closed_trail|restricted|wildlife_core|flood|crowd|red_zone|custom
     severity: str = "danger"  # warn|danger
     polygon: Any = J()  # GeoJSON Polygon geometry
     source: str = "seeded"  # seeded|drawn|auto_crowd

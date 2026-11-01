@@ -29,7 +29,7 @@ export function ZoneAlert({ zone, bundle, onWayBack, onClose, notPermitted }: { 
     <div className={`fixed inset-0 z-[60] flex flex-col px-6 pb-8 pt-14 text-white ${warn ? "bg-caution" : "bg-danger"}`} role="alertdialog">
       <ZoneIcon kind={zone.kind} size={72} strokeWidth={1.75} />
       {notPermitted && <p className="mt-4 rounded-xl bg-white px-3 py-2 text-lg font-extrabold text-danger">{t("not_permitted")} · {notPermitted}</p>}
-      <h1 className="mt-6 text-4xl font-extrabold leading-tight">{a.title}</h1>
+      <h1 className="mt-6 text-6xl leading-none">{a.title}</h1>
       <p className="mt-4 text-xl leading-snug">{a.body}</p>
       {a.action && <p className="mt-4 rounded-2xl bg-white/15 p-4 text-xl font-bold">→ {a.action}</p>}
       {zone.simulated && <p className="mt-3 text-sm opacity-80">Simulated demo zone</p>}

@@ -99,7 +99,7 @@ export default function StageControl() {
       <B a="landslide" icon={<Mountain size={28} className="text-danger" />} title="Landslide here" sub="Publishes a danger zone over the judges. Their phones buzz." tone="btn-danger" />
       <B a="crowd_surge" icon={<Users size={28} className="text-caution" />} title="Crowd surge" sub="Adds 40 simulated people over 20 s. The area turns red." />
       <B a="safety_check" icon={<BellRing size={28} className="text-info" />} title='Send "Are you safe?"' sub="To everyone in (or recently in) the landslide zone." />
-      <B a="budget_stress" icon={<Zap size={28} className="text-[#7C3AED]" />} title="Budget stress test" sub="Tiny Prune run budget on the cluster summary: 429 stop, standard text, safety unaffected." />
+      <B a="budget_stress" icon={<Zap size={28} className="text-[#6B3E8E]" />} title="Budget stress test" sub="Tiny Prune run budget on the cluster summary: 429 stop, standard text, safety unaffected." />
       <B a="walk_sim" icon={<Footprints size={28} />} title="Walk simulation" sub="A simulated tourist walks a loop (backup if GPS is bad)." />
       <B a="demo_data" icon={<Database size={28} className="text-brand" />} title="Load demo data (Kedarnath)" sub="28 demo travellers, an SOS cluster at the landslide, a lost traveller, a safety check, a crowd and Break-it attempts. View on /r (Kedarnath) or /stage?route=kedarnath." />
       <div className="card p-3 text-sm"><Activity size={14} className="inline" /> {last || "Open /stage on the projector."}</div>

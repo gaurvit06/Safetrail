@@ -12,7 +12,7 @@ from .ai import features
 from .ai.jobs import spawn
 from .config import settings
 from .db import get_session
-from .engines import latest_heat
+from .engines import latest_heat, latest_public_heat
 from .geo import polygon_area_m2
 from .models import (BreakItAttempt, Checkpoint, HelpPoint, Incident, LlmCall, Route, SafetyCheck, SosEvent, Trip,
                      Zone)
@@ -248,7 +248,7 @@ def sync(trip_id: str, request: Request, s: Session = Depends(get_session)):
     from . import weather
     return {"trip": core.trip_public(trip), "zones": [core.zone_public(s, z) for z in core.active_zones(s, trip.route_id)],
             "checks_pending": core.pending_checks(s, trip), "sos": core.trip_sos_status(s, trip),
-            "weather": weather.cached(trip.route_id)}
+            "weather": weather.cached(trip.route_id), "heat": latest_public_heat.get(trip.route_id)}
 
 
 @router.get("/checkpoints/{checkpoint_id}")
@@ -285,7 +285,7 @@ class ZoneIn(BaseModel):
 
 @router.post("/zones")
 def create_zone(body: ZoneIn, role: str = Depends(RESP), s: Session = Depends(get_session)):
-    if body.kind not in ("landslide", "closed_trail", "restricted", "wildlife_core", "flood", "custom"):
+    if body.kind not in ("landslide", "closed_trail", "restricted", "wildlife_core", "flood", "red_zone", "custom"):
         raise HTTPException(400, "Unknown zone kind")
     ring = (body.polygon.get("coordinates") or [[]])[0]
     if body.polygon.get("type") != "Polygon" or len(ring) < 4 or ring[0] != ring[-1] or len(ring) > 201:
@@ -675,6 +675,29 @@ async def scenario(body: ScenarioIn, role: str = Depends(PRES)):
     if body.action == "next_round":
         with session_scope() as s:
             return stage.next_round(s)
+    raise HTTPException(400, "Unknown action")
+
+
+class CsedIn(BaseModel):
+    action: str
+
+
+@router.post("/stage/csed")
+async def csed(body: CsedIn, role: str = Depends(RESP)):
+    """The CSED block demo, from the responder portal or from stage control."""
+    from .db import session_scope
+    if body.action == "flag":
+        with session_scope() as s:
+            return stage.flag_csed(s, role)
+    if body.action == "clear":
+        with session_scope() as s:
+            return stage.clear_csed(s, role)
+    if body.action == "crowd":
+        spawn(stage.csed_crowd())
+        return {"ok": True, "message": "Simulated crowd building around the CSED block"}
+    if body.action == "crowd_stop":
+        with session_scope() as s:
+            return stage.stop_csed_crowd(s)
     raise HTTPException(400, "Unknown action")
 
 

@@ -3,6 +3,13 @@ import type { Lang } from "./types";
 
 const en = {
   tagline: "Safety on your route, even offline",
+  motto: "Warn early. Never lose an SOS. Prove every response.",
+  flow_before: "Before you go",
+  flow_before_text: "Join by QR code. Your safety pack and signed pass stay on your phone.",
+  flow_trail: "On the trail",
+  flow_trouble: "In trouble",
+  flow_help: "Help is coming",
+  flow_help_text: "Every phone in your group shows \"Help acknowledged\". Your family sees your status, never your location.",
   start_trip: "Start a trip",
   im_responder: "I'm a responder",
   continue_trip: "Continue my trip",
@@ -162,6 +169,13 @@ export type Key = keyof typeof en;
 
 const hi: Partial<Record<Key, string>> = {
   tagline: "आपके रास्ते पर सुरक्षा, बिना नेटवर्क के भी",
+  motto: "पहले चेतावनी। SOS कभी न खोए। हर मदद का सबूत।",
+  flow_before: "जाने से पहले",
+  flow_before_text: "QR कोड से जुड़ें। सुरक्षा पैक और साइन किया हुआ पास आपके फ़ोन में रहता है।",
+  flow_trail: "रास्ते पर",
+  flow_trouble: "मुसीबत में",
+  flow_help: "मदद आ रही है",
+  flow_help_text: "आपके समूह के हर फ़ोन पर \"मदद की पुष्टि\" दिखती है। परिवार को केवल स्थिति दिखती है, लोकेशन कभी नहीं।",
   start_trip: "यात्रा शुरू करें",
   im_responder: "मैं बचाव दल से हूँ",
   continue_trip: "मेरी यात्रा जारी रखें",

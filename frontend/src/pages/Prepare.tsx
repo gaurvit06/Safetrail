@@ -58,7 +58,7 @@ export default function Prepare() {
 
   return (
     <div className="mx-auto flex min-h-full max-w-lg flex-col px-5 pb-6 pt-8">
-      <h1 className="text-2xl font-bold">{t("preparing")}</h1>
+      <h1 className="text-5xl">{t("preparing")}</h1>
       <p className="mt-1 text-muted">{session?.trip.label} · {bundle?.route.name ?? "…"}</p>
       <div className="card mt-6 divide-y divide-line">
         {items.map((it) => (

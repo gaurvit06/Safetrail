@@ -34,7 +34,7 @@ type Props = {
 };
 
 const fc = (features: any[]) => ({ type: "FeatureCollection", features }) as any;
-const STATUS_COLOR: Record<string, string> = { active: "#1A73E8", quiet: "#F59E0B", quiet_red: "#EA580C", sos: "#D93025", safe: "#1E8E3E", planned: "#80868B", ended: "#80868B" };
+const STATUS_COLOR: Record<string, string> = { active: "#1A73E8", quiet: "#E8A317", quiet_red: "#EA580C", sos: "#D93025", safe: "#1E8E3E", planned: "#80868B", ended: "#80868B" };
 const HP_ICON: Record<string, string> = { medical: "✚", shelter: "⌂", police: "★", ranger: "✦", checkpoint: "◆" };
 
 function circlePoly(lat: number, lon: number, r: number) {
@@ -189,7 +189,7 @@ export default function MapView(p: Props) {
     m.once("style.load", () => {
       const add = (id: string) => m.addSource(id, { type: "geojson", data: fc([]) });
       ["route", "zones", "heat", "dots", "path", "draft", "acc"].forEach(add);
-      m.addLayer({ id: "heat", type: "fill", source: "heat", paint: { "fill-color": ["match", ["get", "level"], "red", "#D93025", "amber", "#F59E0B", "#22C55E"], "fill-opacity": 0.38 } });
+      m.addLayer({ id: "heat", type: "fill", source: "heat", paint: { "fill-color": ["match", ["get", "level"], "red", "#D93025", "amber", "#E8A317", "#22C55E"], "fill-opacity": 0.38 } });
       m.addLayer({ id: "route-casing", type: "line", source: "route", paint: { "line-color": "#ffffff", "line-width": 9, "line-opacity": 0.9 }, layout: { "line-cap": "round", "line-join": "round" } });
       m.addLayer({ id: "route", type: "line", source: "route", paint: { "line-color": "#1A73E8", "line-width": 5 }, layout: { "line-cap": "round", "line-join": "round" } });
       const zColor = ["case", ["any", ["==", ["get", "kind"], "crowd"], ["==", ["get", "severity"], "warn"]], "#D97706", "#D93025"] as any;
@@ -201,7 +201,7 @@ export default function MapView(p: Props) {
       m.addLayer({ id: "draft-fill", type: "fill", source: "draft", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": "#D93025", "fill-opacity": 0.18 } });
       m.addLayer({ id: "draft-line", type: "line", source: "draft", filter: ["==", ["geometry-type"], "LineString"], paint: { "line-color": "#D93025", "line-width": 2, "line-dasharray": [2, 1] } });
       m.addLayer({ id: "draft-pts", type: "circle", source: "draft", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#fff", "circle-stroke-color": "#D93025", "circle-stroke-width": 2 } });
-      m.addLayer({ id: "dots", type: "circle", source: "dots", paint: { "circle-radius": ["case", ["==", ["get", "sim"], 1], 4, 7], "circle-color": ["get", "color"], "circle-opacity": ["case", ["==", ["get", "sim"], 1], 0.6, 1], "circle-stroke-width": ["case", ["==", ["get", "flagged"], 1], 3, 2], "circle-stroke-color": ["case", ["==", ["get", "flagged"], 1], "#7C3AED", "#ffffff"] } });
+      m.addLayer({ id: "dots", type: "circle", source: "dots", paint: { "circle-radius": ["case", ["==", ["get", "sim"], 1], 4, 7], "circle-color": ["get", "color"], "circle-opacity": ["case", ["==", ["get", "sim"], 1], 0.6, 1], "circle-stroke-width": ["case", ["==", ["get", "flagged"], 1], 3, 2], "circle-stroke-color": ["case", ["==", ["get", "flagged"], 1], "#6B3E8E", "#ffffff"] } });
       loaded.current = true;
       if (bb && bb.length === 4) m.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, maxZoom: 17, duration: 0 });
       syncAll();

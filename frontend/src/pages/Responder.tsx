@@ -152,7 +152,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
               <div className="flex justify-between"><b>{dotSel.trip_label}</b><button onClick={() => setDotSel(null)}><X size={16} /></button></div>
               <p className="text-sm">{dotSel.name} · <span className="capitalize">{dotSel.status.replace("_", " ")}</span></p>
               <p className="text-xs text-muted">±{Math.round(dotSel.accuracy_m ?? 0)} m · {dotSel.kind}</p>
-              {dotSel.flags?.includes("impossible_travel") && <p className="mt-1 text-xs font-semibold text-[#7C3AED]">Impossible jump flagged</p>}
+              {dotSel.flags?.includes("impossible_travel") && <p className="mt-1 text-xs font-semibold text-[#6B3E8E]">Impossible jump flagged</p>}
             </div>
           )}
           {draw && (

@@ -23,6 +23,9 @@ _hist: dict[str, deque] = defaultdict(lambda: deque(maxlen=20))
 _clear_streak: dict[str, int] = {}
 _warned: dict[tuple[str, str], float] = {}
 latest_heat: dict[str, dict] = {}
+latest_public_heat: dict[str, dict] = {}  # what tourists' phones get: only spots with enough people to hide anyone
+HEAT_GRID_M = 6  # finer than the crowd cells, so the heatmap follows where people really stand
+PUBLIC_MIN_PEOPLE = 3
 
 
 def _components(cells: set[tuple[int, int]]) -> list[set[tuple[int, int]]]:
@@ -71,7 +74,8 @@ def crowd_tick() -> None:
         for tr in trips:
             by_route[tr.route_id].append(tr)
         auto = s.exec(select(Zone).where(Zone.source == "auto_crowd", Zone.active == True)).all()  # noqa: E712
-        for route_id in set(by_route) | {z.route_id for z in auto}:
+        # A route that had heat stays in the loop for one more tick, so the map clears when everyone has left.
+        for route_id in set(by_route) | {z.route_id for z in auto} | {r for r, h in latest_heat.items() if h["cells"]}:
             route = s.get(Route, route_id)
             if not route:
                 continue
@@ -80,9 +84,13 @@ def crowd_tick() -> None:
             lat0 = route.center[1]
             dlat = settings.crowd_cell_m / 111_320
             dlon = settings.crowd_cell_m / (111_320 * math.cos(math.radians(lat0)))
+            glat, glon = HEAT_GRID_M / 111_320, HEAT_GRID_M / (111_320 * math.cos(math.radians(lat0)))
             counts: Counter = Counter()
+            fine: Counter = Counter()
             for tr in by_route.get(route_id, []):
                 counts[(math.floor(tr.last_lat / dlat), math.floor(tr.last_lon / dlon))] += 1
+                fine[(round(tr.last_lat / glat), round(tr.last_lon / glon))] += 1
+            points = [{"lat": round(k[0] * glat, 6), "lon": round(k[1] * glon, 6), "n": n} for k, n in fine.items()]
             cells, red = [], set()
             for key, n in counts.items():
                 hk = f"{route_id}:{key[0]}:{key[1]}"
@@ -130,9 +138,16 @@ def crowd_tick() -> None:
                     if _clear_streak[z.id] >= 2:
                         remove_zone(s, z, "crowd_engine")
                         events.publish("crowd.cleared", {"zone_id": z.id}, events.ALL, route_id=route_id)
-            heat = {"route_id": route_id, "cells": cells, "capacity": cap, "ts": t}
+            people = sum(counts.values())
+            simulated = any(tr.kind == "sim" for tr in by_route.get(route_id, []))
+            heat = {"route_id": route_id, "cells": cells, "points": points, "capacity": cap, "ts": t, "people": people,
+                    "simulated": simulated}
             latest_heat[route_id] = heat
             events.publish("crowd.heat", heat, events.OPS, route_id=route_id)
+            shared = [p for p in points if counts[(math.floor(p["lat"] / dlat), math.floor(p["lon"] / dlon))] >= PUBLIC_MIN_PEOPLE]
+            public = {"route_id": route_id, "points": shared, "people": sum(p["n"] for p in shared), "simulated": simulated, "ts": t}
+            latest_public_heat[route_id] = public
+            events.publish("crowd.heat_public", public, {"tourists"}, route_id=route_id)
 
 
 def _warn_approaching(s: Session, z: Zone, trips: list[Trip], people: int, facts: dict) -> None:

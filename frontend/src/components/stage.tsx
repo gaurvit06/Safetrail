@@ -6,7 +6,7 @@ const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce
 
 /* ---------------------------------------------------------------- confetti (projector only) */
 type Piece = { x: number; y: number; vx: number; vy: number; r: number; vr: number; w: number; h: number; c: string };
-const COLORS = ["#0F766E", "#1E8E3E", "#F59E0B", "#FFFFFF", "#1A73E8", "#D93025"];
+const COLORS = ["#0F766E", "#1E8E3E", "#E8A317", "#FFFFFF", "#1A73E8", "#D93025"];
 
 /** A burst of confetti over the projector each time `burst` changes. Draws nothing with reduced motion. */
 export function Confetti({ burst }: { burst: number }) {
@@ -58,7 +58,7 @@ export function Confetti({ burst }: { burst: number }) {
 
 /* ---------------------------------------------------------------- big numbers that pop when they change */
 function Num({ v }: { v: string | number }) {
-  return <span key={String(v)} className="inline-block animate-[pop_.5s_ease-out] font-mono font-extrabold tabular-nums">{v}</span>;
+  return <span key={String(v)} className="inline-block animate-[pop_.5s_ease-out] font-display font-bold tabular-nums">{v}</span>;
 }
 
 export type Headline = { round: number; onTrail: number; simulated: number; sos: number; incidents: number; aiCostUsd: number | null; aiConfigured: boolean; usdInr: number };
@@ -98,11 +98,11 @@ export function RoundRecap({ r, next, usdInr }: { r: RoundSummary; next: number;
           {items.map(([k, v]) => (
             <div key={k} className="rounded-2xl bg-white/10 p-3">
               <p className="text-xs opacity-70">{k}</p>
-              <p className="font-mono text-2xl font-bold">{v}</p>
+              <p className="font-display text-4xl font-bold leading-none text-gold">{v}</p>
             </div>
           ))}
         </div>
-        <p className="mt-4 text-center text-2xl font-bold">Round {next} · scan the QR to join</p>
+        <p className="mt-4 text-center font-display text-4xl font-bold">Round {next} · scan the QR to join</p>
       </div>
     </div>
   );
@@ -120,7 +120,7 @@ export function AcceptBanner({ text }: { text: string | null }) {
   if (!shown) return null;
   return (
     <div className="pointer-events-none absolute inset-x-0 top-1/3 z-30 flex justify-center px-4">
-      <div className="rounded-3xl bg-safe px-8 py-5 text-center text-4xl font-extrabold text-white shadow-float">✓ {shown}</div>
+      <div className="rounded-3xl bg-safe px-8 py-5 text-center font-display text-6xl font-bold text-white shadow-float">✓ {shown}</div>
     </div>
   );
 }

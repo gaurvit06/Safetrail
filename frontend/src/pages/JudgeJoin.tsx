@@ -31,14 +31,18 @@ export default function JudgeJoin() {
   };
 
   return (
-    <div className="mx-auto flex min-h-full max-w-lg flex-col px-5 pb-6 pt-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-lg font-bold"><img src="/icon.svg" alt="" className="h-9 w-9" /> SafeTrail</div>
-        <LangSwitch />
+    <div className="mx-auto flex min-h-full max-w-lg flex-col pb-6">
+      <div className="bg-night-bg px-5 pb-6 pt-5 text-night-text">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-display text-2xl font-bold text-white"><img src="/icon.svg" alt="" className="h-9 w-9" /> SafeTrail</div>
+          <LangSwitch dark />
+        </div>
+        <h1 className="mt-6 text-5xl text-white">You're on the trail</h1>
+        <p className="mt-2 font-display text-2xl font-bold leading-tight text-gold">{t("motto")}</p>
+        <p className="mt-2 text-night-text/80">For the next few minutes, the CSED block is a mountain route. Your phone will warn you, and you can call for help.</p>
       </div>
-      <h1 className="mt-10 text-3xl font-bold">You're on the trail</h1>
-      <p className="mt-2 text-muted">For the next few minutes, the CSED block is a mountain route. Your phone will warn you, and you can call for help.</p>
-      <label className="mt-8 block"><span className="label">Your name (optional)</span><input className="input mt-1" placeholder="Judge" value={name} onChange={(e) => setName(e.target.value)} /></label>
+      <div className="flex flex-1 flex-col px-5">
+      <label className="mt-6 block"><span className="label">Your name (optional)</span><input className="input mt-1" placeholder="Judge" value={name} onChange={(e) => setName(e.target.value)} /></label>
       <div className="mt-6 space-y-2 text-sm">
         {[t("consent_1"), t("consent_3"), t("consent_4")].map((c, i) => <div key={i} className="flex gap-2"><Check size={18} className="shrink-0 text-safe" />{c}</div>)}
       </div>
@@ -48,6 +52,7 @@ export default function JudgeJoin() {
       </label>
       <div className="mt-auto pt-8">
         <button className="btn-primary w-full text-lg" disabled={!consent || busy} onClick={join}>Join the trail</button>
+      </div>
       </div>
     </div>
   );

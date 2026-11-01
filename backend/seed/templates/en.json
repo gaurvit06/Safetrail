@@ -7,6 +7,7 @@
     "wildlife_core": {"title": "Wildlife zone", "body": "You are near a core wildlife area ({segment}). Animals may be close.", "action": "Leave quietly the way you came"},
     "flood": {"title": "Flood risk", "body": "Water levels are rising near {segment}. Stay away from the river bank.", "action": "Move to higher ground"},
     "crowd": {"title": "Dense crowd", "body": "The crowd near {segment} is very dense. Pushing can cause injuries.", "action": "Move slowly to an open area"},
+    "red_zone": {"title": "Red zone: do not enter", "body": "Responders have marked {segment} as a red zone. Do not go in.", "action": "Turn back to the safe area"},
     "custom": {"title": "Safety warning", "body": "Responders have marked {segment} as unsafe.", "action": "Follow the safe route"}
   },
   "approach": "{title}: {distance} m ahead",

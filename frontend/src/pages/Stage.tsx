@@ -82,7 +82,7 @@ export default function Stage() {
         <AcceptBanner key={burst} text={accepted} />
         <div className="absolute left-4 top-4 z-10 flex items-center gap-3 rounded-2xl bg-black/60 px-4 py-2 backdrop-blur">
           <img src="/icon.svg" className="h-9 w-9" alt="" />
-          <div><p className="text-xl font-bold">SafeTrail · Live</p><p className="text-xs opacity-70">{feed.route?.name ?? "…"} · zones, dispatches and demo travellers are simulated</p></div>
+          <div><p className="font-display text-3xl font-bold leading-none">SafeTrail · Live</p><p className="text-xs opacity-70">{feed.route?.name ?? "…"} · zones, dispatches and demo travellers are simulated</p></div>
           <span className={`ml-2 h-3 w-3 rounded-full ${feed.connected ? "bg-safe" : "bg-offline"}`} />
         </div>
         <div className="absolute inset-x-4 bottom-4 z-10 rounded-2xl bg-black/65 p-3 backdrop-blur">
@@ -112,12 +112,12 @@ export default function Stage() {
         </div>
         {feed.tally && <TallyCard t={feed.tally} dark />}
         <div>
-          <p className="mb-1 text-sm font-semibold opacity-80">Every AI call, through Prune</p>
+          <p className="mb-1 font-display text-xl font-bold text-gold">Every AI call, through Prune</p>
           <RoutingRiver dots={feed.river} dark totals={lanes as any} />
           {stats && !stats.ai_configured && <p className="mt-1 text-xs text-amber-300">AI keys not set: standard text is used and safety still works.</p>}
         </div>
         <div>
-          <p className="mb-1 text-sm font-semibold opacity-80">Break it board</p>
+          <p className="mb-1 font-display text-xl font-bold text-gold">Break it board</p>
           <Explain id="breakit" dark />
           <div className="space-y-1">
             {feed.board.slice(0, 6).map((b) => (
@@ -138,7 +138,7 @@ function Big({ label, value, sub, tone }: { label: string; value: string | numbe
   return (
     <div className="rounded-2xl bg-night-surface p-3">
       <p className="text-xs opacity-70">{label}</p>
-      <p className={`font-mono text-3xl font-bold ${tone ?? ""}`}>{value}</p>
+      <p className={`font-display text-5xl font-bold leading-none text-gold ${tone ?? ""}`}>{value}</p>
       {sub && <p className="text-xs opacity-70">{sub}</p>}
     </div>
   );

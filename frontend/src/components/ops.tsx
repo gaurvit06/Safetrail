@@ -282,7 +282,7 @@ export function LoginCard({ roles = ["responder", "presenter"], onDone, dark }: 
 /* ================================================================ routing river */
 const LANES: { key: RiverDot["lane"]; label: string; color: string }[] = [
   { key: "SMALL", label: "SMALL", color: "#1A73E8" },
-  { key: "LARGE", label: "LARGE", color: "#7C3AED" },
+  { key: "LARGE", label: "LARGE", color: "#6B3E8E" },
   { key: "ROUTED", label: "ROUTED", color: "#0EA5E9" },
   { key: "CACHE", label: "CACHE", color: "#EAB308" },
   { key: "STOPPED", label: "STOPPED", color: "#D93025" },
@@ -430,7 +430,7 @@ export function IncidentRow({ i, selected, onClick }: { i: IncidentSummary; sele
         <span className="chip bg-black/5"><Users size={12} className="-mt-0.5 mr-1 inline" />{i.people_total}</span>
         {i.injured_total > 0 && <span className="chip bg-danger/10 text-danger"><Bandage size={12} className="-mt-0.5 mr-1 inline" />{i.injured_total}</span>}
         <span className="chip bg-black/5 capitalize">{i.status.replace("_", " ")}</span>
-        {i.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#7C3AED]/10 text-[#7C3AED]">{FLAG_LABEL[f]}</span>)}
+        {i.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#6B3E8E]/10 text-[#6B3E8E]">{FLAG_LABEL[f]}</span>)}
       </div>
     </button>
   );
@@ -507,7 +507,7 @@ export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: nu
               <div className="rounded-xl bg-black/[.03] p-2"><p className="font-mono text-2xl font-bold">{d.member_count}</p><p className="text-xs text-muted">SOS ({d.trip_count} groups)</p></div>
             </div>
             <Explain id="counts" />
-            {d.flags.filter((f) => FLAG_LABEL[f]).length > 0 && <div className="flex flex-wrap gap-1.5">{d.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#7C3AED]/10 text-[#7C3AED]"><ShieldAlert size={12} />{FLAG_LABEL[f]}</span>)}</div>}
+            {d.flags.filter((f) => FLAG_LABEL[f]).length > 0 && <div className="flex flex-wrap gap-1.5">{d.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#6B3E8E]/10 text-[#6B3E8E]"><ShieldAlert size={12} />{FLAG_LABEL[f]}</span>)}</div>}
             {summary && (
               <div className="card p-3">
                 <p className="text-sm font-semibold">{d.type === "cluster" ? "Summary" : "Report"}</p>
@@ -533,7 +533,7 @@ export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: nu
                     <div className="flex items-center gap-2"><SosKindIcon kind={s.kind} size={18} /><b>{s.trip_label}</b><span className="text-muted">{s.name}</span><span className="ml-auto chip bg-black/5">{s.people_bucket} ppl</span></div>
                     {s.note_text && <p className="mt-1">“{showOrig || d.type === "cluster" ? s.note_text : d.report?.translated_note || s.note_text}”</p>}
                     <p className="mt-1 text-xs text-muted">{clock(s.created_at_device)} pressed · received {clock(s.received_at_server)}{s.delay_s > 5 ? ` (delay ${duration(s.delay_s)})` : ""} · via {s.channel} · ±{Math.round(s.accuracy_m)} m{s.cancelled_at ? " · cancelled" : ""}</p>
-                    {s.flags.filter((f) => FLAG_LABEL[f]).length > 0 && <div className="mt-1 flex flex-wrap gap-1">{s.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#7C3AED]/10 text-[#7C3AED]">{FLAG_LABEL[f]}</span>)}</div>}
+                    {s.flags.filter((f) => FLAG_LABEL[f]).length > 0 && <div className="mt-1 flex flex-wrap gap-1">{s.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#6B3E8E]/10 text-[#6B3E8E]">{FLAG_LABEL[f]}</span>)}</div>}
                   </div>
                 ))}
               </div>

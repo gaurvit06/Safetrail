@@ -5,8 +5,12 @@
 html, body, #root { height: 100%; }
 body { @apply bg-bg text-ink font-sans antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 button { touch-action: manipulation; }
+h1, h2, h3 { @apply font-display font-bold; }
 
 @layer components {
+  .eyebrow { @apply text-sm font-semibold text-caution; }
+  .flow-dot { @apply grid h-10 w-10 shrink-0 place-items-center rounded-full text-white; }
+  .flow-line { @apply border-dashed border-gold; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 font-semibold transition active:scale-[.98] disabled:opacity-50 disabled:active:scale-100; min-height: 48px; }
   .btn-primary { @apply btn bg-brand text-white shadow-sm hover:brightness-110; }
   .btn-danger { @apply btn bg-danger text-white shadow-sm hover:brightness-110; }
@@ -24,7 +28,7 @@ button { touch-action: manipulation; }
 /* Map markers */
 .st-me { position: relative; width: 22px; height: 22px; }
 .st-me-dot { position: absolute; inset: 3px; border-radius: 9999px; background: #1A73E8; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
-.st-me-demo .st-me-dot { background: #7C3AED; }
+.st-me-demo .st-me-dot { background: #6B3E8E; }
 .st-me-ring { position: absolute; inset: 0; border-radius: 9999px; background: rgba(26,115,232,.35); animation: pulsering 1.8s ease-out infinite; }
 .st-heading { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin-left: -9px; margin-top: -30px; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 22px solid rgba(26,115,232,.45); transform-origin: 9px 30px; }
 .st-pin { width: 28px; height: 28px; border-radius: 9999px; display: grid; place-items: center; background: #fff; border: 2px solid #1B1D1F; font-weight: 800; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,.25); }

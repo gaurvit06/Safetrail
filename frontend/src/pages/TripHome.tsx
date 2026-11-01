@@ -455,7 +455,7 @@ export default function TripHome() {
         <div className="card flex min-w-0 flex-1 items-center gap-2 px-3 py-2 shadow-float">
           <MapPin size={18} className="shrink-0 text-brand" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold">{route.name}</p>
+            <p className="truncate font-display text-lg font-bold leading-tight">{route.name}</p>
             <p className="truncate text-xs text-muted">{session.trip.label}{segment ? ` · ${segment}` : ""}</p>
           </div>
         </div>
@@ -473,7 +473,7 @@ export default function TripHome() {
         {gps === "denied" && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-danger shadow-float">{t("no_gps")}</div>}
         {!sharing && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("sharing_off")}</div>}
         {queued > 0 && !online && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("queued_sos", { n: sosList.filter((s) => s.status === "queued").length })}</div>}
-        {demo && <div className="rounded-xl bg-[#7C3AED] px-4 py-2 text-sm font-semibold text-white shadow-float">{t("demo_location")}</div>}
+        {demo && <div className="rounded-xl bg-[#6B3E8E] px-4 py-2 text-sm font-semibold text-white shadow-float">{t("demo_location")}</div>}
       </div>
 
       {guide && <GuideCard hp={guide} me={me} heading={heading} onClose={() => setGuide(null)} />}
@@ -515,8 +515,8 @@ export default function TripHome() {
       <BottomSheet peek={SHEET_PEEK}>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("nearest_help")}</p>
-            <p className="truncate font-bold">{nh ? `${nh.item.name}` : "—"}</p>
+            <p className="eyebrow">{t("nearest_help")}</p>
+            <p className="truncate font-display text-2xl font-bold leading-tight">{nh ? `${nh.item.name}` : "—"}</p>
             <p className="text-sm text-muted">{nh ? fmtDistance(nh.d) : gps === "waiting" ? "Finding you…" : ""}</p>
           </div>
           {nh && <button className="btn-ghost shrink-0" onClick={() => setGuide(nh.item)}><Navigation size={18} /> {t("guide_me")}</button>}
@@ -561,7 +561,7 @@ export default function TripHome() {
         <div className="mt-5 space-y-2">
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-semibold"><Languages size={18} /> Language</span><LangSwitch /></div>
           <button className="btn-ghost w-full" onClick={toggleSharing}>{sharing ? t("stop_sharing") : t("resume_sharing")}</button>
-          <button className={`btn w-full ${demo ? "bg-[#7C3AED] text-white" : "btn-ghost"}`} onClick={() => setDemo((v) => !v)}>{t("demo_location")}</button>
+          <button className={`btn w-full ${demo ? "bg-[#6B3E8E] text-white" : "btn-ghost"}`} onClick={() => setDemo((v) => !v)}>{t("demo_location")}</button>
           <button className="btn-ghost w-full text-danger" onClick={() => setOverlay("end")}><LogOut size={18} /> {t("end_trip")}</button>
           {route.simulated && <p className="pt-1 text-center text-xs text-muted">{t("route_simulated")}</p>}
         </div>

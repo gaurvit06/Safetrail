@@ -64,7 +64,7 @@ export function SheetHeader({ title, onClose, sub }: { title: string; onClose?: 
   return (
     <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-line bg-white px-5 pb-3 pt-4">
       <div>
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className="text-3xl leading-none">{title}</h2>
         {sub && <p className="text-sm text-muted">{sub}</p>}
       </div>
       {onClose && (

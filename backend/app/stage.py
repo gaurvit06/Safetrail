@@ -14,9 +14,10 @@ from .ai import features
 from .config import settings
 from .ai.jobs import spawn
 from .core import (answer_check, create_trip, ingest_pings, position_event, publish_zone, receive_sos, remove_zone,
-                   scan_injection, send_check, set_incident_status, start_trip)
+                   scan_injection, send_check, set_incident_status, start_trip, zone_public)
 from .db import engine
-from .geo import centroid, circle_polygon, haversine_m, offset_point, point_in_polygon
+from .engines import crowd_tick
+from .geo import centroid, circle_polygon, haversine_m, offset_point, point_in_polygon, rect_polygon
 from .models import (AiJob, BreakItAttempt, CheckResponse, DemoState, Incident, LlmCall, Ping, Route, SafetyCheck,
                      SosEvent, Trip, Zone)
 from .security import b64u, b64u_dec, canonical, check_role_token, issue_pass, verify_pass
@@ -87,6 +88,109 @@ async def walk_sim(lat=None, lon=None, route_id: str = "hall", seconds: int = 90
             ingest_pings(s, s.get(Trip, trip_id), [{"lat": plat, "lon": plon, "accuracy_m": 8,
                                                     "ts_device": time.time(), "source": "sim"}])
         await asyncio.sleep(2)
+
+
+# ------------------------------------------------------------------------------------------ the CSED block demo
+
+CSED_ROUTE = "hall"
+CSED_MARGIN_M = 20  # the red zone reaches past the walls, because GPS near a building drifts by 10 to 30 m
+# Where a crowd gathers around the block, as (metres north, metres east, share of people) from its centre:
+# the main door, the side door, the south path and the west lawn.
+CSED_SPOTS = [(40, 2, 0.4), (6, 48, 0.25), (-44, 10, 0.2), (2, -52, 0.15)]
+_csed_crowd_run = 0  # a new run or a stop bumps this, which ends the loop of the previous run
+
+
+def csed_red_zone(s: Session) -> Zone | None:
+    return s.exec(select(Zone).where(Zone.route_id == CSED_ROUTE, Zone.kind == "red_zone", Zone.active == True)).first()  # noqa: E712
+
+
+def flag_csed(s: Session, actor: str = "responder") -> dict:
+    """One tap: the whole CSED block becomes a red zone on every phone, by the same path as a zone an officer draws.
+    A second tap changes nothing, so a nervous double tap can't send two alerts."""
+    z = csed_red_zone(s)
+    if z:
+        data = zone_public(s, z)
+    else:
+        line = route_seed(CSED_ROUTE)["line"]
+        lats, lons = [p[1] for p in line], [p[0] for p in line]
+        dlat = CSED_MARGIN_M / 111_320
+        dlon = CSED_MARGIN_M / (111_320 * math.cos(math.radians(lats[0])))
+        z = Zone(id="Z-CSED-" + uuid.uuid4().hex[:6], route_id=CSED_ROUTE, kind="red_zone", severity="danger",
+                 polygon=rect_polygon(min(lats) - dlat, min(lons) - dlon, max(lats) + dlat, max(lons) + dlon),
+                 source="drawn", segment_name="CSED block", simulated=True, created_by=actor)
+        data = publish_zone(s, z, actor)
+    phones = sum(1 for _ in s.exec(select(Trip.id).where(Trip.route_id == CSED_ROUTE, Trip.sharing == True,  # noqa: E712
+                                                         Trip.kind == "tourist", Trip.status != "ended")).all())
+    return {"zone": data, "phones_notified": phones, "message": f"CSED block is a red zone · sent to {phones} phones"}
+
+
+def clear_csed(s: Session, actor: str = "responder") -> dict:
+    z = csed_red_zone(s)
+    if not z:
+        return {"ok": False, "message": "CSED block isn't flagged."}
+    remove_zone(s, z, actor)
+    return {"ok": True, "message": "CSED red zone cleared"}
+
+
+async def csed_crowd(n: int = 80, build_s: float = 20, hold_s: float = 300, drift_s: float = 5) -> None:
+    """A simulated crowd around the CSED block only. It builds up, shuffles about a little so the heatmap looks
+    alive, then leaves. Every person here is simulated, and the map says so."""
+    global _csed_crowd_run
+    _csed_crowd_run += 1
+    run = _csed_crowd_run
+    with Session(engine) as s:
+        r = s.get(Route, CSED_ROUTE)
+        clat, clon = r.center[1], r.center[0]
+    spots, shares = [x[:2] for x in CSED_SPOTS], [x[2] for x in CSED_SPOTS]
+    people: list[tuple[str, float, float]] = []
+    next_tick = 0.0
+    for i in range(n):
+        if run != _csed_crowd_run:
+            return
+        north, east = random.choices(spots, shares)[0]
+        lat, lon = offset_point(clat, clon, north + random.gauss(0, 13), east + random.gauss(0, 13))
+        with Session(engine) as s:
+            tr, _ = create_trip(s, {"name": f"CSED-{i + 1}", "route_id": CSED_ROUTE}, kind="sim")
+            tr.status, tr.sharing, tr.start_at, tr.end_at = "active", True, time.time(), time.time() + build_s + hold_s + 60
+            tr.last_lat, tr.last_lon, tr.last_ping_at, tr.last_accuracy_m = lat, lon, time.time(), 10
+            s.add(tr)
+            s.add(Ping(trip_id=tr.id, lat=lat, lon=lon, accuracy_m=10, ts_device=time.time(), source="sim"))
+            s.commit()
+            people.append((tr.id, lat, lon))
+        await asyncio.sleep(build_s / n)
+        if time.monotonic() >= next_tick:
+            next_tick = time.monotonic() + 3
+            await asyncio.to_thread(crowd_tick)
+    end = time.monotonic() + hold_s
+    while time.monotonic() < end:
+        with Session(engine) as s:
+            for trip_id, lat, lon in people:
+                tr = s.get(Trip, trip_id)
+                if tr:
+                    tr.last_lat, tr.last_lon = offset_point(lat, lon, random.uniform(-4, 4), random.uniform(-4, 4))
+                    tr.last_ping_at = time.time()
+                    s.add(tr)
+            s.commit()
+        await asyncio.to_thread(crowd_tick)
+        await asyncio.sleep(drift_s)
+        if run != _csed_crowd_run:
+            return
+    with Session(engine) as s:
+        stop_csed_crowd(s)
+
+
+def stop_csed_crowd(s: Session) -> dict:
+    global _csed_crowd_run
+    _csed_crowd_run += 1
+    gone = [tr for tr in s.exec(select(Trip).where(Trip.kind == "sim", Trip.route_id == CSED_ROUTE, Trip.status != "ended")).all()
+            if (tr.name or "").startswith("CSED-")]
+    for tr in gone:
+        tr.status, tr.sharing, tr.end_at = "ended", False, time.time()
+        s.add(tr)
+        events.publish("trip.ended", {"trip_label": tr.label}, events.OPS, route_id=CSED_ROUTE)
+    s.commit()
+    crowd_tick()
+    return {"ok": True, "message": f"Simulated crowd cleared ({len(gone)} people)"}
 
 
 async def budget_stress() -> dict:
@@ -205,6 +309,8 @@ def safety_check(s: Session, route_id: str = "hall") -> dict:
 
 
 def reset_demo(s: Session) -> dict:
+    global _csed_crowd_run
+    _csed_crowd_run += 1  # stops a running simulated crowd
     for z in s.exec(select(Zone).where(Zone.source.in_(["drawn", "auto_crowd"]), Zone.active == True)).all():  # noqa: E712
         remove_zone(s, z, "reset")
     for model in (CheckResponse, SafetyCheck, BreakItAttempt, SosEvent, Incident):
