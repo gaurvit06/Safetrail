@@ -43,6 +43,8 @@ Do this over the phone's mobile data if the campus Wi-Fi is slow.
 
 **If GPS is bad:** pull up the sheet and tap **Simulate walking into CSED**. The dot walks in by itself in about 17 seconds. The warning and alert are the real ones, and only the position is simulated. The screen says so, and you should too.
 
+The simulated walk leaves the phone on a simulated position, and real GPS is ignored until you tap the purple bar at the top or reload the page. The top card tells you which one is on: **GPS ±N m** or **Simulated location**.
+
 iPhones don't vibrate from a web page, so they use sound and the full-screen red. Turn the volume up.
 
 ## In front of the judges
@@ -66,6 +68,7 @@ Vercel can host the screens but not the server. SafeTrail needs one always-on pr
 |---|---|
 | "Port 8000 is already in use" | Another copy is running. Close that Terminal window, or run `lsof -ti:8000 \| xargs kill` |
 | Phone shows "Turn on location" | Allow location for the browser in the phone's settings, then reload |
+| Top card never shows "GPS ±N m" | iPhone: Settings → Privacy & Security → Location Services → turn it on, and set Safari Websites to While Using. Then reload |
 | Phone shows old screens | Reload the page twice. The app updates itself after the first load |
 | AI text says "Standard text" | The free AI key is busy. That's the safety rule working: everything else still runs |
 | The link stopped working | Start again. You get a new link, so scan the new QR on `/stage` |

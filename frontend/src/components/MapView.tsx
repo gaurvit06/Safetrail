@@ -95,6 +95,7 @@ export default function MapView(p: Props) {
   props.current = p;
   const markers = useRef<Record<string, Marker>>({});
   const followed = useRef(false);
+  const lastDrag = useRef(0);
   const [failed, setFailed] = useState(false);
   const { t } = useT();
 
@@ -224,6 +225,9 @@ export default function MapView(p: Props) {
       if (bb && bb.length === 4) m.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, maxZoom: 17, duration: 0 });
       syncAll();
     });
+    m.on("dragstart", () => {
+      lastDrag.current = Date.now();
+    });
     m.on("click", (e) => {
       const q = props.current;
       const dot = q.onDotClick ? m.queryRenderedFeatures(e.point, { layers: ["dots"] })[0] : undefined;
@@ -261,7 +265,8 @@ export default function MapView(p: Props) {
   }, [p.me, p.followMe]);
 
   useEffect(() => {
-    if (p.trackMe && p.me && map.current) map.current.easeTo({ center: [p.me.lon, p.me.lat], zoom: Math.max(map.current.getZoom(), 17), duration: 800 });
+    // Keep the moving dot in view, unless the person has just panned the map to look around.
+    if (p.trackMe && p.me && map.current && Date.now() - lastDrag.current > 30000) map.current.easeTo({ center: [p.me.lon, p.me.lat], zoom: Math.max(map.current.getZoom(), 16), duration: 800 });
   }, [p.me, p.trackMe]);
 
   useEffect(() => {

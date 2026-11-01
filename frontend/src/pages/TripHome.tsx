@@ -458,6 +458,28 @@ export default function TripHome() {
   };
   useEffect(() => () => { if (walkTimer.current) clearInterval(walkTimer.current); }, []);
 
+  /** Leave simulated positions behind and start again from real GPS, so a fake position never lingers. */
+  const backToGps = () => {
+    if (walkTimer.current) clearInterval(walkTimer.current);
+    walkTimer.current = null;
+    setWalking(false);
+    setDemo(false);
+    demoRef.current = false;
+    geofence.current = new Geofence();
+    setAlertZone(null);
+    setApproach(null);
+    setWayOut(null);
+    setInside([]);
+    meRef.current = null;
+    setMe(null);
+    setGps("waiting");
+    navigator.geolocation?.getCurrentPosition(
+      (p) => onFix({ lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy, source: "gps" }),
+      (err) => err.code === 1 && setGps("denied"),
+      { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 },
+    );
+  };
+
   /* ---------------- derived */
   const route = bundle?.route;
   const segment = me && route ? nearestSegmentName(me.lat, me.lon, route.segments) : "";
@@ -487,7 +509,7 @@ export default function TripHome() {
         checkpoints={route.checkpoints}
         path={path}
         followMe
-        trackMe={walking}
+        trackMe
         crowd={heat}
         legendClass="bottom-[166px] left-3"
         onClick={demo ? (lat, lon) => onFix({ lat, lon, accuracy: 5, source: "sim" }) : undefined}
@@ -501,7 +523,7 @@ export default function TripHome() {
           <MapPin size={18} className="shrink-0 text-brand" />
           <div className="min-w-0">
             <p className="truncate font-display text-lg font-bold leading-tight">{route.name}</p>
-            <p className="truncate text-xs text-muted">{session.trip.label}{segment ? ` · ${segment}` : ""}</p>
+            <p className="truncate text-xs text-muted">{session.trip.label}{demo || me?.source === "sim" ? ` · ${t("sim_label")}` : me?.source === "gps" ? ` · ${t("gps_label", { m: Math.round(me.accuracy) })}` : segment ? ` · ${segment}` : ""}</p>
           </div>
         </div>
         <span className={`chip px-3 py-2 shadow-float ${pill.cls}`}>{pill.icon}{pill.text}</span>
@@ -518,7 +540,8 @@ export default function TripHome() {
         {gps === "denied" && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-danger shadow-float">{t("no_gps")}</div>}
         {!sharing && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("sharing_off")}</div>}
         {queued > 0 && !online && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("queued_sos", { n: sosList.filter((s) => s.status === "queued").length })}</div>}
-        {demo && <div className="rounded-xl bg-[#6B3E8E] px-4 py-2 text-sm font-semibold text-white shadow-float">{walking ? t("walking") : t("demo_location")}</div>}
+        {gps === "waiting" && !demo && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("gps_waiting")}</div>}
+        {demo && <button onClick={backToGps} className="rounded-xl bg-[#6B3E8E] px-4 py-2 text-left text-sm font-semibold text-white shadow-float">{walking ? t("walking") : t("sim_on")}</button>}
       </div>
 
       {guide && <GuideCard hp={guide} me={me} heading={heading} onClose={() => setGuide(null)} />}
@@ -607,7 +630,7 @@ export default function TripHome() {
         <div className="mt-5 space-y-2">
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-semibold"><Languages size={18} /> Language</span><LangSwitch /></div>
           <button className="btn-ghost w-full" onClick={toggleSharing}>{sharing ? t("stop_sharing") : t("resume_sharing")}</button>
-          <button className={`btn w-full ${demo ? "bg-[#6B3E8E] text-white" : "btn-ghost"}`} onClick={() => setDemo((v) => !v)}>{t("demo_location")}</button>
+          <button className={`btn w-full ${demo ? "bg-[#6B3E8E] text-white" : "btn-ghost"}`} onClick={() => (demo ? backToGps() : setDemo(true))}>{demo ? t("use_real_gps") : t("demo_location")}</button>
           <button className="btn-ghost w-full text-danger" onClick={() => setOverlay("end")}><LogOut size={18} /> {t("end_trip")}</button>
           {route.simulated && <p className="pt-1 text-center text-xs text-muted">{t("route_simulated")}</p>}
         </div>
