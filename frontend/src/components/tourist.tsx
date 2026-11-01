@@ -2,7 +2,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { ArrowUp, Copy, Megaphone, Mic, Navigation, Share2, Sun, Volume2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
-import { ago, clock, duration, KIND_ICON, riskText, weatherIcon } from "../lib/format";
+import { ago, clock, duration, riskText } from "../lib/format";
+import { SosKindIcon, WarnIcon, WeatherIcon, ZoneIcon } from "./icons";
 import { bearing, cardinal, fmtDistance, haversine } from "../lib/geo";
 import { useT } from "../lib/i18n";
 import type { QueuedSos } from "../lib/offline";
@@ -26,7 +27,7 @@ export function ZoneAlert({ zone, bundle, onWayBack, onClose, notPermitted }: { 
   const warn = !notPermitted && (zone.kind === "crowd" || zone.severity === "warn");
   return (
     <div className={`fixed inset-0 z-[60] flex flex-col px-6 pb-8 pt-14 text-white ${warn ? "bg-caution" : "bg-danger"}`} role="alertdialog">
-      <div className="text-7xl">{KIND_ICON[zone.kind] ?? "⚠"}</div>
+      <ZoneIcon kind={zone.kind} size={72} strokeWidth={1.75} />
       {notPermitted && <p className="mt-4 rounded-xl bg-white px-3 py-2 text-lg font-extrabold text-danger">{t("not_permitted")} · {notPermitted}</p>}
       <h1 className="mt-6 text-4xl font-extrabold leading-tight">{a.title}</h1>
       <p className="mt-4 text-xl leading-snug">{a.body}</p>
@@ -58,7 +59,6 @@ export function SafetyCheckPrompt({ message, onAnswer }: { message: string; onAn
 
 /* ---------------------------------------------------------------- SOS flow */
 const KINDS = ["injured", "lost", "stuck", "medical", "unsafe"] as const;
-const KIND_EMOJI: Record<string, string> = { injured: "🩹", lost: "🧭", stuck: "🪨", medical: "❤️", unsafe: "⚠️" };
 
 export function SosFlow({ bundle, preset, onSend, onClose }: { bundle: StartBundle | null; preset?: string; onSend: (kind: string, people: string, note: string) => void; onClose: () => void }) {
   const { t, lang } = useT();
@@ -90,7 +90,7 @@ export function SosFlow({ bundle, preset, onSend, onClose }: { bundle: StartBund
         <div className="mt-3 grid grid-cols-2 gap-3">
           {KINDS.map((k) => (
             <button key={k} onClick={() => { vibrate(20); setKind(k); }} className={`tile ${kind === k ? "tile-on" : ""} ${k === "unsafe" ? "col-span-2" : ""}`}>
-              <span className="text-3xl">{KIND_EMOJI[k]}</span>{kindLabel(k)}
+              <SosKindIcon kind={k} size={30} strokeWidth={1.75} />{kindLabel(k)}
             </button>
           ))}
         </div>
@@ -474,13 +474,13 @@ export function WeatherSheet({ weather, templates, current, online, onClose }: {
         {weather?.sections.map((s) => (
           <div key={s.segment_id} className={`card p-3 ${s.name === current ? "border-2 border-brand" : ""}`}>
             <div className="flex items-center justify-between gap-2">
-              <p className="font-bold">{weatherIcon(s.now.code)} {s.name}</p>
+              <p className="flex items-center gap-1.5 font-bold"><WeatherIcon code={s.now.code} size={18} /> {s.name}</p>
               <span className="font-mono text-xl font-bold">{Math.round(s.now.temp_c)}°</span>
             </div>
             <p className="text-sm text-muted">
               {s.now.desc}{s.elevation_m ? ` · ${Math.round(s.elevation_m)} m` : ""} · {t("next_12h")}: {s.next12h.temp_min != null ? Math.round(s.next12h.temp_min) : "–"}° to {s.next12h.temp_max != null ? Math.round(s.next12h.temp_max) : "–"}°, {s.next12h.rain_12h} mm, {s.next12h.gust_max} km/h
             </p>
-            {s.risks.map((r) => <p key={r.key} className={`mt-1 text-sm font-semibold ${r.level === "danger" ? "text-danger" : "text-caution"}`}>⚠ {riskText(templates, r.key, r.value)}</p>)}
+            {s.risks.map((r) => <p key={r.key} className={`mt-1 text-sm font-semibold ${r.level === "danger" ? "text-danger" : "text-caution"}`}><WarnIcon className="-mt-0.5 mr-1 inline" />{riskText(templates, r.key, r.value)}</p>)}
             {s.name === current && <p className="mt-1 text-xs font-semibold text-brand">{t("you_are_here")}</p>}
           </div>
         ))}

@@ -30,6 +30,12 @@ export default defineConfig({
             handler: "CacheFirst",
             options: { cacheName: "map-tiles", expiration: { maxEntries: 300, maxAgeSeconds: 7 * 86400 } },
           },
+          {
+            // Elevation for the terrain relief: it never changes, so keep it longer.
+            urlPattern: /^https:\/\/elevation-tiles-prod\.s3\.amazonaws\.com\/terrarium\//,
+            handler: "CacheFirst",
+            options: { cacheName: "terrain-tiles", expiration: { maxEntries: 200, maxAgeSeconds: 30 * 86400 } },
+          },
         ],
       },
     }),

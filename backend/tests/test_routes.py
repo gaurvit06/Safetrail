@@ -36,3 +36,32 @@ def test_partial_translations_fall_back_to_english():
     pack = pack_template("sikkim", "en", "standard")
     help_line = next(p for p in pack["phrasebook"] if p["key"] == "help")
     assert help_line["local_text"] == ne["phrases"]["help"] and help_line["user_text"] == en["phrases"]["help"]
+
+
+def _crossings(ring: list) -> int:
+    def side(p, q, r):
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+    segs, n = list(zip(ring, ring[1:])), 0
+    for i in range(len(segs)):
+        for j in range(i + 2, len(segs)):
+            if i == 0 and j == len(segs) - 1:
+                continue
+            (a, b), (c, d) = segs[i], segs[j]
+            n += side(a, b, c) * side(a, b, d) < 0 and side(c, d, a) * side(c, d, b) < 0
+    return n
+
+
+def test_seeded_zone_outlines_are_simple_and_cover_their_line():
+    """A zone outline that crosses itself has holes for the even-odd test, so part of the trail
+    inside a landslide zone would read as outside it (the first Kedarnath outlines did)."""
+    from app.geo import point_in_polygon
+    for rid in route_ids():
+        for z in route_seed(rid).get("zones", []):
+            ring = z["polygon"]["coordinates"][0]
+            assert ring[0] == ring[-1], z["id"]
+            assert _crossings(ring) == 0, f"{z['id']} outline crosses itself"
+            line = z.get("centerline", [])
+            for (lon1, lat1), (lon2, lat2) in zip(line, line[1:]):
+                for k in range(5):
+                    lat, lon = lat1 + (lat2 - lat1) * k / 5, lon1 + (lon2 - lon1) * k / 5
+                    assert point_in_polygon(lat, lon, z["polygon"]), f"{z['id']}: its own line is outside at {lat},{lon}"

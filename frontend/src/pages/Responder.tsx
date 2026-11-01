@@ -1,10 +1,11 @@
-﻿import { BellRing, Circle, LogOut, PenLine, ScanLine, Undo2, X } from "lucide-react";
+﻿import { BellRing, Circle, LogOut, Megaphone, PenLine, ScanLine, Undo2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import MapView from "../components/MapView";
 import { CostPanel, IncidentPanel, IncidentRow, LoginCard, PassScanner, RoutingRiver, TallyCard, useOpsFeed, WeatherPanel } from "../components/ops";
 import { Explain, ExplainToggle, useToast } from "../components/ui";
 import { api } from "../lib/api";
-import { KIND_ICON, KIND_LABEL, RISK_SHORT, riskText } from "../lib/format";
+import { KIND_LABEL, RISK_SHORT, riskText } from "../lib/format";
+import { ZoneIcon } from "../components/icons";
 import { getRoleToken, setRoleToken } from "../lib/session";
 import type { Dot, RouteSummary, WeatherSection } from "../lib/types";
 
@@ -172,7 +173,7 @@ export default function Responder({ simple }: { simple?: boolean }) {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex flex-wrap gap-1.5">{KINDS.map((k) => <button key={k} onClick={() => setZk({ ...zk, kind: k })} className={`chip border px-3 py-1.5 text-sm ${zk.kind === k ? "border-danger bg-danger text-white" : "border-line"}`}>{KIND_ICON[k]} {KIND_LABEL[k]}</button>)}</div>
+                  <div className="flex flex-wrap gap-1.5">{KINDS.map((k) => <button key={k} onClick={() => setZk({ ...zk, kind: k })} className={`chip border px-3 py-1.5 text-sm ${zk.kind === k ? "border-danger bg-danger text-white" : "border-line"}`}><ZoneIcon kind={k} size={14} className="-mt-0.5 mr-1 inline" />{KIND_LABEL[k]}</button>)}</div>
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="font-semibold">Severity</span>
                     {["danger", "warn"].map((s) => <button key={s} onClick={() => setZk({ ...zk, severity: s })} className={`chip border capitalize ${zk.severity === s ? "border-ink bg-ink text-white" : "border-line"}`}>{s === "warn" ? "Caution" : "Danger"}</button>)}
@@ -189,8 +190,8 @@ export default function Responder({ simple }: { simple?: boolean }) {
             <div className="absolute left-1/2 top-3 z-20 w-[min(460px,92%)] -translate-x-1/2 card p-4 shadow-float">
               <div className="flex justify-between"><p className="font-bold">Send "Are you safe?" to…</p><button onClick={() => setCheckOpen(false)}><X size={18} /></button></div>
               <div className="mt-3 space-y-2">
-                {feed.zones.filter((z) => z.kind !== "crowd").map((z) => <button key={z.id} onClick={() => sendCheck(z.id)} className="btn-ghost w-full justify-start">{KIND_ICON[z.kind]} Everyone in or recently in: {KIND_LABEL[z.kind]} {z.segment_name ? `· ${z.segment_name}` : ""}</button>)}
-                <button onClick={() => sendCheck(null)} className="btn-ghost w-full justify-start">📣 Everyone on this route</button>
+                {feed.zones.filter((z) => z.kind !== "crowd").map((z) => <button key={z.id} onClick={() => sendCheck(z.id)} className="btn-ghost w-full justify-start"><ZoneIcon kind={z.kind} size={16} className="mr-1 inline" />Everyone in or recently in: {KIND_LABEL[z.kind]} {z.segment_name ? `· ${z.segment_name}` : ""}</button>)}
+                <button onClick={() => sendCheck(null)} className="btn-ghost w-full justify-start"><Megaphone size={16} className="mr-1 inline" />Everyone on this route</button>
               </div>
             </div>
           )}

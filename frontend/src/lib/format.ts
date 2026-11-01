@@ -31,16 +31,6 @@ export function inr(v: number | null | undefined, rate: number): string {
   return r < 1 ? `${(r * 100).toFixed(1)} paise` : `₹${r.toFixed(2)}`;
 }
 
-export const KIND_ICON: Record<string, string> = {
-  landslide: "⛰",
-  closed_trail: "⛔",
-  restricted: "🛡",
-  wildlife_core: "🐅",
-  flood: "🌊",
-  crowd: "👥",
-  custom: "⚠",
-};
-
 export const KIND_LABEL: Record<string, string> = {
   landslide: "Landslide",
   closed_trail: "Closed trail",
@@ -50,18 +40,6 @@ export const KIND_LABEL: Record<string, string> = {
   crowd: "Crowd",
   custom: "Custom",
 };
-
-export function weatherIcon(code: number): string {
-  if (code >= 95) return "⛈️";
-  if (code >= 71 && code <= 77) return "🌨️";
-  if (code === 85 || code === 86) return "🌨️";
-  if (code >= 61 || (code >= 80 && code <= 82)) return "🌧️";
-  if (code >= 51) return "🌦️";
-  if (code === 45 || code === 48) return "🌫️";
-  if (code === 3) return "☁️";
-  if (code === 2) return "⛅";
-  return "☀️";
-}
 
 export function riskText(templates: Record<string, string> | undefined, key: string, value?: number): string {
   const t = templates?.[key] ?? key.replace("_", " ");
@@ -80,4 +58,3 @@ export const RISK_SHORT: Record<string, string> = {
   fog: "Fog",
 };
 
-export const SOS_ICON: Record<string, string> = { injured: "🩹", lost: "🧭", stuck: "🪨", medical: "❤️", unsafe: "⚠️", unknown: "❔" };

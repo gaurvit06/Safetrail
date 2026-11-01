@@ -1,4 +1,4 @@
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Lightbulb, Loader2, X } from "lucide-react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { EXPLAIN } from "../explain";
 import { vibrate } from "../lib/signals";
@@ -38,7 +38,7 @@ export const useExplain = () => useContext(ExplainCtx);
 export function Explain({ id, dark }: { id: keyof typeof EXPLAIN | string; dark?: boolean }) {
   const { on } = useExplain();
   if (!on) return null;
-  return <p className={`mt-1 rounded-lg px-2 py-1 text-xs ${dark ? "bg-white/10 text-night-text" : "bg-info/10 text-info"}`}>💡 {EXPLAIN[id]}</p>;
+  return <p className={`mt-1 rounded-lg px-2 py-1 text-xs ${dark ? "bg-white/10 text-night-text" : "bg-info/10 text-info"}`}><Lightbulb size={12} className="-mt-0.5 mr-1 inline" />{EXPLAIN[id]}</p>;
 }
 export function ExplainToggle({ dark }: { dark?: boolean }) {
   const { on, toggle } = useExplain();

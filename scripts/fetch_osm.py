@@ -103,19 +103,86 @@ def nearest_idx(line, pt) -> int:
 
 
 def corridor(pts: list[tuple], half_m: float) -> dict:
-    """A polygon around a polyline (simple offset corridor)."""
+    """All ground within half_m metres of a polyline, as one simple polygon (a true buffer).
+
+    A plain left/right offset folds over itself on switchbacks, and the even-odd point-in-polygon test
+    then reads the folds as holes, so parts of the trail tested as outside their own zone. Instead we
+    sample the distance to the line on a grid, trace the half_m contour (marching squares) and keep the
+    outer ring, so small pockets between switchbacks count as inside too. Every point within half_m is
+    inside; the edge may sit a few metres further out, never further in. pts are (lat, lon)."""
     lat0 = pts[0][0]
     kx, ky = 111320 * math.cos(math.radians(lat0)), 111320
-    left, right = [], []
-    for i, p in enumerate(pts):
-        a, b = pts[max(0, i - 1)], pts[min(len(pts) - 1, i + 1)]
-        dx, dy = (b[1] - a[1]) * kx, (b[0] - a[0]) * ky
-        n = math.hypot(dx, dy) or 1
-        ox, oy = -dy / n * half_m, dx / n * half_m
-        left.append([round(p[1] + ox / kx, 7), round(p[0] + oy / ky, 7)])
-        right.append([round(p[1] - ox / kx, 7), round(p[0] - oy / ky, 7)])
-    ring = left + right[::-1] + [left[0]]
-    return {"type": "Polygon", "coordinates": [ring]}
+    xy = [(p[1] * kx, p[0] * ky) for p in pts]
+    if len(xy) == 1:
+        xy = xy * 2
+    step = max(2.0, half_m / 4)
+    tol = step / 4  # simplifying moves the edge at most this far in, so trace this much further out
+    reach = half_m + tol + 2 * step
+    x0, y0 = min(x for x, _ in xy) - reach, min(y for _, y in xy) - reach
+    nx = int((max(x for x, _ in xy) + reach - x0) / step) + 2
+    ny = int((max(y for _, y in xy) + reach - y0) / step) + 2
+    big = reach * 10
+    f = [[big] * nx for _ in range(ny)]  # distance to the line minus half_m: negative inside
+    for (ax, ay), (bx, by) in zip(xy, xy[1:]):
+        dx, dy = bx - ax, by - ay
+        dd = dx * dx + dy * dy
+        i0, i1 = max(0, int((min(ax, bx) - reach - x0) / step)), min(nx - 1, int((max(ax, bx) + reach - x0) / step) + 1)
+        j0, j1 = max(0, int((min(ay, by) - reach - y0) / step)), min(ny - 1, int((max(ay, by) + reach - y0) / step) + 1)
+        for j in range(j0, j1 + 1):
+            py, row = y0 + j * step, f[j]
+            for i in range(i0, i1 + 1):
+                px = x0 + i * step
+                t = 0.0 if dd == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / dd))
+                d = math.hypot(px - ax - t * dx, py - ay - t * dy) - half_m - tol
+                if d < row[i]:
+                    row[i] = d
+
+    def cross(key):  # where the contour crosses a grid edge, by linear interpolation
+        kind, i, j = key
+        (pi, pj), (qi, qj) = ((i, j), (i + 1, j)) if kind == "h" else ((i, j), (i, j + 1))
+        a, b = f[pj][pi], f[qj][qi]
+        t = a / (a - b)
+        return x0 + (pi + t * (qi - pi)) * step, y0 + (pj + t * (qj - pj)) * step
+
+    links: dict = {}
+    for j in range(ny - 1):
+        for i in range(nx - 1):
+            corner = [f[j][i] < 0, f[j][i + 1] < 0, f[j + 1][i + 1] < 0, f[j + 1][i] < 0]  # a b c d
+            if all(corner) or not any(corner):
+                continue
+            edge = [("h", i, j), ("v", i + 1, j), ("h", i, j + 1), ("v", i, j)]  # bottom right top left
+            touch = [(0, 3), (0, 1), (1, 2), (2, 3)]  # the two edges at each corner a b c d
+            if corner == [True, False, True, False] or corner == [False, True, False, True]:
+                centre = (f[j][i] + f[j][i + 1] + f[j + 1][i + 1] + f[j + 1][i]) / 4 < 0
+                pairs = [touch[k] for k in range(4) if corner[k] != centre]
+            else:
+                crossed = [k for k in range(4) if corner[k] != corner[(k + 1) % 4]]
+                pairs = [tuple(crossed)]
+            for u, v in pairs:
+                links.setdefault(edge[u], []).append(edge[v])
+                links.setdefault(edge[v], []).append(edge[u])
+
+    rings, seen = [], set()
+    for start in links:
+        if start in seen:
+            continue
+        ring, prev, cur = [start], None, start
+        seen.add(start)
+        while True:
+            nxt = next((n for n in links[cur] if n != prev and n not in seen), None)
+            if nxt is None:
+                break
+            ring.append(nxt)
+            seen.add(nxt)
+            prev, cur = cur, nxt
+        rings.append([cross(k) for k in ring])
+    area = lambda r: sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(r, r[1:] + r[:1])) / 2
+    outer = max(rings, key=lambda r: abs(area(r)))
+    if area(outer) < 0:
+        outer.reverse()  # counter-clockwise, as GeoJSON prefers
+    ll = [(y / ky, x / kx) for x, y in outer]
+    ll = simplify(ll + [ll[0]], tol)
+    return {"type": "Polygon", "coordinates": [[[round(p[1], 7), round(p[0], 7)] for p in ll]]}
 
 
 def lonlat(pts) -> list[list[float]]:
@@ -161,11 +228,13 @@ def main():
     hospital = next((h for h in help_points if h["source"] == "osm" and h["kind"] == "medical"), None)
 
     i0, i1 = nearest_idx(line, (30.6940, 79.0566)), nearest_idx(line, (30.6984, 79.0616))
+    slide, old_road = line[min(i0, i1):max(i0, i1) + 1], simplify(old, 12)
+    # centerline and half_width_m are kept so scripts/rebuild_zone_outlines.py can redraw the outline offline.
     zones = [{"id": "Z-KED-L1", "kind": "landslide", "severity": "danger", "segment_name": "Bhimbali to Linchauli",
-              "polygon": corridor(line[min(i0, i1):max(i0, i1) + 1], 70)}]
+              "polygon": corridor(slide, 70), "centerline": lonlat(slide), "half_width_m": 70}]
     if len(old) > 2:
         zones.append({"id": "Z-KED-C1", "kind": "closed_trail", "severity": "warn", "segment_name": "Old Kedarnath trek road",
-                      "polygon": corridor(simplify(old, 12), 25)})
+                      "polygon": corridor(old_road, 25), "centerline": lonlat(old_road), "half_width_m": 25})
 
     route = {
         "id": "kedarnath", "name": "Gaurikund to Kedarnath", "region": "Rudraprayag, Uttarakhand", "local_lang": "hi",

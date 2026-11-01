@@ -2,8 +2,8 @@ import maplibregl, { type GeoJSONSource, type Map as MLMap, type Marker } from "
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { centroid } from "../lib/geo";
-import { KIND_ICON } from "../lib/format";
 import { useT } from "../lib/i18n";
+import { zoneIconSvg } from "./icons";
 import type { Checkpoint, Dot, HeatCell, HelpPoint, Zone } from "../lib/types";
 
 export type IncidentPin = { id: number; lat: number; lon: number; count: number; priority: string; selected?: boolean; status: string };
@@ -46,13 +46,18 @@ function circlePoly(lat: number, lon: number, r: number) {
   return { type: "Polygon", coordinates: [pts] };
 }
 
-/** OpenStreetMap raster tiles (no key; light use only, never bulk-prefetched). Offline, the route,
- *  zones and help points still draw as GeoJSON on the plain background. The projector gets a dimmed copy. */
+/** OpenStreetMap raster tiles (no key; light use only, never bulk-prefetched) with terrain relief on top:
+ *  a hillshade drawn from the open AWS Terrain Tiles (Mapzen "terrarium" elevation, no key). Relief matters
+ *  on a mountain trail, and once viewed it is cached, so valleys and ridges still show without signal.
+ *  Offline, the route, zones and help points still draw as GeoJSON. The projector gets a dimmed copy. */
+const TERRAIN_TILES = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
 function style(dark: boolean): maplibregl.StyleSpecification {
   return {
     version: 8,
     sources: {
       base: { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 19, attribution: "© OpenStreetMap contributors" },
+      // SRTM-class data is about 30 m, so zoom 12 is its native detail; MapLibre stretches it beyond that.
+      terrain: { type: "raster-dem", tiles: [TERRAIN_TILES], tileSize: 256, maxzoom: 12, encoding: "terrarium", attribution: "Terrain: Mapzen, SRTM, AWS Open Data" },
     },
     layers: [
       { id: "bg", type: "background", paint: { "background-color": dark ? "#1b1f24" : "#ece7dd" } },
@@ -61,6 +66,20 @@ function style(dark: boolean): maplibregl.StyleSpecification {
         type: "raster",
         source: "base",
         paint: dark ? { "raster-saturation": -0.7, "raster-brightness-max": 0.42, "raster-contrast": 0.15 } : { "raster-saturation": -0.25 },
+      },
+      {
+        id: "relief",
+        type: "hillshade",
+        source: "terrain",
+        paint: dark
+          ? { "hillshade-exaggeration": 0.3, "hillshade-shadow-color": "#000000", "hillshade-highlight-color": "#8a8f96", "hillshade-accent-color": "#000000" }
+          : {
+              // Strong when zoomed out (valleys and ridges), softer up close where 30 m data gets blurry.
+              "hillshade-exaggeration": ["interpolate", ["linear"], ["zoom"], 10, 0.5, 16, 0.28],
+              "hillshade-shadow-color": "#4a3b2a",
+              "hillshade-highlight-color": "#fffaf0",
+              "hillshade-accent-color": "#5c4a36",
+            },
       },
     ],
   };
@@ -135,7 +154,7 @@ export default function MapView(p: Props) {
     for (const cp of q.checkpoints ?? []) keep.add(marker(`cp:${cp.id}`, [cp.lon, cp.lat], `<div class="st-pin st-pin-checkpoint" title="${cp.name}">◆</div>`));
     for (const z of q.zones ?? []) {
       const [lat, lon] = centroid(z.polygon);
-      keep.add(marker(`z:${z.id}`, [lon, lat], `<div class="st-zone-badge st-zone-${z.kind === "crowd" || z.severity === "warn" ? "warn" : "danger"}">${KIND_ICON[z.kind] ?? "⚠"}</div>`, () => props.current.onZoneClick?.(z)));
+      keep.add(marker(`z:${z.id}`, [lon, lat], `<div class="st-zone-badge st-zone-${z.kind === "crowd" || z.severity === "warn" ? "warn" : "danger"}">${zoneIconSvg(z.kind)}</div>`, () => props.current.onZoneClick?.(z)));
     }
     for (const inc of q.incidents ?? [])
       keep.add(marker(`i:${inc.id}`, [inc.lon, inc.lat], `<div class="st-inc st-inc-${inc.priority} ${inc.selected ? "st-inc-sel" : ""} ${inc.status !== "new" ? "st-inc-ack" : ""}"><span>${inc.count}</span></div>`, () => props.current.onIncidentClick?.(inc.id)));
@@ -164,7 +183,9 @@ export default function MapView(p: Props) {
     }
     map.current = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }), "top-right");
-    m.on("load", () => {
+    // Draw our layers as soon as the style is ready, not on "load": "load" waits for every tile, and
+    // when tiles fail on a weak or missing connection it can wait forever, leaving no route or zones.
+    m.once("style.load", () => {
       const add = (id: string) => m.addSource(id, { type: "geojson", data: fc([]) });
       ["route", "zones", "heat", "dots", "path", "draft", "acc"].forEach(add);
       m.addLayer({ id: "heat", type: "fill", source: "heat", paint: { "fill-color": ["match", ["get", "level"], "red", "#D93025", "amber", "#F59E0B", "#22C55E"], "fill-opacity": 0.38 } });

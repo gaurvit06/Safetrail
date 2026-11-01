@@ -2,7 +2,9 @@ import { BrowserQRCodeReader, type IScannerControls } from "@zxing/browser";
 import { Check, ChevronDown, ChevronRight, ExternalLink, KeyRound, Link2, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, connectEvents } from "../lib/api";
-import { ago, clock, duration, hm, inr, KIND_LABEL, RISK_SHORT, riskText, SOS_ICON, usd, weatherIcon } from "../lib/format";
+import { ago, clock, duration, hm, inr, KIND_LABEL, RISK_SHORT, riskText, usd } from "../lib/format";
+import { Bandage, Users } from "lucide-react";
+import { SosKindIcon, WarnIcon, WeatherIcon } from "./icons";
 import { setRoleToken } from "../lib/session";
 import type { AiStats, Config, Dot, Evt, HeatCell, IncidentDetail, IncidentSummary, LlmCallBrief, RouteDetail, Tally, Weather, WeatherSection, Zone } from "../lib/types";
 import { verifyEntries, verifyPassOffline, type EntryCheck, type LogEntry } from "../lib/verify";
@@ -221,19 +223,19 @@ export function WeatherPanel({ weather, onLocate, onDrawZone }: { weather: Weath
               }}
               className={`chip border px-2.5 py-1 text-xs ${WX_CHIP[s.level]} ${open === s.segment_id ? "ring-2 ring-ink/30" : ""}`}
             >
-              {weatherIcon(s.now.code)} {s.name} · {n(s.now.temp_c)}°{r ? ` · ${riskText(RISK_SHORT, r.key, r.value)}` : ""}
+              <WeatherIcon code={s.now.code} size={14} className="-mt-0.5 mr-1 inline" />{s.name} · {n(s.now.temp_c)}°{r ? ` · ${riskText(RISK_SHORT, r.key, r.value)}` : ""}
             </button>
           );
         })}
       </div>
       {sel ? (
         <div className="mt-2 rounded-xl bg-black/[.03] p-2.5 text-sm">
-          <p className="font-semibold">{weatherIcon(sel.now.code)} {sel.name} · {n(sel.now.temp_c)}° · {sel.now.desc}{sel.elevation_m ? ` · ${Math.round(sel.elevation_m)} m` : ""}</p>
+          <p className="font-semibold"><WeatherIcon code={sel.now.code} size={16} className="-mt-0.5 mr-1 inline" />{sel.name} · {n(sel.now.temp_c)}° · {sel.now.desc}{sel.elevation_m ? ` · ${Math.round(sel.elevation_m)} m` : ""}</p>
           <p className="text-xs text-muted">
             Next {weather.hours_ahead ?? 12} h: {n(sel.next12h.temp_min)}° to {n(sel.next12h.temp_max)}° · rain {sel.next12h.rain_12h} mm ({sel.next12h.rain_prob_max}% max chance) · snow {sel.next12h.snow_12h} cm · gusts {sel.next12h.gust_max} km/h
           </p>
           {sel.risks.length === 0 && <p className="mt-1 text-xs text-safe">No warnings for this section.</p>}
-          {sel.risks.map((r) => <p key={r.key} className={`mt-1 text-xs font-semibold ${r.level === "danger" ? "text-danger" : "text-caution"}`}>⚠ {riskText(RISK_SHORT, r.key, r.value)}</p>)}
+          {sel.risks.map((r) => <p key={r.key} className={`mt-1 text-xs font-semibold ${r.level === "danger" ? "text-danger" : "text-caution"}`}><WarnIcon className="-mt-0.5 mr-1 inline" size={12} />{riskText(RISK_SHORT, r.key, r.value)}</p>)}
           {sel.level !== "none" && onDrawZone && (
             <button className="btn-ghost mt-2 min-h-[36px] text-sm" onClick={() => onDrawZone(sel)}>Draw a zone here</button>
           )}
@@ -425,8 +427,8 @@ export function IncidentRow({ i, selected, onClick }: { i: IncidentSummary; sele
       </div>
       <p className="mt-1 line-clamp-2 text-sm">{i.headline ?? "…"}</p>
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-        <span className="chip bg-black/5">👥 {i.people_total}</span>
-        {i.injured_total > 0 && <span className="chip bg-danger/10 text-danger">🩹 {i.injured_total}</span>}
+        <span className="chip bg-black/5"><Users size={12} className="-mt-0.5 mr-1 inline" />{i.people_total}</span>
+        {i.injured_total > 0 && <span className="chip bg-danger/10 text-danger"><Bandage size={12} className="-mt-0.5 mr-1 inline" />{i.injured_total}</span>}
         <span className="chip bg-black/5 capitalize">{i.status.replace("_", " ")}</span>
         {i.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#7C3AED]/10 text-[#7C3AED]">{FLAG_LABEL[f]}</span>)}
       </div>
@@ -528,7 +530,7 @@ export function IncidentPanel({ id, token, lastEvt, onClose, compact }: { id: nu
               <div className="mt-1 space-y-2">
                 {d.sos.map((s) => (
                   <div key={s.client_id} className={`rounded-xl border border-line p-3 text-sm ${s.cancelled_at ? "opacity-50" : ""}`}>
-                    <div className="flex items-center gap-2"><span className="text-lg">{SOS_ICON[s.kind]}</span><b>{s.trip_label}</b><span className="text-muted">{s.name}</span><span className="ml-auto chip bg-black/5">{s.people_bucket} ppl</span></div>
+                    <div className="flex items-center gap-2"><SosKindIcon kind={s.kind} size={18} /><b>{s.trip_label}</b><span className="text-muted">{s.name}</span><span className="ml-auto chip bg-black/5">{s.people_bucket} ppl</span></div>
                     {s.note_text && <p className="mt-1">“{showOrig || d.type === "cluster" ? s.note_text : d.report?.translated_note || s.note_text}”</p>}
                     <p className="mt-1 text-xs text-muted">{clock(s.created_at_device)} pressed · received {clock(s.received_at_server)}{s.delay_s > 5 ? ` (delay ${duration(s.delay_s)})` : ""} · via {s.channel} · ±{Math.round(s.accuracy_m)} m{s.cancelled_at ? " · cancelled" : ""}</p>
                     {s.flags.filter((f) => FLAG_LABEL[f]).length > 0 && <div className="mt-1 flex flex-wrap gap-1">{s.flags.filter((f) => FLAG_LABEL[f]).map((f) => <span key={f} className="chip bg-[#7C3AED]/10 text-[#7C3AED]">{FLAG_LABEL[f]}</span>)}</div>}

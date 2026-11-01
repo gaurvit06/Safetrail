@@ -22,6 +22,12 @@ One long session with Hardik (GitHub: pajiala99). It started from the handoff wr
 
 Tests at the end: 56 backend, 6 frontend, checker clean.
 
+## 1 Nov 2026: fixes found while making the pitch deck
+- Emoji replaced by line icons everywhere (`components/icons.tsx`).
+- Terrain relief (hillshade) on every map, from open elevation tiles, cached for offline use.
+- Bug: with map tiles failing, the map sometimes drew nothing (MapLibre's `load` never fired). Our layers now go in on `style.load`.
+- Bug: the Kedarnath zone outlines crossed themselves on switchbacks, so parts of the trail tested as outside the landslide zone. Rebuilt as true buffers (`scripts/rebuild_zone_outlines.py`), with a test.
+
 ## Facts to remember
 - PINs: responder 2468, presenter 1357. Prune base URL https://api.withprune.com/v1 (default). Keys only in `.env`.
 - The cloud session could not push to `gaurvit06/Safetrail` (Claude GitHub App not installed on it), so the work was handed over as `safetrail-work.bundle`; see CONTINUE.md Step 0.

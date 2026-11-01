@@ -149,13 +149,15 @@ async def demo_scenario(route_id: str = "kedarnath") -> dict:
                         polygon=circle_polygon(*_along(route_id, 0.5), 120), source="drawn", simulated=True,
                         created_by="demo")
             publish_zone(s, zone, "demo")
-        # The group stands on the real trail, inside the landslide zone.
+        # The group stands together on the real trail, in the middle of the landslide zone.
         on_trail = [(p[1], p[0]) for p in route_seed(route_id)["line"] if point_in_polygon(p[1], p[0], zone.polygon)]
         if not on_trail:
             on_trail = [centroid(zone.polygon)]
+        mid = on_trail[len(on_trail) // 2]
+        near = [p for p in on_trail if haversine_m(*p, *mid) <= 40] or [mid]
         group = []
         for i in range(8):
-            lat, lon = on_trail[(i * len(on_trail)) // 8]
+            lat, lon = near[(i * len(near)) // 8]
             lat, lon = offset_point(lat, lon, rnd.uniform(-6, 6), rnd.uniform(-6, 6))
             group.append(_demo_trip(s, f"Demo-G{i + 1}", route_id, lat, lon, "hi" if i in (1, 5) else "en", 90))
 

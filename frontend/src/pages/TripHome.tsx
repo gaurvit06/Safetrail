@@ -7,7 +7,8 @@ import {
 } from "../components/tourist";
 import { BottomSheet, HoldButton, Overlay, SheetHeader, Spinner, useToast } from "../components/ui";
 import { api, connectEvents, isNetworkError } from "../lib/api";
-import { ago, KIND_ICON, riskText, weatherIcon } from "../lib/format";
+import { ago, riskText } from "../lib/format";
+import { WeatherIcon, ZoneIcon } from "../components/icons";
 import { distanceToPolygon, fmtDistance, haversine, nearest, nearestSegmentName, safeWayOut } from "../lib/geo";
 import { Geofence } from "../lib/geofence";
 import { useT } from "../lib/i18n";
@@ -465,9 +466,9 @@ export default function TripHome() {
       <div className="absolute inset-x-3 top-[72px] z-20 mx-auto flex max-w-lg flex-col gap-2">
         {acked && <div className="animate-slideup rounded-xl bg-safe px-4 py-3 font-semibold text-white shadow-float"><CheckCircle2 className="mr-2 inline" size={18} />{t("help_ack_banner", { team: activeSos?.team ?? "" })}</div>}
         {activeSos && !acked && <button onClick={() => setStatusId(activeSos.client_id)} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float">SOS · {activeSos.status === "received" ? t("st_received") : t("st_pending")} →</button>}
-        {wDanger && wsec && <button onClick={() => setOverlay("weather")} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float">{weatherIcon(wsec.now.code)} {riskText(bundle.templates.weather, wDanger.key, wDanger.value)}</button>}
-        {insideZone && !alertZone && <button onClick={() => showWayOut(insideZone)} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float">{KIND_ICON[insideZone.kind]} {zoneText(insideZone, lang, bundle).title} · {t("show_way_back")} →</button>}
-        {approach && !insideZone && me && <button onClick={() => setZoneCard(approach)} className="animate-slideup rounded-xl bg-caution px-4 py-3 text-left font-semibold text-white shadow-float">{KIND_ICON[approach.kind]} {zoneText(approach, lang, bundle).title}: {fmtDistance(distanceToPolygon(me.lat, me.lon, approach.polygon))} {t("ahead")}</button>}
+        {wDanger && wsec && <button onClick={() => setOverlay("weather")} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float"><WeatherIcon code={wsec.now.code} size={18} className="-mt-0.5 mr-1.5 inline" />{riskText(bundle.templates.weather, wDanger.key, wDanger.value)}</button>}
+        {insideZone && !alertZone && <button onClick={() => showWayOut(insideZone)} className="rounded-xl bg-danger px-4 py-3 text-left font-semibold text-white shadow-float"><ZoneIcon kind={insideZone.kind} size={18} className="-mt-0.5 mr-1.5 inline" />{zoneText(insideZone, lang, bundle).title} · {t("show_way_back")} →</button>}
+        {approach && !insideZone && me && <button onClick={() => setZoneCard(approach)} className="animate-slideup rounded-xl bg-caution px-4 py-3 text-left font-semibold text-white shadow-float"><ZoneIcon kind={approach.kind} size={18} className="-mt-0.5 mr-1.5 inline" />{zoneText(approach, lang, bundle).title}: {fmtDistance(distanceToPolygon(me.lat, me.lon, approach.polygon))} {t("ahead")}</button>}
         {gps === "rough" && me && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-caution shadow-float"><AlertTriangle className="mr-1 inline" size={16} />{t("rough", { m: Math.round(me.accuracy) })}</div>}
         {gps === "denied" && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-danger shadow-float">{t("no_gps")}</div>}
         {!sharing && <div className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-muted shadow-float">{t("sharing_off")}</div>}
@@ -481,7 +482,7 @@ export default function TripHome() {
         <div className="absolute inset-x-3 top-20 z-30 mx-auto max-w-lg animate-slideup">
           <div className="card p-4 shadow-float">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-lg font-bold">{KIND_ICON[zoneCard.kind]} {zoneText(zoneCard, lang, bundle).title}</p>
+              <p className="text-lg font-bold"><ZoneIcon kind={zoneCard.kind} size={20} className="-mt-0.5 mr-1.5 inline" />{zoneText(zoneCard, lang, bundle).title}</p>
               <button onClick={() => setZoneCard(null)} className="grid h-9 w-9 place-items-center rounded-full bg-black/5"><X size={16} /></button>
             </div>
             <p className="mt-1">{zoneText(zoneCard, lang, bundle).body}</p>
@@ -494,7 +495,7 @@ export default function TripHome() {
       {crowd && (
         <div className="absolute inset-x-3 z-30 mx-auto max-w-lg animate-slideup" style={{ bottom: SHEET_PEEK + 12 }}>
           <div className="rounded-2xl bg-caution p-4 text-white shadow-float">
-            <div className="flex items-start justify-between"><p className="text-lg font-bold">👥 {t("crowd_title")}</p><button onClick={() => setCrowd(null)}><X /></button></div>
+            <div className="flex items-start justify-between"><p className="flex items-center gap-2 text-lg font-bold"><Users size={20} />{t("crowd_title")}</p><button onClick={() => setCrowd(null)}><X /></button></div>
             <p className="mt-1">{crowd.message}</p>
             <div className="mt-3 flex gap-2">
               <button className="btn flex-1 bg-white text-ink" onClick={() => { setCrowd(null); setTimeout(() => { cautionChime(); toast(t("crowd_title") + "?", "warn"); }, crowd.wait * 60000); toast(t("remind_me", { m: crowd.wait }), "ok"); }}>{t("remind_me", { m: crowd.wait })}</button>
@@ -522,7 +523,7 @@ export default function TripHome() {
         </div>
         {wsec && (
           <button onClick={() => setOverlay("weather")} className="card mt-3 flex w-full items-center gap-3 p-3 text-left">
-            <span className="text-3xl">{weatherIcon(wsec.now.code)}</span>
+            <WeatherIcon code={wsec.now.code} size={32} strokeWidth={1.75} className="shrink-0 text-ink" />
             <div className="min-w-0 flex-1">
               <p className="font-bold">{Math.round(wsec.now.temp_c)}° · {wsec.now.desc}</p>
               <p className={`truncate text-sm ${wsec.level === "danger" ? "text-danger" : wsec.level === "warn" ? "text-caution" : "text-muted"}`}>
